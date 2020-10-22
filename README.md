@@ -134,14 +134,14 @@ Vous pouvez ajouter des regexs en éditant les fichiers [NameRegexes.json](https
 
 Si le nom et le prénom sont captués dans deux groupes différents :<br>
 "regex": `/(.+) épouse [^ .]+ (.+)né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/`,<br>
-"indexName": **2**,     -> le 2nd group match le nom<br>
-"indexSurname": **1**,  -> le 1er group match le prénom<br>
+"indexNom": **2**,     -> le 2nd group match le nom<br>
+"indexPrenom": **1**,  -> le 1er group match le prénom<br>
 "indexDate": 3      -> le 3èm group match la date<br>
 
 Si le nom et le prénom sont capturés dans le même groupe, alors mettre le même index pour les deux : <br>
 "regex": `/(.+) né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/`,<br>
-"indexName": **1**, -> le 1er groupe match le nom et le prenom<br>
-"indexSurname": **1**, -> le 1er groupe match le nom et le prenom<br>
+"indexNom": **1**, -> le 1er groupe match le nom et le prenom<br>
+"indexPrenom": **1**, -> le 1er groupe match le nom et le prenom<br>
 "indexDate": 2<br>
 
 Si la regex ne capture pas la date de naissance, alors mettre indexDate à -1;
