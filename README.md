@@ -23,8 +23,8 @@
 3. Il faut que le serveur web puisse écrire dans les dossiers var/cache et var/log de l'application. Pour cela, les manipulations diffèrent en fonction de votre système :
  
 * Avec SELinux :
-    * `semanage fcontext -a -t httpd_sys_content_rw_t '/var/www/html/ent-doc-scola/var/cache(/.*)?'`
-    * `restorecon -v -R /var/www/html/ent-doc-scola/var/cache/`
+    * `semanage fcontext -a -t httpd_sys_content_rw_t '/var/www/html/Document-Scolarite-ENT/var/cache(/.*)?'`
+    * `restorecon -v -R /var/www/html/Document-Scolarite-ENT/var/cache/`
 
 
 * Avec ACL (Notez que tous les serveurs web n'utilisent pas l'utilisateur www-data. Vous devez vérifier quel utilisateur votre serveur web utilise et le remplacer dans la commande ci-dessous si besoin) :
