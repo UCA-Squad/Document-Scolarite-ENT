@@ -35,7 +35,7 @@ Il faut effectuer ces commandes pour les dossiers var/cache et var/log.
 
 4. Creér une copie du fichier .env et le nommer .env.local. C'est ce fichier qui sera utilisé par l'application pour définir plusieurs paramètres.
 
-5. Dans le fichier .env.local, modifiez la variable `DATABASE_URL` en y indiquant le pseudo et mot de passe de votre utilisateur mysql.
+5. Dans le fichier .env.local, modifiez la variable `DATABASE_URL` en y indiquant le pseudo et mot de passe de votre utilisateur mysql ainsi que le nom de votre base.
 Ensuite, à la racine de l'application, utilisez la commande `php bin/console doctrine:database:create` pour créer la base de données.<br>
 Puis `php bin/console doctrine:schema:update --force` afin de mettre à jour les tables.
     
