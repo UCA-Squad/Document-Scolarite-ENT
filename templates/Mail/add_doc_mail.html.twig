@@ -1,0 +1,72 @@
+<style>
+    .inline {
+        display: inline-block !important;
+    }
+</style>
+
+<div class="container">
+	<div class="row inline">
+		<div class="inline">Bonjour</div>
+		<div class="inline"><h5>{{ stud.Surname }}</h5></div>
+		<div class="inline"><h4>{{ stud.Name }}</h4></div>
+	</div>
+</div>
+
+{% if mode == 0 %}
+
+	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre == "1" or bddData.semestre == "2") %}
+		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
+			session
+			<strong>{{ bddData.session }}</strong>,
+			semestre <strong>{{ bddData.semestre }}</strong><br> a
+			été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre == "A") %}
+		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
+			session
+			<strong>{{ bddData.session }}</strong>
+			<br>a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+	{% if (bddData.session == "U") and (bddData.semestre == "1" or bddData.semestre == "2") %}
+		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
+			semestre
+			<strong>{{ bddData.semestre }}</strong><br> a été déposé
+			dans votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+	{% if (bddData.session == "U") and (bddData.semestre == "A") %}
+		<p>Votre relevé de notes de
+			<br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong><br> a été déposé dans
+			votre ENT, rubrique
+			Scolarité/Documents.</p>
+	{% endif %}
+
+{% endif %}
+
+{% if mode == 1 %}
+
+	{% if bddData.type == "VDI" %}
+		<p>Votre attestation de réussite au <br>diplôme de <strong>{{ stud.LibelleObj }}</strong><br> a été déposée dans
+			votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+	{% if bddData.type == "VET" %}
+		<p>Votre attestation de réussite au <br>niveau <strong>{{ stud.LibelleObj }}</strong><br> a été déposée dans
+			votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+	{% if bddData.type == "ELP" %}
+		<p>Votre attestation de réussite au <br>module <strong>{{ stud.LibelleObj }}</strong> de
+			<strong>{{ stud.Libelle }}</strong><br> a été déposée dans votre ENT, rubrique Scolarité/Documents.</p>
+	{% endif %}
+
+{% endif %}
+<a href="https://ent.uca.fr/doc-scola/etudiant">https://ent.uca.fr/doc-scola/etudiant</a>
+<br><br>
+<p>Le service scolarité de votre formation</p>
+
+<p>Université Clermont Auvergne<br><a href="https://www.uca.fr">www.uca.fr</a></p>
+<br>
+<i>Ce Courriel a été envoyé automatiquement, merci de ne pas y répondre</i>

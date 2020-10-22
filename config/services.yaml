@@ -1,0 +1,80 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    ldap:
+        connection_string: '%env(LDAP_URL)%'
+        bind_dn: '%env(LDAP_BIND_DN)%'
+        bind_password: '%env(LDAP_BIND_PASSWORD)%'
+        base_dn: '%env(LDAP_BASE_DN)%'
+        admin_group: '%env(LDAP_ADMIN_GROUP_DN)%'
+
+    cas_login_url: '%env(CAS_LOGIN_URL)%'
+    cas_validation_url: '%env(CAS_VALIDATION_URL)%'
+    cas_logout_url: '%env(CAS_LOGOUT_URL)%'
+
+    is_maintenance: '%env(bool:IS_MAINTENANCE)%'
+
+    mail_sender: '%env(MAIL_SENDER)%'
+    mail_subject: '%env(MAIL_SUBJECT)%'
+
+    admin_users: '%env(json:ADMIN_UID)%'
+    output_dir_rn: '%env(OUTPUT_DIR_RN)%'
+    output_tmp_rn: '%env(OUTPUT_TMP_RN)%'
+    output_etu_rn: '%env(OUTPUT_ETU_RN)%'
+    output_dir_attest: '%env(OUTPUT_DIR_ATTEST)%'
+    output_tmp_attest: '%env(OUTPUT_TMP_ATTEST)%'
+    output_etu_attest: '%env(OUTPUT_ETU_ATTEST)%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    App\Logic\LDAP:
+        autowire: false
+        arguments:
+            $ldapParams: "%ldap%"
+
+    App\Security\AccessDeniedHandler:
+        arguments: ["@service_container"]
+
+    App\Listener\MaintenanceListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request }
+
+    App\Listener\StudentFileUpdateListener:
+        arguments: ['@mailer', '@twig', '@parser.etu']
+
+    App\Parser\IEtuParser: '@parser.etu'
+
+############################### CONFIGURATION SECTION ###############################################
+
+    # Parser use to extract info from files
+    parser.etu:
+        class: App\Parser\EtuParser # Has to implement IEtuParser
+        arguments: ["@service_container"]
+
+    # Normalizer use to transform one line of etu file into Student
+    normalizer:
+        class: App\Normalizer\StudentNormalizer
+        tags: ['serializer.normalizer']
+#####################################################################################################

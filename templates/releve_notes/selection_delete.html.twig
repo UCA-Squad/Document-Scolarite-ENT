@@ -1,0 +1,360 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suppression {{ mode == 1 ? 'Attest' : 'RN' }}{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.css"/>
+	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+{% endblock %}
+
+{% block body %}
+
+	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		 aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Vérification</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<ul>
+						<li><p><strong id="modal_txt_notransfert"></strong></p></li>
+						<li><p><strong id="modal_txt_transfert"></strong></p></li>
+					</ul>
+					<div style="text-align: center" class="alert alert-dismissible alert-warning">
+						<p><strong>Etes-vous sûr de vouloir continuer ?</strong></p>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button id="btn_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Annuler
+					</button>
+					<button id="btn_transfer" type="button" class="btn btn-primary">Supprimer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div style="text-align: center">
+		<a id="cancel" style="float: left" class="btn btn-primary"
+		   href="{{ mode == 1 ? path('delete_import_attest') : path('delete_import_rn') }}"><-</a>
+		<h2 id="title" style="display: inline-block;margin: 0 auto">Suppression
+			des {{ mode == 1 ? 'attestations de réussite' : 'relevés de notes' }}</h2>
+	</div>
+
+	<div style="margin-top: 40px" class="row justify-content-md-center">
+		{% if mode == 0 %}
+			<div class="form-group col-sm-2">
+				<label class="control-label">Semestre</label>
+				<input class="form-control" style="text-align: center" name="session" type="text" disabled
+					   value="{{ bddData.semestre }}">
+			</div>
+		{% endif %}
+		{% if mode == 0 %}
+			<div class="form-group col-sm-2">
+				<label class="control-label">Session</label>
+				<input class="form-control" style="text-align: center" type="text" disabled
+					   value="{{ bddData.session }}">
+			</div>
+		{% endif %}
+		<div class="form-group col-sm-{{ mode == 1 ? "3" : "2" }}">
+			<label class="control-label">Libellé</label>
+			{% if mode == 0 %}
+				<input class="form-control" style="text-align: center" type="text" disabled
+					   value="{{ bddData.libelle is same as("") ? bddData.libelleForm : bddData.libelle }}">
+			{% else %}
+				<input class="form-control" style="text-align: center" type="text" disabled
+					   value="{{ bddData.libelleObj }} / {{ bddData.libelle }}">
+			{% endif %}
+		</div>
+		<div class="form-group col-sm-2">
+			<label class="control-label">Code</label>
+			{% if mode == 0 %}
+				<input class="form-control" style="text-align: center" type="text" disabled
+					   value="{{ bddData.code is same as("--")  or bddData.code is same as("") ? bddData.codeObj : bddData.code }}">
+			{% else %}
+				<input class="form-control" style="text-align: center" type="text" disabled
+					   value="{{ bddData.codeObj }} / {{ bddData.code }}">
+			{% endif %}
+		</div>
+		<div class="form-group col-sm-2">
+			<label class="control-label">Année</label>
+			<input class="form-control" style="text-align: center" type="text" disabled
+				   value="{{ bddData.year }}">
+		</div>
+	</div>
+
+	<div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px">
+		<button type="button" class="btn btn-primary" id="btn_go" disabled onclick="OnGO()">Continuer</button>
+		<button type="button" class="btn btn-primary" id="btn_select" style="margin-left: 10px" onclick="OnAllSelect()">
+			Tout sélectionner
+		</button>
+		<button type="button" id="btn_reload" style="margin-left: 10px;visibility: hidden" class="btn btn-primary"
+				onclick="OnCancel()">Annuler
+		</button>
+	</div>
+
+	<div id="students_tab" class="container-fluid">
+
+		<table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
+
+			<thead>
+			<tr style="text-align: center">
+				<th scope="col">Numero</th>
+				<th scope="col">Nom</th>
+				<th scope="col">Prenom</th>
+				<th scope="col">Date de naissance</th>
+				<th scope="col">Mail</th>
+				<th scope="col">{{ mode == 0 ? "Relevé" : "Attestation" }}</th>
+				<th scope="col">Supprimer</th>
+			</tr>
+			</thead>
+
+			<tbody>
+			{% for stud in students %}
+				<tr id="cell_{{ stud.numero }}" style="text-align: center;opacity: {{ stud.file == "" ? 0.4: 1 }}">
+					<td style="padding: 10px">{{ stud.numero }}</td>
+					<td style="padding: 10px">{{ stud.name }}</td>
+					<td style="padding: 10px">{{ stud.surname }}</td>
+					<td style="padding: 10px">{{ stud.birthday }}</td>
+					<td style="padding: 10px">{{ stud.mail }}</td>
+					<td style="padding: 10px">
+						{% if mode == 1 %}
+							<a target="_blank"
+							   href="{{ path('preview_attest',{'numero':stud.numero, 'index':stud.index}) }}">{{ stud.file }}</a>
+						{% else %}
+							<a target="_blank"
+							   href="{{ path('preview_rn',{'numero':stud.numero, 'index':stud.index}) }}">{{ stud.file }}</a>
+						{% endif %}
+					</td>
+					<td style="padding: 10px">
+						<div class="custom-control custom-checkbox">
+							<input onclick="chbxClicked()" type="checkbox"
+								   class="custom-control-input" {{ stud.file == "" ? 'disabled ' : '' }}
+								   id="{{ stud.numero }}"/>
+							<label class="custom-control-label" for="{{ stud.numero }}"></label>
+						</div>
+					</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+
+		</table>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+	<script>
+        let isAllSelect = false;
+        let nonExisting = 0;
+
+        function OnAllSelect() {
+            isAllSelect = !isAllSelect;
+            let table = $('#indexable_table').DataTable();
+            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                let rowNode = this.node();
+                $(rowNode).find("td").each(function (num, elem) {
+                    if (num === 6) {
+                        let box = elem.childNodes[1].childNodes[1];
+                        if (!box.disabled)
+                            box.checked = isAllSelect;
+                    }
+                });
+            });
+            chbxClicked();
+            if (isAllSelect)
+                document.getElementById('btn_select').innerText = "Tout désélectionner";
+            else
+                document.getElementById('btn_select').innerText = "Tout sélectionner";
+        }
+
+        function chbxClicked() {
+            document.getElementById('btn_go').disabled = !IsOneChbxChecked();
+        }
+
+        function OnCancel() {
+            document.location.reload(true);
+        }
+
+        function OnTransfer() {
+            const total = {{ students|length }} -nonExisting;
+            const tmp = [];
+            let table = $('#indexable_table').DataTable();
+			{% for stud in students %}
+            var isChecked = getChbxById("{{ stud.numero }}", table);
+            if (isChecked)
+                tmp.push('{{ stud.numero }}');
+			{% endfor %}
+			{% if mode == 0 %}
+            getRNTextForModal(tmp, total);
+			{% else %}
+            getAttestTextForModal(tmp, total);
+			{% endif %}
+            document.getElementById("btn_transfer").onclick = () => ajax_delete_call(tmp);
+            $('#myModal').modal();
+        }
+
+        function getRNTextForModal(tmp, total) {
+            const len = tmp.length;
+            if (len === total) {
+                $("#modal_txt_transfert").text("Tous les relevés (" + total + ") vont être supprimés.");
+                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
+            } else {
+                $("#modal_txt_notransfert").text(len + " relevé" + (len > 1 ? 's' : '') + " sur " + total + (len > 1 ? ' seront' : ' sera') + " supprimé" + (len > 1 ? 's' : '') + ".");
+                $("#modal_txt_transfert").text(total - len + " relevé" + (total - len > 1 ? 's' : '') + " sur " + total + " ne " + (total - len > 1 ? ' seront' : ' sera') + " pas supprimé" + (total - len > 1 ? 's' : '') + ".");
+                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
+            }
+        }
+
+        function getAttestTextForModal(tmp, total) {
+            const len = tmp.length;
+            if (len === total) {
+                $("#modal_txt_transfert").text("Toutes les attestations (" + total + ") vont être supprimées.");
+                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
+            } else {
+                $("#modal_txt_notransfert").text(len + " attestation" + (len > 1 ? 's' : '') + " sur " + total + (len > 1 ? ' seront' : ' sera') + " supprimée" + (len > 1 ? 's' : '') + ".");
+                $("#modal_txt_transfert").text(total - len + " attestation" + (total - len > 1 ? 's' : '') + " sur " + total + " ne " + (total - len > 1 ? ' seront' : ' sera') + " pas supprimée" + (total - len > 1 ? 's' : '') + ".");
+                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
+            }
+        }
+
+        function OnGO() {
+            if (!IsOneChbxChecked())
+                return;
+
+            nonExisting = getNbChbxDisabled();
+            document.getElementById('btn_select').style.display = "none";
+            const table = $('#indexable_table').DataTable();
+            while (clearTable(table)) {
+            }
+            const btn = document.getElementById("btn_go");
+            btn.innerText = "Supprimer";
+            btn.onclick = () => OnTransfer();
+            dynamicOpacity();
+            document.getElementById("btn_reload").style.visibility = "visible";
+			{% if mode == 1 %}
+            document.getElementById("title").textContent = "Attestations de réussite sélectionnées";
+			{% else %}
+            document.getElementById("title").textContent = "Relevés de notes sélectionnés";
+			{% endif %}
+            document.getElementById("title").style.color = "#d53343"; // red uca
+            document.getElementById("indexable_table").style.backgroundColor = "#faff8b"; // yellow
+        }
+
+        function dynamicOpacity() {
+            document.getElementById('indexable_table').style.opacity = 0;
+            $('#indexable_table').fadeTo(1500, 1);
+        }
+
+        function clearTable(table) {
+            let res = false;
+            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                var rowNode = this.node();
+                $(rowNode).find("td").each(function (num, elem) {
+                    if (num === 6) {
+                        var box = elem.childNodes[1].childNodes[1];
+                        if (!box.checked) {
+                            table.row(box.parentElement.parentElement).remove();
+                            res = true;
+                        }
+                    }
+                });
+            });
+            table.draw();
+            return res;
+        }
+
+        function IsOneChbxChecked() {
+            let nb = false;
+            let table = $('#indexable_table').DataTable();
+            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                let rowNode = this.node();
+                $(rowNode).find("td").each(function (num, elem) {
+                    if (num === 6) {
+                        let box = elem.childNodes[1].childNodes[1];
+                        if (box.checked) {
+                            nb = true;
+                            return false;
+                        }
+                    }
+                });
+                if (nb)
+                    return false;
+            });
+            console.log("IsOneChbxChecked : " + nb);
+            return nb;
+        }
+
+        function getNbChbxDisabled() {
+            let nb = 0;
+            let table = $('#indexable_table').DataTable();
+            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                let rowNode = this.node();
+                $(rowNode).find("td").each(function (num, elem) {
+                    if (num === 6) {
+                        let box = elem.childNodes[1].childNodes[1];
+                        if (box.disabled) {
+                            nb++;
+                        }
+                    }
+                });
+            });
+            return nb;
+        }
+
+        function getChbxById(id, table) {
+            const node = table.row('#cell_' + id).node();
+            return node == null ? false : $(node).find("input:checkbox")[0].checked;
+        }
+
+        function onSucessAjax() {
+            if ('{{ mode }}' === '0')
+                window.location = "{{ path('monitoring_rn') }}";
+            else
+                window.location = "{{ path('monitoring_attest') }}";
+        }
+
+        function getFilesToDelete(toDelete) {
+            var res = [];
+			{% for stud in students %}
+            if (toDelete.includes("{{ stud.numero }}"))
+                res.push({'id': "{{ stud.numero }}", 'file': "{{ stud.file }}"});
+			{% endfor %}
+            return res;
+        }
+
+        function ajax_delete_call(tmp) {
+            console.log(tmp);
+            console.log('{{ bddData.id }}');
+            $.ajax({
+                method: 'POST',
+                url: '{{ mode == 1 ? path('delete_attest') : path('delete_rn') }}',
+                data: {
+                    'ids': getFilesToDelete(tmp),
+                    'dataId': '{{ bddData.id }}'
+                },
+                success: function () {
+                    onSucessAjax();
+                },
+                error: function (msg) {
+                    console.log("error ajax : " + msg);
+                }
+            });
+        }
+	</script>
+
+	<script>
+        $(document).ready(function () {
+            $('#indexable_table').DataTable({
+                'lengthMenu': [[10, 50, 100, 500, -1], [10, 50, 100, 500, "All"]],
+                'language': {
+                    'emptyTable': 'Aucun relevé sélectionné'
+                },
+            });
+        });
+	</script>
+{% endblock %}

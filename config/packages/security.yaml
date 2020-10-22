@@ -1,0 +1,27 @@
+security:
+    providers:
+        cas:
+            id: App\Security\UserProvider
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            access_denied_handler: App\Security\AccessDeniedHandler
+            anonymous: ~
+            logout:
+                path: logout
+            guard:
+                authenticators:
+                    - prayno.cas_authenticator
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_SCOLA]
+        ROLE_SCOLA: [ROLE_ETUDIANT]
+        ROLE_ETUDIANT: [ROLE_USER]
+
+    access_control:
+        - { path: ^/, roles: ROLE_USER }
+        - { path: ^/scola, roles: ROLE_SCOLA }
+        - { path: ^/etudiant, roles: ROLE_ETUDIANT }

@@ -1,0 +1,56 @@
+[
+  {
+    "regex": "/(\\bMme\\b|\\bMr\\b). (.+)[\\n ]+né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 2,
+    "indexPrenom": 2,
+    "indexDate": 3
+  },
+  {
+    "regex": "/Page : \\/(\\\\t)?\\n(['éA-Za-z -]+)(DFGSP2 - Année)?(Licence.*)?\\n/",
+    "indexNom": 2,
+    "indexPrenom": 2,
+    "indexDate": 3
+  },
+  {
+    "regex": "/(.+) né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 1,
+    "indexPrenom": 1,
+    "indexDate": 2
+  },
+  {
+    "regex": "/(\\bMme\\b|\\bMr\\b). (.+)ép\\. [^ .]+ (.+)né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 3,
+    "indexPrenom": 2,
+    "indexDate": 4
+  },
+  {
+    "regex": "/(\\bMme\\b|\\bMr\\b). (.+)ép\\. .+ (.+)né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 3,
+    "indexPrenom": 2,
+    "indexDate": 4
+  },
+  {
+    "regex": "/(.+) épouse [^ .]+ (.+)né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 2,
+    "indexPrenom": 1,
+    "indexDate": 3
+  },
+  {
+    "regex": "/(.+)-.+ (.+) né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 2,
+    "indexPrenom": 1,
+    "indexDate": 3
+  },
+  {
+    "regex": "/(\\bMme\\b|\\bMr\\b). (.+)-.+ (.+) né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/",
+    "indexNom": 3,
+    "indexPrenom": 2,
+    "indexDate": 4
+  },
+  {
+    "regex": "/(.+)   (.+)\\t\\n/",
+    "indexNom": 2,
+    "indexPrenom": 1,
+    "indexDate": -1
+  }
+]

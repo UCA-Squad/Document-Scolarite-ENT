@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>{% block title %}Documents de scolarite{% endblock %}</title>
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="https://cdn.uca.fr/css/bootstrap_uca.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	{% block stylesheets %}{% endblock %}
+	<script async type="text/javascript" src="https://ent.uca.fr/core/menu.js"></script>
+</head>
+<body>
+
+{#<div style="margin-right: 50px;text-align: center" class="alert alert-dismissible alert-warning">#}
+{#	<h5>#}
+{#		Environnement de Préproduction#}
+{#	</h5>#}
+{#</div>#}
+
+{% block body %}{% endblock %}
+
+
+{% block javascripts %}{% endblock %}
+
+</body>
+</html>

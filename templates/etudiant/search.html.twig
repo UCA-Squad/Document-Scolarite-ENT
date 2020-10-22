@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Documents de scolarité{% endblock %}
+
+{% block body %}
+
+	<div class="row justify-content-md-center">
+		<h2>Rechercher les documents d'un étudiant</h2>
+	</div>
+
+	{% form_theme form 'bootstrap_4_layout.html.twig' %}
+	<div class="container">
+		{{ form(form) }}
+	</div>
+
+{% endblock %}
