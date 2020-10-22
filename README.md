@@ -1,12 +1,19 @@
 - Prérequis : 
     --
     
-    - Serveur Web fonctionnel
-    - Version PHP minimium : 7.2
-    - Extension PHP nécessaire : mbstring
-    - Installer le logiciel Ghostscript sur le serveur
-    - Installer Composer : https://getcomposer.org
-
+    - Serveur Web :
+        - `yum install httpd`
+    - Serveur Mysql :
+        - `yum install mariadb mariadb-server`
+    - PHP et extensions :
+        - `yum install php-fpm php-cli php-json php-pdo php-mbstring php-xml php-ldap`
+    - Installer le logiciel Ghostscript : 
+        - `yum install ghostscript`
+    - Installer Composer : 
+        - `php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"`
+        - `php composer-setup.php --install-dir=/bin --filename=composer`
+    - Install Git :
+        - `yum install git`
 
 - Installation et Configuration serveur
     --
