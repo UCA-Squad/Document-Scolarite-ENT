@@ -146,11 +146,6 @@ Si le nom et le prénom sont capturés dans le même groupe, alors mettre le mê
 
 Si la regex ne capture pas la date de naissance, alors mettre indexDate à -1;
 
-- Evenement
-    --
-Lorsqu'un document est déposé dans un dossier étudiant, l'application envoit un évènement qui permet d'effectuer une action (Ex: envoi de mail).
-Pour personnaliser cette action, il faut éditer la fonction `onStudentUpdated` dans [StudentFileUpdateListener](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/master/src/Listener/StudentFileUpdateListener.php).
-
 - Maintenance
     --
 Si vous désirez rendre inaccessible l'application à tous les utilisateurs, il est possible d'activer le mode maintenance. Dès lors, les utilisateurs seront redirigés vers la page [closed.html.twig](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/master/templates/closed.html.twig).
