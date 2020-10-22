@@ -18,7 +18,7 @@
 - Installation et Configuration serveur
     --
 
-1. Récupérer le code de l'application : `https://github.com/UCA-Squad/Document-Scolarite-ENT.git`
+1. Récupérer le code de l'application et le placer dans le dossier /var/www/html : `git clone https://github.com/UCA-Squad/Document-Scolarite-ENT.git`
 2. Dans le dossier de l'application, installation avec le composer : `composer install` ou `composer update` (en cas d'erreur mémoire : augmenter la valeur de la variable memory_limit dans le fichier /etc/php.ini)
 3. Il faut que le serveur web puisse écrire dans les dossiers var/cache et var/log de l'application. Pour cela, les manipulations diffèrent en fonction de votre système :
  
