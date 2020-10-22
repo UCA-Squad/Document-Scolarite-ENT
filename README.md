@@ -6,7 +6,7 @@
     - Serveur Mysql :
         - `yum install mariadb mariadb-server`
     - PHP et extensions :
-        - `yum install php-fpm php-cli php-json php-pdo php-mbstring php-xml php-ldap`
+        - `yum install php-fpm php-cli php-json php-pdo php-mbstring php-xml php-ldap php-mysqlnd`
     - Installer le logiciel Ghostscript : 
         - `yum install ghostscript`
     - Installer Composer : 
