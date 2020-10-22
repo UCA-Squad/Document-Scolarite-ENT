@@ -130,21 +130,21 @@ Pour personnaliser ces fonctionnalités, vous pouvez créer votre propre service
 Les fichiers pdfs ayant tous des différences, les fonctions findStudentBy utilisent une liste de regex qui se trouvent dans le dossier src/Parser.
 Vous pouvez ajouter des regexs en éditant les fichiers [NameRegexes.json](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/dev/src/Parser/NameRegexes.json) et [NumRegexes.json](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/dev/src/Parser/NumRegexes.json) : 
 * Pour la recherche par numéro, la fonction teste chaque éléments capturés comme numéro étudiant,
-* Pour la recherche par nom/prénom/date, chaque regex est accompagnée de l'index des élements capturés correspondant au nom,prenom et date.
+* Pour la recherche par nom/prénom/date, chaque regex est accompagnée de l'index des élements capturés correspondant au nom,prenom et date :
 
-Si le nom et le prénom sont captués dans deux groupes différents :<br>
+    - Si le nom et le prénom sont captués dans deux groupes différents :<br>
 "regex": `/(.+) épouse [^ .]+ (.+)né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/`,<br>
 "indexNom": **2**,     -> le 2nd group match le nom<br>
 "indexPrenom": **1**,  -> le 1er group match le prénom<br>
 "indexDate": 3      -> le 3èm group match la date<br>
 
-Si le nom et le prénom sont capturés dans le même groupe, alors mettre le même index pour les deux : <br>
+    - Si le nom et le prénom sont capturés dans le même groupe, alors mettre le même index pour les deux : <br>
 "regex": `/(.+) né\\(e\\) le ([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})/`,<br>
 "indexNom": **1**, -> le 1er groupe match le nom et le prenom<br>
 "indexPrenom": **1**, -> le 1er groupe match le nom et le prenom<br>
 "indexDate": 2<br>
 
-Si la regex ne capture pas la date de naissance, alors mettre indexDate à -1;
+    - Si la regex ne capture pas la date de naissance, alors mettre indexDate à -1;
 
 - Maintenance
     --
