@@ -127,9 +127,9 @@ Pour personnaliser ces fonctionnalités, vous pouvez créer votre propre service
 * En héritant de [EtuParser](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/master/src/Parser/EtuParser.php) afin de redéfinir une ou plusieurs fonctions
 * En créant entièrement votre service en héritant de [IEtuParser](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/master/src/Parser/IEtuParser.php)
 
-Les fichiers pdfs ayant tous des différences, les fonctions findStudentBy utilisent une liste de regex qui se trouvent dans le dossier src/Parser.
+Les fichiers pdfs étants différents selon les composantes, les fonctions findStudentBy utilisent une liste de regex qui se trouvent dans le dossier src/Parser.
 Vous pouvez ajouter des regexs en éditant les fichiers [NameRegexes.json](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/dev/src/Parser/NameRegexes.json) et [NumRegexes.json](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/dev/src/Parser/NumRegexes.json) : 
-* Pour la recherche par numéro, la fonction teste chaque éléments capturés comme numéro étudiant,
+* Pour la recherche par numéro, la fonction teste chaque élément capturé comme numéro étudiant,
 * Pour la recherche par nom/prénom/date, chaque regex est accompagnée de l'index des élements capturés correspondant au nom,prenom et date :
 
     - Si le nom et le prénom sont captués dans deux groupes différents :<br>
