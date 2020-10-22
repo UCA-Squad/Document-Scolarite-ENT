@@ -12,7 +12,7 @@
     - Installer Composer : 
         - `php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"`
         - `php composer-setup.php --install-dir=/bin --filename=composer`
-    - Install Git :
+    - Installer Git :
         - `yum install git`
 
 - Installation et Configuration serveur
