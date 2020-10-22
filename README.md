@@ -1,6 +1,8 @@
 - Installation et Configuration serveur
     --
-Prérequis : 
+
+- Prérequis : 
+    --
     
     - Serveur Web fonctionnel
     - Version PHP minimium : 7.2
