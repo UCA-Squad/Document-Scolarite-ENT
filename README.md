@@ -154,5 +154,5 @@ Cette fonctionnalité est activable en éditant la variable `IS_MAINTENANCE`à `
 - Les Routes
     -- 
 L'application possède deux routes principales :
-    - Celle de base redirige les utilisateurs avec le rôle étudiant sur l'écran étudiant et les gestionnaires sur la page de recherche
-    - /scola est la route principale des gestionnaires
+    * Celle de base redirige les utilisateurs avec le rôle étudiant sur l'écran étudiant et les gestionnaires sur la page de recherche
+    * /scola est la route principale des gestionnaires
