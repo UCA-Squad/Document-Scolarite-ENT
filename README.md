@@ -150,3 +150,9 @@ Vous pouvez ajouter des regexs en éditant les fichiers [NameRegexes.json](https
     --
 Si vous désirez rendre inaccessible l'application à tous les utilisateurs, il est possible d'activer le mode maintenance. Dès lors, les utilisateurs seront redirigés vers la page [closed.html.twig](https://gitlab.dsi.uca.fr/dev/ent-doc-scola/-/blob/master/templates/closed.html.twig).
 Cette fonctionnalité est activable en éditant la variable `IS_MAINTENANCE`à `TRUE` dans le .env.local.
+
+- Les Routes
+    -- 
+L'application possède deux routes principales :
+    - Celle de base redirige les utilisateurs avec le rôle étudiant sur l'écran étudiant et les gestionnaires sur la page de recherche
+    - /scola est la route principale des gestionnaires
