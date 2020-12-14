@@ -162,4 +162,5 @@ L'application possède deux routes principales :
     * 14/12/20
         - L'import tombe en échec si l'année universitaire n'est pas correctement extraite
         - Si le mail universitaire n'est pas présent dans le fichier ETU, le mail personnel sera utilisé. Si aucun des deux n'existe, le mail pour cet étudiant ne sera pas envoyé
-        - 
+        - Pagination fonctionnelle même si les lignes du fichier ETU ne sont pas dédoublées
+        - La variable MAILER_DSN du fichier .env n'est plus commentée par défaut
