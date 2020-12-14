@@ -15,7 +15,7 @@ class StudentNormalizer extends ObjectNormalizer
 		$name = $data[1];
 		$surname = $data[2];
 		$birthday = $data[3];
-		$mail = $data[5];
+		$mail = empty($data[5]) ? $data[4] : $data[5];
 		$type = isset($data[6]) ? $data[6] : "";
 		$code = isset($data[7]) ? $data[7] : "";
 
