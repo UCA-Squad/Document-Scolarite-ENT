@@ -160,6 +160,9 @@ class TransfertController extends AbstractController
 
 	private function send_mail(Student $stud, int $mode, ImportedData $bddData, Environment $twig, MailerInterface $mailer)
 	{
+		if (empty($stud->getMail()))
+			return;
+
 		$body = $twig->render('Mail/add_doc_mail.html.twig', [
 			'stud' => $stud,
 			'mode' => $mode,
