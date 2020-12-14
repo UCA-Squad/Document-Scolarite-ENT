@@ -156,3 +156,7 @@ Cette fonctionnalité est activable en éditant la variable `IS_MAINTENANCE`à `
 L'application possède deux routes principales :
 * Celle de base redirige les utilisateurs avec le rôle étudiant sur l'écran étudiant et les gestionnaires sur la page de recherche
 * /scola est la route principale des gestionnaires afin d'accéder aux imports et à la gestion des documents
+
+- Mises à jour
+    --
+    * 14/12/20
