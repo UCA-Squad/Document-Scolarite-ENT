@@ -31,6 +31,18 @@ class HistoryRepository extends ServiceEntityRepository
 			->getResult();
 	}
 
+	public function findRNHistories(string $order = "DESC"): array
+	{
+		return $this->createQueryBuilder('h')
+			->innerJoin('h.importedData', 'd', Join::WITH, 'h.importedData = d.id')
+			->Where('d.semestre IS NOT NULL')
+			->andWhere('d.session IS NOT NULL')
+			->andWhere('d.libelle_form IS NOT NULL')
+			->orderBy('h.date', $order)
+			->getQuery()
+			->getResult();
+	}
+
 	public function findAttestHistoriesForUser(string $username, string $order = "DESC"): array
 	{
 		return $this->createQueryBuilder('h')
@@ -40,6 +52,18 @@ class HistoryRepository extends ServiceEntityRepository
 			->andWhere('d.session IS NULL')
 			->andWhere('d.libelle_form IS NULL')
 			->setParameter('username', $username)
+			->orderBy('h.date', $order)
+			->getQuery()
+			->getResult();
+	}
+
+	public function findAttestHistories(string $order = "DESC"): array
+	{
+		return $this->createQueryBuilder('h')
+			->innerJoin('h.importedData', 'd', Join::WITH, 'h.importedData = d.id')
+			->Where('d.semestre IS NULL')
+			->andWhere('d.session IS NULL')
+			->andWhere('d.libelle_form IS NULL')
 			->orderBy('h.date', $order)
 			->getQuery()
 			->getResult();

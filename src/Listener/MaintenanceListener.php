@@ -4,26 +4,28 @@
 namespace App\Listener;
 
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Twig\Environment;
 
 class MaintenanceListener
 {
-	private $container;
+	private $params;
+	private $twig;
 
-	public function __construct(ContainerInterface $container)
+	public function __construct(ParameterBagInterface $params, Environment $twig)
 	{
-		$this->container = $container;
+		$this->params = $params;
+		$this->twig = $twig;
 	}
 
 	public function onKernelRequest(RequestEvent $event)
 	{
-		$isMaintenance = $this->container->hasParameter('is_maintenance') ? $this->container->getParameter('is_maintenance') : false;
+		$isMaintenance = $this->params->has('is_maintenance') ? $this->params->get('is_maintenance') : false;
 
 		if ($isMaintenance === true) {
-			$twig_engine = $this->container->get("twig");
-			$content = $twig_engine->render('closed.html.twig');
+			$content = $this->twig->render('closed.html.twig');
 			$event->setResponse(new Response($content, 200));
 			$event->stopPropagation();
 		}

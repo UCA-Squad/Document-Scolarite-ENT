@@ -102,6 +102,4 @@ class History
 		$this->importedData = $importedData;
 	}
 
-
-
 }

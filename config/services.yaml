@@ -11,6 +11,10 @@ parameters:
         base_dn: '%env(LDAP_BASE_DN)%'
         admin_group: '%env(LDAP_ADMIN_GROUP_DN)%'
 
+    ldap_code: '%env(LDAP_CODE)%'
+    ldap_affiliation: '%env(LDAP_AFFILIATION)%'
+    ldap_affiliation_student: '%env(LDAP_AFFILIATION_STUDENT)%'
+
     cas_login_url: '%env(CAS_LOGIN_URL)%'
     cas_validation_url: '%env(CAS_VALIDATION_URL)%'
     cas_logout_url: '%env(CAS_LOGOUT_URL)%'
@@ -27,6 +31,8 @@ parameters:
     output_dir_attest: '%env(OUTPUT_DIR_ATTEST)%'
     output_tmp_attest: '%env(OUTPUT_TMP_ATTEST)%'
     output_etu_attest: '%env(OUTPUT_ETU_ATTEST)%'
+    output_tmp_pdf: '%env(OUTPUT_TMP_PDF)%'
+    output_tmp_tampon : '%env(OUTPUT_TMP_TAMPON)%'
 
 services:
     # default configuration for services in *this* file

@@ -10,7 +10,6 @@ use App\Form\ImportType;
 use App\Logic\CustomFinder;
 use App\Parser\IEtuParser;
 use App\Repository\HistoryRepository;
-use App\Repository\ImportedDataRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,13 +27,20 @@ class MonitoringController extends AbstractController
 	 * @param HistoryRepository $repo
 	 * @return Response
 	 */
-	public function monitoring_rn(HistoryRepository $repo)
+	public function monitoring_rn(HistoryRepository $repo): Response
 	{
-		$histories = $repo->findRNHistoriesForUser($this->getUser()->getUsername());
+		$admins = $this->getParameter('admin_users');
+		$isAdmin = in_array($this->getUser()->getUsername(), $admins);
+
+		if ($isAdmin)
+			$histories = $repo->findRNHistories();
+		else
+			$histories = $repo->findRNHistoriesForUser($this->getUser()->getUsername());
 
 		return $this->render("monitoring/monitoring.html.twig", [
 			'histories' => $histories,
-			'mode' => ImportedData::RN
+			'mode' => ImportedData::RN,
+			'isAdmin' => $isAdmin
 		]);
 	}
 
@@ -43,13 +49,20 @@ class MonitoringController extends AbstractController
 	 * @param HistoryRepository $repo
 	 * @return Response
 	 */
-	public function monitoring_attest(HistoryRepository $repo)
+	public function monitoring_attest(HistoryRepository $repo): Response
 	{
-		$imports = $repo->findAttestHistoriesForUser($this->getUser()->getUsername());
+		$admins = $this->getParameter('admin_users');
+		$isAdmin = in_array($this->getUser()->getUsername(), $admins);
+
+		if ($isAdmin)
+			$imports = $repo->findAttestHistories();
+		else
+			$imports = $repo->findAttestHistoriesForUser($this->getUser()->getUsername());
 
 		return $this->render("monitoring/monitoring.html.twig", [
 			'histories' => $imports,
-			'mode' => ImportedData::ATTEST
+			'mode' => ImportedData::ATTEST,
+			'isAdmin' => $isAdmin
 		]);
 	}
 
@@ -59,7 +72,7 @@ class MonitoringController extends AbstractController
 	 * @param IEtuParser $parser
 	 * @return Response
 	 */
-	function delete_import_rn(Request $request, IEtuParser $parser)
+	function delete_import_rn(Request $request, IEtuParser $parser): Response
 	{
 		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::DELETE, "type" => ImportType::RELEVE]);
 
@@ -72,7 +85,7 @@ class MonitoringController extends AbstractController
 	 * @param IEtuParser $parser
 	 * @return Response
 	 */
-	function delete_import_attest(Request $request, IEtuParser $parser)
+	function delete_import_attest(Request $request, IEtuParser $parser): Response
 	{
 		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::DELETE, "type" => ImportType::ATTEST]);
 
@@ -119,7 +132,7 @@ class MonitoringController extends AbstractController
 	 * @param Request $request
 	 * @return JsonResponse
 	 */
-	function delete_rn(Request $request)
+	function delete_rn(Request $request): JsonResponse
 	{
 		return $this->delete($request, $this->getParameter('output_dir_rn'));
 	}
@@ -129,7 +142,7 @@ class MonitoringController extends AbstractController
 	 * @param Request $request
 	 * @return JsonResponse
 	 */
-	function delete_attest(Request $request)
+	function delete_attest(Request $request): JsonResponse
 	{
 		return $this->delete($request, $this->getParameter('output_dir_attest'));
 	}

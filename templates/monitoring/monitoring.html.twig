@@ -1,67 +1,73 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.css"/>
-	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
 {% endblock %}
 
 {% block title %}Suivi des documents{% endblock %}
 
 {% block body %}
 
-	<div style="text-align: center">
-		<a style="float: left" class="btn btn-primary" href="{{ path('scola') }}"><-</a>
-		<h2 id="title"
-			style="display: inline-block;margin: 0 auto">{{ mode == 0 ? 'Suivi des Relevés de notes' : 'Suivi des attestations de réussite' }}</h2>
-	</div>
+    <div style="text-align: center">
+        <a style="float: left" class="btn btn-primary" href="{{ path('scola') }}"><-</a>
+        <h2 id="title"
+            style="display: inline-block;margin: 0 auto">{{ mode == 0 ? 'Suivi des Relevés de notes' : 'Suivi des attestations de réussite' }}</h2>
+    </div>
 
-	<div style="margin-top: 40px" class="container-fluid">
+    <div style="margin-top: 40px" class="container-fluid">
 
-		<table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
+        <table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
 
-			<thead>
-			<tr style="text-align: center">
-				<th scope="col">Date et heure traitement</th>
-				<th scope="col">Fichiers traités</th>
-				<th scope="col">Année universitaire{{ mode == 0 ? ' / Session / Semestre' : '' }}</th>
-				<th scope="col">Code</th>
-				<th scope="col">Libellé</th>
-				<th scope="col">Nombre de transferts</th>
-			</tr>
-			</thead>
+            <thead>
+            <tr style="text-align: center">
+                {% if isAdmin %}
+                    <th scope="col">Utilisateur</th>
+                {% endif %}
+                <th scope="col">Date et heure traitement</th>
+                <th scope="col">Fichiers traités</th>
+                <th scope="col">Année universitaire{{ mode == 0 ? ' / Session / Semestre' : '' }}</th>
+                <th scope="col">Code</th>
+                <th scope="col">Libellé</th>
+                <th scope="col">Nombre de transferts</th>
+            </tr>
+            </thead>
 
-			<tbody>
-			{% for hist in histories %}
-				{% if hist.state > 1 %}
-					<tr style="text-align: center;background: {{ hist.state == 3 ? '#d53343' : '' }};color: {{ hist.state == 3 ? 'white' : '' }};">
-						<td>{{ hist.date|date('d/m/Y à H:i') }}</td>
-						<td>{{ hist.importedData.pdfFilename }} / {{ hist.importedData.etuFilename }}</td>
-						{% if mode == 0 %}
-							<td>{{ hist.importedData.year }} / {{ hist.importedData.session }}
-								/ {{ hist.importedData.semestre }}</td>
-						{% else %}
-							<td>{{ hist.importedData.year }}</td>
-						{% endif %}
-						<td>{{ hist.importedData.type }} / {{ hist.importedData.codeObj }}
-							/ {{ hist.importedData.code }}</td>
-						{% if mode == 0 %}
-							<td>{{ hist.importedData.libelleForm }} / {{ hist.importedData.libelle }}</td>
-						{% else %}
-							<td>{{ hist.importedData.libelleObj }} / {{ hist.importedData.libelle }}</td>
-						{% endif %}
-						<td>{{ hist.nbFiles }} / {{ hist.importedData.nbStudents }}</td>
-					</tr>
-				{% endif %}
-			{% endfor %}
-			</tbody>
+            <tbody>
+            {% for hist in histories %}
+                {% if hist.state > 1 %}
+                    <tr style="text-align: center;background: {{ hist.state == 3 ? '#d53343' : '' }};color: {{ hist.state == 3 ? 'white' : '' }};">
+                        {% if isAdmin %}
+                            <td>{{ hist.importedData.username }}</td>
+                        {% endif %}
+                        <td>{{ hist.date|date('d/m/Y à H:i') }}</td>
+                        <td>{{ hist.importedData.pdfFilename }} / {{ hist.importedData.etuFilename }}</td>
+                        {% if mode == 0 %}
+                            <td>{{ hist.importedData.year }} / {{ hist.importedData.session }}
+                                / {{ hist.importedData.semestre }}</td>
+                        {% else %}
+                            <td>{{ hist.importedData.year }}</td>
+                        {% endif %}
+                        <td>{{ hist.importedData.type }} / {{ hist.importedData.codeObj }}
+                            / {{ hist.importedData.code }}</td>
+                        {% if mode == 0 %}
+                            <td>{{ hist.importedData.libelleForm }} / {{ hist.importedData.libelle }}</td>
+                        {% else %}
+                            <td>{{ hist.importedData.libelleObj }} / {{ hist.importedData.libelle }}</td>
+                        {% endif %}
+                        <td>{{ hist.nbFiles }} / {{ hist.importedData.nbStudents }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
 
-		</table>
-	</div>
+        </table>
+    </div>
 
 {% endblock %}
 
 {% block javascripts %}
-	<script>
+    <script>
         $(document).ready(function () {
             $('#indexable_table').DataTable({
                 'lengthMenu': [[10, 50, 100, 500, -1], [10, 50, 100, 500, "All"]],
@@ -71,5 +77,5 @@
                 'order': [] // Keep our collection data order at load
             });
         });
-	</script>
+    </script>
 {% endblock %}

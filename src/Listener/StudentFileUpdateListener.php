@@ -35,9 +35,9 @@ class StudentFileUpdateListener implements EventSubscriberInterface
 
 	public function onStudentTransfered(GenericEvent $event)
 	{
-		$numero = $event->getSubject();
-		$file_path = $event->getArgument('path');
-		$stud = $this->parser->getEtuByNum($numero, $this->parser->parseETU(""));
+//		$numero = $event->getSubject();
+//		$file_path = $event->getArgument('path');
+//		$stud = $this->parser->getEtuByNum($numero, $this->parser->parseETU(""));
 
 		/**
 		 * DO WHAT YOU WANT

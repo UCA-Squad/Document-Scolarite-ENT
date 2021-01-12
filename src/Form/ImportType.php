@@ -35,10 +35,14 @@ class ImportType extends AbstractType
 					->add('semestre', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'A' => 'A']])
 					->add('session', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'U' => 'U']])
 					->add('libelle_form', TextType::class, ['label' => 'Libellé', 'attr' => ['maxlength' => 25]])
+					->add('tampon', FileType::class, ['label' => 'Tampon', 'required' => false, 'mapped' => false, 'attr' => ['accept' => '.png']])
+					->add('num_page', IntegerType::class, ['label' => "Numéro de page d'exemple pour tampon", 'data' => 1, 'mapped' => false, 'required' => false, 'attr' => ['min' => 1]])
 					->add('submit', SubmitType::class, ['label' => 'Charger']);
 			} else if ($type == self::ATTEST) {
 				$builder->add('pdf', FileType::class, ['label' => 'Attestation de réussite PDF', 'attr' => ['accept' => '.pdf']])
 					->add('etu', FileType::class, ['label' => 'Fichier ETU', 'attr' => ['accept' => '.etu']])
+					->add('tampon', FileType::class, ['label' => 'Tampon', 'required' => false, 'mapped' => false, 'attr' => ['accept' => '.png']])
+					->add('num_page', IntegerType::class, ['label' => "Numéro de page d'exemple pour tampon", 'data' => 1, 'mapped' => false, 'required' => false, 'attr' => ['min' => 1]])
 					->add('submit', SubmitType::class, ['label' => 'Charger']);
 			}
 		} else if ($act == self::DELETE) {
@@ -63,7 +67,7 @@ class ImportType extends AbstractType
 		$resolver->setDefaults([
 			'data_class' => ImportedData::class,
 			'type' => self::RELEVE,
-			'act' => self::IMPORT
+			'act' => self::IMPORT,
 		]);
 	}
 

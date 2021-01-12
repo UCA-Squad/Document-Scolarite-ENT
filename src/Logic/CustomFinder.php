@@ -14,7 +14,7 @@ class CustomFinder
 	 * @param $directory
 	 * @return array
 	 */
-	public function getFilesName(string $directory)
+	public function getFilesName(string $directory): array
 	{
 		$results = [];
 
@@ -35,7 +35,7 @@ class CustomFinder
 	 * @param $directory
 	 * @return array
 	 */
-	public function getDirsName(string $directory)
+	public function getDirsName(string $directory): array
 	{
 		$results = [];
 
@@ -56,7 +56,7 @@ class CustomFinder
 	 * @param $directory
 	 * @return mixed|string
 	 */
-	public function getFirstFile(string $directory)
+	public function getFirstFile(string $directory): string
 	{
 		$filesname = $this->getFilesName($directory);
 		if (count($filesname) >= 1)
@@ -70,7 +70,7 @@ class CustomFinder
 	 * @param $filename
 	 * @return int
 	 */
-	public function getFileIndex(string $directory, string $filename)
+	public function getFileIndex(string $directory, string $filename): int
 	{
 		$filesname = $this->getFilesName($directory);
 
@@ -87,7 +87,7 @@ class CustomFinder
 	 * @param int $index
 	 * @return mixed|string
 	 */
-	public function getFileByIndex(string $directory, int $index)
+	public function getFileByIndex(string $directory, int $index): string
 	{
 		$filesnames = $this->getFilesName($directory);
 		if (isset($filesnames[$index]))
@@ -95,7 +95,7 @@ class CustomFinder
 		return "";
 	}
 
-	public function deleteDirectory(string $dir)
+	public function deleteDirectory(string $dir): bool
 	{
 		if (!file_exists($dir)) {
 			return true;

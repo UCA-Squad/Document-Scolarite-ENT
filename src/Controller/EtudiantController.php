@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Logic\CustomFinder;
 use App\Logic\PdfResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -15,8 +16,10 @@ class EtudiantController extends AbstractController
 {
 	/**
 	 * @Route("/{numero}", name="etudiant_home", requirements={"numero"="\d{8}"})
+	 * @param int|null $numero
+	 * @return Response
 	 */
-	public function etudiant($numero = null)
+	public function etudiant(int $numero = null): Response
 	{
 		if (!is_null($numero) && !$this->isGranted("ROLE_SCOLA"))
 			return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
@@ -38,8 +41,11 @@ class EtudiantController extends AbstractController
 
 	/**
 	 * @Route("/download/releve/{numero}/{index}", name="download_rn")
+	 * @param $numero
+	 * @param $index
+	 * @return BinaryFileResponse|Response
 	 */
-	public function download_rn($numero, $index)
+	public function download_rn(int $numero, $index)
 	{
 		if (!$this->isGranted("ROLE_SCOLA")) {
 			if ($numero != $this->getUser()->getExtraFields()["numero"])
@@ -52,8 +58,11 @@ class EtudiantController extends AbstractController
 
 	/**
 	 * @Route("/download/attest/{numero}/{index}", name="download_attest")
+	 * @param int $numero
+	 * @param $index
+	 * @return BinaryFileResponse|Response
 	 */
-	public function download_attest($numero, $index)
+	public function download_attest(int $numero, $index)
 	{
 		if (!$this->isGranted("ROLE_SCOLA")) {
 			if ($numero != $this->getUser()->getExtraFields()["numero"])
