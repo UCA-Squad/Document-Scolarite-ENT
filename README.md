@@ -81,7 +81,9 @@ LDAP_AFFILIATION="eduPersonAffiliation"
 LDAP_AFFILIATION_STUDENT="student"
 ```
 L'attribut LDAP_CODE doit correspondre au numéro de l'étudiant présent dans le fichier .etu
+
 L'attribut LDAP_AFFILIATION doit correspondre à la liste d'affiliations d'un individu
+
 La valeur LDAP_AFFILIATION_STUDENT doit correspondre à l'affiliation "Etudiant" et être contenu dans LDAP_AFFILIATION
 - Les rôles
     --
