@@ -103,6 +103,14 @@ OUTPUT_DIR_ATTEST=dossier_final_attestations/   # Stockage final des attestation
 OUTPUT_TMP_ATTEST=dossier_tmp_attestations/     # Stoackage temporaire des attestations (pendant la phase de sélection)
 OUTPUT_ETU_ATTEST=dossier_etu_attestations/     # Stoackage temporaire du fichier .etu (pendant la phase de sélection)
 ```
+
+_Dossiers supplémentaires ajoutés par la mise à jour du 28/01/21 pour le tamponnage_
+
+```
+OUTPUT_TMP_TAMPON=/var/www/html/{doc-scola}/public/tampons/   # Stockage temporaire du tampon et du pdf d'exemple - Doit être dans le dossier /public
+OUTPUT_TMP_PDF=dossier_pdf/                                 # Stockage temporaire du pdf uploadé
+```
+
 Votre serveur web doit être propriétaire de ces dossiers afin de pouvoir écrire dedans : `chown -R apache:apache dossier_final_releves`.
 
 - Extraction des données du fichier .etu
@@ -177,6 +185,6 @@ L'application possède deux routes principales :
         - Pagination fonctionnelle même si les lignes du fichier ETU ne sont pas dédoublées
         - La variable MAILER_DSN du fichier .env n'est plus commentée par défaut
     * 28/01/21
-        - Ajout du tamponnage automatique (Voir section Paramètrage). Fonctionnalité optionnelle permettant d'ajouter un tampon (image .png) sur les fichiers généres.
-        - Ajout de paramètres supplémentaires permettant de récupérer des informations via le LDAP configuré 
+        - Ajout du tamponnage automatique : Fonctionnalité optionnelle permettant d'ajouter un tampon (image '.png') sur les fichiers généres. (voir section Dossiers de stockage)
+        - Ajout de paramètres supplémentaires permettant de récupérer des informations via le LDAP configuré (voir section LDAP)
         - En fonction de l'environnement (dev ou prod) les mails sont envoyés respectivement à l'utilisateur ou aux étudiants 
