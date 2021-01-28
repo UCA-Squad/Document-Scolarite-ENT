@@ -188,3 +188,4 @@ L'application possède deux routes principales :
         - Ajout du tamponnage automatique : Fonctionnalité optionnelle permettant d'ajouter un tampon (image '.png') sur les fichiers généres. (voir section Dossiers de stockage)
         - Ajout de paramètres supplémentaires permettant de récupérer des informations via le LDAP configuré (voir section LDAP)
         - En fonction de l'environnement (dev ou prod) les mails sont envoyés respectivement à l'utilisateur ou aux étudiants 
+        - Les administrateurs ont maintenant accès à l'historique d'actions de tous les gestionnaires
