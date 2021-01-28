@@ -73,6 +73,16 @@ LDAP_ADMIN_GROUP_DN="cn=groupe-ldap-gestionnaire,ou=groups,dc=etablissement,dc=f
 ```
 Afin d'obtenir le rôle de gestionnaire, les utilisateurs doivent appartenir à un groupe LDAP (Exemple : groupe-ldap-gestionnaire) défini dans la variable LDAP_ADMIN_GROUP_DN.
 
+_Paramètres supplémentaires ajoutés avec la mise à jour du 28/01/21 :_
+
+```
+LDAP_CODE="CLFDcodeEtu"
+LDAP_AFFILIATION="eduPersonAffiliation"
+LDAP_AFFILIATION_STUDENT="student"
+```
+L'attribut LDAP_CODE doit correspondre au numéro de l'étudiant présent dans le fichier .etu
+L'attribut LDAP_AFFILIATION doit correspondre à la liste d'affiliations d'un individu
+La valeur LDAP_AFFILIATION_STUDENT doit correspondre à l'affiliation "Etudiant" et être contenu dans LDAP_AFFILIATION
 - Les rôles
     --
 Il existe 3 type de rôles différents : 
@@ -164,3 +174,7 @@ L'application possède deux routes principales :
         - Si le mail universitaire n'est pas présent dans le fichier ETU, le mail personnel sera utilisé. Si aucun des deux n'existe, le mail pour cet étudiant ne sera pas envoyé
         - Pagination fonctionnelle même si les lignes du fichier ETU ne sont pas dédoublées
         - La variable MAILER_DSN du fichier .env n'est plus commentée par défaut
+    * 28/01/21
+        - Ajout du tamponnage automatique (Voir section Paramètrage). Fonctionnalité optionnelle permettant d'ajouter un tampon (image .png) sur les fichiers généres.
+        - Ajout de paramètres supplémentaires permettant de récupérer des informations via le LDAP configuré 
+        - En fonction de l'environnement (dev ou prod) les mails sont envoyés respectivement à l'utilisateur ou aux étudiants 
