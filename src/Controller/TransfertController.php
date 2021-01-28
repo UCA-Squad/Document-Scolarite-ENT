@@ -13,6 +13,7 @@ use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
@@ -28,11 +29,13 @@ class TransfertController extends AbstractController
 {
 	private $file_access;
 	private $finder;
+	private $params;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
+		$this->params = $params;
 	}
 
 	/**
@@ -164,9 +167,11 @@ class TransfertController extends AbstractController
 			'bddData' => $bddData
 		]);
 
+		$to = $this->params->get('kernel.environment') == "dev" ? $this->getUser()->getExtraFields()["mail"] : $stud->getMail();
+
 		$msg = (new Email())
 			->from($this->getParameter('mail_sender'))
-			->to('hugo.taillefumier@uca.fr')
+			->to($to)
 			->subject($this->getParameter('mail_subject'))
 			->html($body);
 

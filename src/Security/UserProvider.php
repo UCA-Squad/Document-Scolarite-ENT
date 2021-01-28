@@ -27,17 +27,29 @@ class UserProvider implements UserProviderInterface
 		$affi = $this->params->get("ldap_affiliation");
 		$affi_student = $this->params->get("ldap_affiliation_student");
 
-		if (in_array($username, $admins))
-			return new User($username, "xxx", ["ROLE_ADMIN"], true, true, true, true, ["numero" => "1234"]);
-
-		$users = $this->ldap->search("(uid=$username)", "ou=people,", [$affi, "memberOf", $code]);
+		$users = $this->ldap->search("(uid=$username)", "ou=people,", [$affi, "memberOf", $code, "mail"]);
 		$user = current($users);
 
-		if ($user->getAttribute($affi)[0] == $affi_student)
-			return new User($username, "xxx", ["ROLE_ETUDIANT"], true, true, true, true, ["numero" => $user->getAttribute($code)[0]]);
+		// Si l'utilisateur est admin
+		if (in_array($username, $admins)) {
+			$mail = current($user->getAttribute('mail'));
+			return new User($username, "xxx", ["ROLE_ADMIN"], true, true, true, true,
+				["mail" => $mail]);
+		}
 
-		if (in_array($this->params->get("ldap")["admin_group"], $user->getAttribute("memberOf")))
-			return new User($username, "xxx", ["ROLE_SCOLA"], true, true, true, true, ["numero" => "1234"]);
+		// Si l'utilisateur est un étudiant
+		if (in_array($affi_student, $user->getAttribute($affi))) {
+			$numero = current($user->getAttribute($code));
+			return new User($username, "xxx", ["ROLE_ETUDIANT"], true, true, true, true,
+				["numero" => $numero]);
+		}
+
+		// Si l'utilisateur fait parti du groupe LDAP gestionnaire
+		if (in_array($this->params->get("ldap")["admin_group"], $user->getAttribute("memberOf"))) {
+			$mail = current($user->getAttribute('mail'));
+			return new User($username, "xxx", ["ROLE_SCOLA"], true, true, true, true,
+				['mail' => $mail]);
+		}
 
 		return new User($username, "xxx", ['ROLE_ANONYMOUS']);
 	}
