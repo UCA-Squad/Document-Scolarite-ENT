@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class EtudiantController extends AbstractController
 {
 	/**
-	 * @Route("/{numero}", name="etudiant_home", requirements={"numero"="\d{8}"})
+	 * @Route("/{numero}", name="etudiant_home", requirements={"numero"="\d+"})
 	 * @param int|null $numero
 	 * @return Response
 	 */

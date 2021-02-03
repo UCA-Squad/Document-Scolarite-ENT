@@ -27,7 +27,7 @@ class ScolaController extends AbstractController
 	public function search(Request $request)
 	{
 		$student_form = $this->createFormBuilder()
-			->add('num', TextType::class, ['label' => 'Numéro étudiant', 'attr' => ['pattern' => "\d{8}"]])
+			->add('num', TextType::class, ['label' => 'Numéro étudiant', 'attr' => ['pattern' => "\d+"]])
 			->add('submit', SubmitType::class, ['label' => 'Rechercher'])
 			->getForm();
 
