@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class PDF
 {
-	protected $dateRegex = '/A?a?nné?e+.*([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
+	protected $dateRegex = '/(A?a?nné?e+.*)?([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
 
 	protected $getFilename = ImportedData::RN;
 
@@ -91,8 +91,12 @@ class PDF
 			if ($index === false)
 				$index = $etu_parser->findStudentByName($content, $students);
 
-			if ($pageStudent['date'] == "" && preg_match($this->dateRegex, $content, $ymatches))
-				$pageStudent['date'] = $ymatches[1] . '-' . $ymatches[2];
+			// Date modif here - A verifier
+			if ($pageStudent['date'] == "" && preg_match($this->dateRegex, $content, $ymatches)) {
+				$index1 = count(($ymatches)) == 4 ? 2 : 1;
+				$index2 = count(($ymatches)) == 4 ? 3 : 2;
+				$pageStudent['date'] = $ymatches[$index1] . '-' . $ymatches[$index2];
+			}
 
 			if ($index !== false)
 				$pageStudent['indexes'][$i]['num'] = $index;
