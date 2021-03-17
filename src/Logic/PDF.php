@@ -113,10 +113,11 @@ class PDF
 			return $pageStudent;
 
 		if ($this->env == "dev") {
-			dump(count($students));
-			dump($etu_parser->getNbDoublons());
-			dump($pageStudent);
-			throw new Exception("IMPOSSIBLE DE RECUPERER LES INFORMATIONS POUR LE CONTENU - REGEX MISSIING	 :\n\n$content");
+//			dump(count($students));
+//			dump(count($pageStudent['indexes']));
+//			dump($etu_parser->getNbDoublons());
+//			dump($pageStudent);
+			throw new Exception("Nombre d'étudiants et de pages pdf incohérent");
 		}
 
 		return false;
