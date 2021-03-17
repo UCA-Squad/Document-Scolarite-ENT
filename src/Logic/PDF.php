@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class PDF
 {
-	protected $dateRegex = '/A?a?nné?e+.*([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
+	protected $dateRegex = '/(A?a?nné?e+.*)?([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
 
 	protected $getFilename = ImportedData::RN;
 
@@ -91,8 +91,12 @@ class PDF
 			if ($index === false)
 				$index = $etu_parser->findStudentByName($content, $students);
 
-			if ($pageStudent['date'] == "" && preg_match($this->dateRegex, $content, $ymatches))
-				$pageStudent['date'] = $ymatches[1] . '-' . $ymatches[2];
+			// Date modif here - A verifier
+			if ($pageStudent['date'] == "" && preg_match($this->dateRegex, $content, $ymatches)) {
+				$index1 = count(($ymatches)) == 4 ? 2 : 1;
+				$index2 = count(($ymatches)) == 4 ? 3 : 2;
+				$pageStudent['date'] = $ymatches[$index1] . '-' . $ymatches[$index2];
+			}
 
 			if ($index !== false)
 				$pageStudent['indexes'][$i]['num'] = $index;
@@ -109,10 +113,11 @@ class PDF
 			return $pageStudent;
 
 		if ($this->env == "dev") {
-			dump(count($students));
-			dump($etu_parser->getNbDoublons());
-			dump($pageStudent);
-			throw new Exception("IMPOSSIBLE DE RECUPERER LES INFORMATIONS POUR LE CONTENU - REGEX MISSIING	 :\n\n$content");
+//			dump(count($students));
+//			dump(count($pageStudent['indexes']));
+//			dump($etu_parser->getNbDoublons());
+//			dump($pageStudent);
+			throw new Exception("Nombre d'étudiants et de pages pdf incohérent");
 		}
 
 		return false;

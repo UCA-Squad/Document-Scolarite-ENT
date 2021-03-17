@@ -118,11 +118,17 @@ class EtuParser implements IEtuParser
 	public function getEtuByName(string $name, array $students, string $date = null): ?Student
 	{
 		for ($i = 0; $i < count($students); $i++) {
-			if (strtolower($students[$i]->getName() . ' ' . $students[$i]->getSurname()) == strtolower($name))
+			$id = strtolower($students[$i]->getName() . ' ' . $students[$i]->getSurname());
+			$name = $this->stripAccents($name);
+			if ($id == strtolower($name))
 				if ($date == null || ($date == $students[$i]->getBirthday()))
 					return $students[$i];
 		}
 		return null;
+	}
+
+	function stripAccents($str) {
+		return strtr(utf8_decode($str), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
 	}
 
 	public function findStudentByNum(string $content, array $students)
