@@ -119,8 +119,7 @@ class EtuParser implements IEtuParser
 	{
 		for ($i = 0; $i < count($students); $i++) {
 			$id = strtolower($students[$i]->getName() . ' ' . $students[$i]->getSurname());
-			$name = $this->stripAccents($name);
-			if ($id == strtolower($name))
+			if ($id == strtolower($name) || $id == strtolower($this->stripAccents($name)))
 				if ($date == null || ($date == $students[$i]->getBirthday()))
 					return $students[$i];
 		}
