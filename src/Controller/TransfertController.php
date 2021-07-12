@@ -8,6 +8,7 @@ use App\Entity\History;
 use App\Entity\ImportedData;
 use App\Entity\Student;
 use App\Logic\CustomFinder;
+use App\Logic\DocapostFast;
 use App\Logic\FileAccess;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
@@ -30,12 +31,14 @@ class TransfertController extends AbstractController
 	private $file_access;
 	private $finder;
 	private $params;
+	private $docapost;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
 		$this->params = $params;
+		$this->docapost = $docapost;
 	}
 
 	/**
@@ -99,7 +102,23 @@ class TransfertController extends AbstractController
 			if ($index != -1) {
 				unlink($to . $doc . '/' . $this->finder->getFileByIndex($to . $doc, $index));
 			}
-			rename($from . $doc . '/' . $fileFrom, $to . $doc . '/' . $fileFrom);
+
+			if ($this->docapost->isEnable()) {
+				// Génére nom random
+				$randName = bin2hex(random_bytes(5)) . '.pdf';
+				// Met à jour le nom du fichier
+				rename($from . $doc . '/' . $fileFrom, $from . $doc . '/' . $randName);
+				// Envoi sur docapost
+				$id = $this->docapost->uploadDocument($from . $doc . '/' . $randName, 'test');
+				// Récupère le binaire pdf signé
+				$docaDoc = $this->docapost->downloadDocument($id);
+				// Écris le pdf reçu dans le dossier de destination
+				file_put_contents($to . $doc . '/' . $fileFrom, $docaDoc);
+				// Supprime le fichier temporaire
+				unlink($from . $doc . '/' . $randName);
+			} else {
+				rename($from . $doc . '/' . $fileFrom, $to . $doc . '/' . $fileFrom);
+			}
 		}
 		$this->finder->deleteDirectory($from);
 		$this->update_transfered_files($mode, $docs_count, $not_transfered);
