@@ -18,6 +18,7 @@ parameters:
     url: "%env(DOCAPOST_URL)%"
     siren: "%env(DOCAPOST_SIREN)%"
     circuitId: "%env(DOCAPOST_CIRCUIT_ID)%"
+    proxy: "%env(PROXY)%"
 
   ldap_code: '%env(LDAP_CODE)%'
   ldap_affiliation: '%env(LDAP_AFFILIATION)%'
