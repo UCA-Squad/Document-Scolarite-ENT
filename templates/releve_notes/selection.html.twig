@@ -3,218 +3,245 @@
 {% block title %}Sélection {{ mode == 1 ? 'Attest' : 'RN' }}{% endblock %}
 
 {% block stylesheets %}
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.css"/>
-	<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/loader.css') }}">
 {% endblock %}
 
 {% block body %}
 
-	<!-- Modal -->
-	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-		 aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Vérification</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<ul>
-						<li><p><strong id="modal_txt_notransfert"></strong></p></li>
-						<li><p><strong id="modal_txt_transfert"></strong></p></li>
-					</ul>
-					<div style="text-align: center" class="alert alert-dismissible alert-warning">
-						<p><strong>Etes-vous sûr de vouloir continuer ?</strong></p>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button id="btn_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Annuler
-					</button>
-					<button id="btn_transfer" type="button" class="btn btn-primary">Transférer</button>
-				</div>
-			</div>
-		</div>
-	</div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Vérification</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        <li><p><strong id="modal_txt_notransfert"></strong></p></li>
+                        <li><p><strong id="modal_txt_transfert"></strong></p></li>
+                    </ul>
+                    <div style="text-align: center" class="alert alert-dismissible alert-warning">
+                        <p><strong>Etes-vous sûr de vouloir continuer ?</strong></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn_cancel" type="button" class="btn btn-secondary" data-dismiss="modal">Annuler
+                    </button>
+                    <button id="btn_transfer" type="button" class="btn btn-primary">Transférer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-	<div style="text-align: center">
-		<a id="cancel" style="float: left" class="btn btn-primary"
-		   href="{{ mode == 1 ? path('cancel_attest') : path('cancel_rn') }}"><-</a>
-		<h2 id="title" style="display: inline-block;margin: 0 auto">Sélection
-			des {{ mode == 1 ? 'attestations de réussite' : 'relevés de notes' }}</h2>
-	</div>
+    <div id="container">
+        <div style="text-align: center">
+            <a id="cancel" style="float: left" class="btn btn-primary"
+               href="{{ mode == 1 ? path('cancel_attest') : path('cancel_rn') }}"><-</a>
+            <h2 id="title" style="display: inline-block;margin: 0 auto">Sélection
+                des {{ mode == 1 ? 'attestations de réussite' : 'relevés de notes' }}</h2>
+        </div>
 
-	<div style="margin-top: 40px" class="row justify-content-md-center">
-		{% if mode == 0 %}
-			<div class="form-group col-sm-2">
-				<label class="control-label">Semestre</label>
-				<input class="form-control" style="text-align: center" name="session" type="text" disabled
-					   value="{{ bddData.semestre }}">
-			</div>
-		{% endif %}
-		{% if mode == 0 %}
-			<div class="form-group col-sm-2">
-				<label class="control-label">Session</label>
-				<input class="form-control" style="text-align: center" type="text" disabled
-					   value="{{ bddData.session }}">
-			</div>
-		{% endif %}
-		<div class="form-group col-sm-{{ mode == 1 ? "3" : "2" }}">
-			<label class="control-label">Libellé</label>
-			{% if mode == 0 %}
-				<input class="form-control" style="text-align: center" type="text" disabled
-					   value="{{ bddData.libelle is same as("") ? bddData.libelleForm : bddData.libelle }}">
-			{% else %}
-				<input class="form-control" style="text-align: center" type="text" disabled
-					   value="{{ bddData.libelleObj }} / {{ bddData.libelle }}">
-			{% endif %}
-		</div>
-		<div class="form-group col-sm-2">
-			<label class="control-label">Code</label>
-			{% if mode == 0 %}
-				<input class="form-control" style="text-align: center" type="text" disabled
-					   value="{{ bddData.code is same as("--")  or bddData.code is same as("") ? bddData.codeObj : bddData.code }}">
-			{% else %}
-				<input class="form-control" style="text-align: center" type="text" disabled
-					   value="{{ bddData.codeObj }} / {{ bddData.code }}">
-			{% endif %}
-		</div>
-		<div class="form-group col-sm-2">
-			<label class="control-label">Année</label>
-			<input class="form-control" style="text-align: center" type="text" disabled
-				   value="{{ bddData.year }}">
-		</div>
-	</div>
+        <div style="margin-top: 40px" class="row justify-content-md-center">
+            {% if mode == 0 %}
+                <div class="form-group col-sm-2">
+                    <label class="control-label">Semestre</label>
+                    <input class="form-control" style="text-align: center" name="session" type="text" disabled
+                           value="{{ bddData.semestre }}">
+                </div>
+            {% endif %}
+            {% if mode == 0 %}
+                <div class="form-group col-sm-2">
+                    <label class="control-label">Session</label>
+                    <input class="form-control" style="text-align: center" type="text" disabled
+                           value="{{ bddData.session }}">
+                </div>
+            {% endif %}
+            <div class="form-group col-sm-{{ mode == 1 ? "3" : "2" }}">
+                <label class="control-label">Libellé</label>
+                {% if mode == 0 %}
+                    <input class="form-control" style="text-align: center" type="text" disabled
+                           value="{{ bddData.libelle is same as("") ? bddData.libelleForm : bddData.libelle }}">
+                {% else %}
+                    <input class="form-control" style="text-align: center" type="text" disabled
+                           value="{{ bddData.libelleObj }} / {{ bddData.libelle }}">
+                {% endif %}
+            </div>
+            <div class="form-group col-sm-2">
+                <label class="control-label">Code</label>
+                {% if mode == 0 %}
+                    <input class="form-control" style="text-align: center" type="text" disabled
+                           value="{{ bddData.code is same as("--")  or bddData.code is same as("") ? bddData.codeObj : bddData.code }}">
+                {% else %}
+                    <input class="form-control" style="text-align: center" type="text" disabled
+                           value="{{ bddData.codeObj }} / {{ bddData.code }}">
+                {% endif %}
+            </div>
+            <div class="form-group col-sm-2">
+                <label class="control-label">Année</label>
+                <input class="form-control" style="text-align: center" type="text" disabled
+                       value="{{ bddData.year }}">
+            </div>
+        </div>
 
-	<div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px">
-		<button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_go" onclick="OnGO()">Continuer
-		</button>
-		<button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_select" onclick="OnAllSelect()">
-			Tout désélectionner
-		</button>
-		<a id="btn_reload" style="margin-left: 10px;visibility: hidden" class="btn btn-primary"
-		   href="{{ mode == 1 ? path('selection_attests') : path('selection_rn') }}">Annuler</a>
-	</div>
+        <div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px">
+            <button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_go" onclick="OnGO()">
+                Continuer
+            </button>
+            <button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_select"
+                    onclick="OnAllSelect()">
+                Tout désélectionner
+            </button>
+            <button id="btn_reload" style="margin-left: 10px;visibility: hidden" class="btn btn-primary">
+                Annuler
+            </button>
+        </div>
 
-	<div id="students_tab" class="container-fluid">
+        <div id="students_tab" class="container-fluid">
 
-		<table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
+            <table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
 
-			<thead>
-			<tr style="text-align: center">
-				<th scope="col">Numero</th>
-				<th scope="col">Nom</th>
-				<th scope="col">Prenom</th>
-				<th scope="col">Date de naissance</th>
-				<th scope="col">Mail</th>
-				<th scope="col">{{ mode == 0 ? "Relevé" : "Attestation" }}</th>
-				<th scope="col">{{ mode == 0 ? "Relevé déjà existant" : "Attestation déjà existante" }}</th>
-				<th scope="col">Transférer</th>
-			</tr>
-			</thead>
+                <thead>
+                <tr style="text-align: center">
+                    <th scope="col">Numero</th>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Prenom</th>
+                    <th scope="col">Date de naissance</th>
+                    <th scope="col">Mail</th>
+                    <th scope="col">{{ mode == 0 ? "Relevé" : "Attestation" }}</th>
+                    <th scope="col">{{ mode == 0 ? "Relevé déjà existant" : "Attestation déjà existante" }}</th>
+                    <th scope="col">Transférer</th>
+                </tr>
+                </thead>
 
-			<tbody>
-			{% for stud in students %}
-				<tr id="cell_{{ stud.numero }}" style="text-align: center">
-					<td style="padding: 10px">{{ stud.numero }}</td>
-					<td style="padding: 10px">{{ stud.name }}</td>
-					<td style="padding: 10px">{{ stud.surname }}</td>
-					<td style="padding: 10px">{{ stud.birthday }}</td>
-					<td style="padding: 10px">{{ stud.mail }}</td>
-					<td style="padding: 10px">
-						{% if mode == 1 %}
-							<a target="_blank"
-							   href="{{ path('preview_tmp_attest',{'numero':stud.numero}) }}">{{ stud.file }}</a>
-						{% else %}
-							<a target="_blank"
-							   href="{{ path('preview_tmp_rn',{'numero':stud.numero}) }}">{{ stud.file }}</a>
-						{% endif %}
-					</td>
-					<td style="padding: 10px">
-						{% if stud.index != -1 %}
-							{% if mode == 1 %}
-								<a href="{{ path('preview_attest',{'numero':stud.numero, 'index':stud.index}) }}"
-								   target="_blank">Voir</a>
-							{% else %}
-								<a href="{{ path('preview_rn',{'numero':stud.numero, 'index':stud.index}) }}"
-								   target="_blank">Voir</a>
-							{% endif %}
-						{% endif %}
-					</td>
-					<td style="padding: 10px">
-						<div class="custom-control custom-checkbox">
-							<input type="checkbox" onclick="chbxClicked()" class="custom-control-input" checked
-								   id="{{ stud.numero }}"/>
-							<label class="custom-control-label" for="{{ stud.numero }}"></label>
-						</div>
-					</td>
-				</tr>
-			{% endfor %}
-			</tbody>
+                <tbody>
+                {% for stud in students %}
+                    <tr id="cell_{{ stud.numero }}" style="text-align: center">
+                        <td style="padding: 10px">{{ stud.numero }}</td>
+                        <td style="padding: 10px">{{ stud.name }}</td>
+                        <td style="padding: 10px">{{ stud.surname }}</td>
+                        <td style="padding: 10px">{{ stud.birthday }}</td>
+                        <td style="padding: 10px">{{ stud.mail }}</td>
+                        <td style="padding: 10px">
+                            {% if mode == 1 %}
+                                <a target="_blank"
+                                   href="{{ path('preview_tmp_attest',{'numero':stud.numero}) }}">{{ stud.file }}</a>
+                            {% else %}
+                                <a target="_blank"
+                                   href="{{ path('preview_tmp_rn',{'numero':stud.numero}) }}">{{ stud.file }}</a>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 10px">
+                            {% if stud.index != -1 %}
+                                {% if mode == 1 %}
+                                    <a href="{{ path('preview_attest',{'numero':stud.numero, 'index':stud.index}) }}"
+                                       target="_blank">Voir</a>
+                                {% else %}
+                                    <a href="{{ path('preview_rn',{'numero':stud.numero, 'index':stud.index}) }}"
+                                       target="_blank">Voir</a>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="padding: 10px">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" onclick="chbxClicked()" class="custom-control-input" checked
+                                       id="{{ stud.numero }}"/>
+                                <label class="custom-control-label" for="{{ stud.numero }}"></label>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
 
-		</table>
-	</div>
+            </table>
+        </div>
+    </div>
 
-	<div style="text-align: center;visibility: collapse;margin-bottom: 20px;margin-top: 20px" id="mail_actions_div">
-		<h5><strong>Voulez-vous envoyer un mail de notification aux étudiants concernés ?</strong></h5>
-		<div class="row justify-content-md-center">
-			<button onclick="send_mails(false)" style="margin-right: 10px" class="btn btn-secondary" type="button">Non
-			</button>
-			<button onclick="send_mails(true)" class="btn btn-primary" type="button">Oui</button>
-		</div>
-	</div>
+    <div style="text-align: center;visibility: collapse;margin-bottom: 20px;margin-top: 20px" id="mail_actions_div">
+        <h5><strong>Voulez-vous envoyer un mail de notification aux étudiants concernés ?</strong></h5>
+        <div class="row justify-content-md-center">
+            <button onclick="send_mails(false)" style="margin-right: 10px" class="btn btn-secondary" type="button">Non
+            </button>
+            <button onclick="send_mails(true)" class="btn btn-primary" type="button">Oui</button>
+        </div>
+    </div>
 
-	<div id="mail_div" style="visibility: collapse" class="container">
-		<div style="border-style: outset; padding: 5px">
-			<div class="row">
-				<div class="col-2">
-					<p>Expéditeur : </p>
-				</div>
-				<div class="col-6">
-					<a href="mailto: noreply@uca.fr">noreply@uca.fr</a>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-2">
-					<p>Sujet : </p>
-				</div>
-				<div class="col-6">
-					<p>Dépôt de document Université Clermont Auvergne</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-2">
-					<p>Contenu : </p>
-				</div>
-				<div class="col-6">
-					{% include 'Mail/add_doc_mail.html.twig' with {'stud': students[0], 'mode': mode, 'bddData': bddData} %}
-				</div>
-			</div>
-		</div>
-	</div>
+    <div id="mail_div" style="visibility: collapse" class="container">
+        <div style="border-style: outset; padding: 5px">
+            <div class="row">
+                <div class="col-2">
+                    <p>Expéditeur : </p>
+                </div>
+                <div class="col-6">
+                    <a href="mailto: noreply@uca.fr">noreply@uca.fr</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Sujet : </p>
+                </div>
+                <div class="col-6">
+                    <p>Dépôt de document Université Clermont Auvergne</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Contenu : </p>
+                </div>
+                <div class="col-6">
+                    {% include 'Mail/add_doc_mail.html.twig' with {'stud': students[0], 'mode': mode, 'bddData': bddData} %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="anim" style="visibility: hidden" class="centered">
+        <div class="loader"></div>
+    </div>
 
 {% endblock %}
 
 {% block javascripts %}
-	<script>
+    <script>
         var isSelection = true;
         var ids = undefined;
+
+        setupAnim();
+        window.onresize = () => setupAnim();
+
+        function setupAnim() {
+            var windowHeight = $(window).height();
+            var windowWidth = $(window).width();
+            var main = $("#anim");
+            $("#anim").css({
+                top: ((windowHeight / 2) - (main.height() / 2)) + "px",
+                left: ((windowWidth / 2) - (main.width() / 2)) + "px"
+            });
+        }
+
+        $('#btn_reload').click(function () {
+            window.location = "{{ mode == 1 ? path('selection_attests') : path('selection_rn') }}";
+        });
 
         function OnTransfer() {
             var total = {{ students|length }};
             var tmp = [];
             let table = $('#indexable_table').DataTable();
-			{% for stud in students %}
+            {% for stud in students %}
             var isChecked = getChbxById("{{ stud.numero }}", table);
             if (!isChecked)
                 tmp.push({{ stud.numero }});
-			{% endfor %}
-			{% if mode == 0 %}
+            {% endfor %}
+            {% if mode == 0 %}
             getRNTextForModal(tmp, total);
-			{% else %}
+            {% else %}
             getAttestTextForModal(tmp, total);
-			{% endif %}
+            {% endif %}
             document.getElementById("btn_transfer").onclick = () => ajax_delete_call(tmp);
             $('#myModal').modal();
         }
@@ -259,11 +286,11 @@
             isSelection = false;
             dynamicOpacity();
             document.getElementById("btn_reload").style.visibility = "visible";
-			{% if mode == 1 %}
+            {% if mode == 1 %}
             document.getElementById("title").textContent = "Attestations de réussite non sélectionnées";
-			{% else %}
+            {% else %}
             document.getElementById("title").textContent = "Relevés de notes non sélectionnés";
-			{% endif %}
+            {% endif %}
             document.getElementById("title").style.color = "#d53343"; // red uca
             document.getElementById("indexable_table").style.backgroundColor = "#faff8b"; // yellow
         }
@@ -293,6 +320,9 @@
         }
 
         function onSucessAjax(msg) {
+            document.getElementById("anim").style.visibility = "hidden";
+            document.getElementById("container").style.opacity = '1';
+
             document.getElementById('students_tab').style.display = "none";
             document.getElementById('transfert_div').style.display = "none";
             document.getElementById('cancel').style.display = "none";
@@ -308,6 +338,13 @@
         }
 
         function ajax_delete_call(tmp) {
+            $('#myModal').modal('hide');
+            $('#btn_go').prop("disabled", true);
+            $('#btn_reload').prop("disabled", true);
+
+            document.getElementById("anim").style.visibility = "visible";
+            document.getElementById("container").style.opacity = '0.4';
+
             console.log("Ajax called with " + tmp);
             $.ajax({
                 method: 'POST',
@@ -347,9 +384,9 @@
                 });
             }
         }
-	</script>
+    </script>
 
-	<script>
+    <script>
         let isAllSelect = true;
 
         function OnAllSelect() {
@@ -397,9 +434,9 @@
             return nb;
         }
 
-	</script>
+    </script>
 
-	<script>
+    <script>
         $(document).ready(function () {
             $('#indexable_table').DataTable({
                 'lengthMenu': [[10, 50, 100, 500, -1], [10, 50, 100, 500, "All"]],
@@ -408,5 +445,5 @@
                 },
             });
         });
-	</script>
+    </script>
 {% endblock %}
