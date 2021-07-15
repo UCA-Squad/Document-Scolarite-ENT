@@ -22,6 +22,7 @@ class DocapostFast
 	private $siren;
 	private $circuitId;
 	private $enable;
+	private $proxy;
 
 	/**
 	 * DocapostFast constructor.
@@ -104,6 +105,7 @@ class DocapostFast
 					"local_cert" => $this->pem_file,
 					"local_pk" => $this->pem_file,
 					"passphrase" => $this->pem_password,
+					"proxy" => $this->proxy
 				])
 		);
 	}
