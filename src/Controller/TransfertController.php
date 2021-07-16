@@ -19,7 +19,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
 use Twig\Environment;
 
 /**
@@ -32,13 +34,15 @@ class TransfertController extends AbstractController
 	private $finder;
 	private $params;
 	private $docapost;
+	private $secu;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost, Security $secu)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
 		$this->params = $params;
 		$this->docapost = $docapost;
+		$this->secu = $secu;
 	}
 
 	/**
@@ -78,70 +82,16 @@ class TransfertController extends AbstractController
 	{
 		$from = $this->file_access->getTmpByMode($mode);
 		$to = $this->file_access->getDirByMode($mode);
+		$username = $this->secu->getUser()->getUsername();
 
-		$documents = $this->finder->getDirsName($from);
-		$docs_count = count($documents);
-		if ($docs_count == 0)
+		try {
+			$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $ids], '/var/www/html/Document-Scolarite-ENT');
+			$process->run();
+		} catch (\Exception $e) {
 			return false;
-
-		if (!is_dir($to))
-			mkdir($to);
-
-		$not_transfered = 0;
-		foreach ($documents as $doc) {
-			if (isset($ids) && in_array($doc, $ids)) {
-				// si pas séléctionné pour transfert mais déjà présent sur le serveur
-				if (!file_exists($to . $doc . '/' . $this->finder->getFirstFile($from . $doc)))
-					$not_transfered++;
-				continue;
-			}
-			if (!is_dir($to . $doc))
-				mkdir($to . $doc);
-			$fileFrom = $this->finder->getFirstFile($from . $doc);
-			$index = $this->finder->getFileIndex($to . $doc, $fileFrom);
-			if ($index != -1) {
-				unlink($to . $doc . '/' . $this->finder->getFileByIndex($to . $doc, $index));
-			}
-
-			if ($this->docapost->isEnable()) {
-				// Génére nom random
-				$randName = bin2hex(random_bytes(5)) . '.pdf';
-				// Met à jour le nom du fichier
-				rename($from . $doc . '/' . $fileFrom, $from . $doc . '/' . $randName);
-				// Envoi sur docapost
-				$id = $this->docapost->uploadDocument($from . $doc . '/' . $randName, 'test');
-				// Récupère le binaire pdf signé
-				$docaDoc = $this->docapost->downloadDocument($id);
-				// Écris le pdf reçu dans le dossier de destination
-				file_put_contents($to . $doc . '/' . $fileFrom, $docaDoc);
-				// Supprime le fichier temporaire
-				unlink($from . $doc . '/' . $randName);
-			} else {
-				rename($from . $doc . '/' . $fileFrom, $to . $doc . '/' . $fileFrom);
-			}
 		}
-		$this->finder->deleteDirectory($from);
-		$this->update_transfered_files($mode, $docs_count, $not_transfered);
+
 		return true;
-	}
-
-	/**
-	 * Update the field 'nbFiles' of the last ImportedData.
-	 * @param int $mode
-	 * @param int $docs_count
-	 * @param int $not_transfered
-	 */
-	private function update_transfered_files(int $mode, int $docs_count, int $not_transfered)
-	{
-		$data = $this->getDoctrine()->getRepository(ImportedData::class)->findLastDataByMode($mode, $this->getUser()->getUsername());
-
-		$data->getLastHistory()->setNbFiles($docs_count - $not_transfered);
-		$data->getLastHistory()->setState(History::Transfered);
-		$data->getLastHistory()->setDate();
-
-		$em = $this->getDoctrine()->getManager();
-		$em->persist($data);
-		$em->flush();
 	}
 
 	/**
