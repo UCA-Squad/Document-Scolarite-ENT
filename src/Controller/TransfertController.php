@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Process\Process;
@@ -35,14 +36,16 @@ class TransfertController extends AbstractController
 	private $params;
 	private $docapost;
 	private $secu;
+	private $kernel;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost, Security $secu)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost, Security $secu, KernelInterface $kernel)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
 		$this->params = $params;
 		$this->docapost = $docapost;
 		$this->secu = $secu;
+		$this->kernel = $kernel;
 	}
 
 	/**
@@ -85,7 +88,7 @@ class TransfertController extends AbstractController
 		$username = $this->secu->getUser()->getUsername();
 
 		try {
-			$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $ids], '/var/www/html/Document-Scolarite-ENT');
+			$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $ids], $this->kernel->getProjectDir());
 			$process->run();
 		} catch (\Exception $e) {
 			return false;
