@@ -42,16 +42,18 @@ class TransfertCommand extends Command
 			->addArgument('from', InputArgument::REQUIRED)
 			->addArgument('to', InputArgument::REQUIRED)
 			->addArgument('username', InputArgument::REQUIRED)
-			->addArgument('ids', InputArgument::IS_ARRAY | InputArgument::REQUIRED);
+			->addArgument('ids', InputArgument::REQUIRED);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$mode = $input->getArgument('mode');
-		$ids = $input->getArgument('ids');
 		$from = $input->getArgument('from');
 		$to = $input->getArgument('to');
 		$username = $input->getArgument('username');
+		$ids = $input->getArgument('ids');
+
+		$ids = explode(' ', $ids);
 
 		$documents = $this->finder->getDirsName($from);
 		$docs_count = count($documents);

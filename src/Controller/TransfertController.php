@@ -4,7 +4,6 @@
 namespace App\Controller;
 
 
-use App\Entity\History;
 use App\Entity\ImportedData;
 use App\Entity\Student;
 use App\Logic\CustomFinder;
@@ -87,14 +86,29 @@ class TransfertController extends AbstractController
 		$to = $this->file_access->getDirByMode($mode);
 		$username = $this->secu->getUser()->getUsername();
 
+		$i = "";
+		if (isset($ids)) {
+			foreach ($ids as $id) {
+				$i .= "$id ";
+			}
+			$i = substr($i, 0, strlen($i) - 1);
+		}
+
+		$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $i], $this->kernel->getProjectDir());
+		$process->setTimeout(120);
+		$process->setIdleTimeout(120);
+
 		try {
-			$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $ids], $this->kernel->getProjectDir());
-			$process->setTimeout(120);
-			$process->setIdleTimeout(120);
 			$process->run();
 		} catch (\Exception $e) {
+//			dump($process->getOutput());
 			return false;
 		}
+
+		dump($process->getExitCode());
+
+//		if ($process->getExitCode() != 0)
+//			dump($process->getOutput());
 
 		return true;
 	}
