@@ -95,8 +95,8 @@ class TransfertController extends AbstractController
 		}
 
 		$process = new Process(['php', 'bin/console', 'transfert', $mode, $from, $to, $username, $i], $this->kernel->getProjectDir());
-		$process->setTimeout(120);
-		$process->setIdleTimeout(120);
+		$process->setTimeout(600);
+		$process->setIdleTimeout(600);
 
 		try {
 			$process->run();
