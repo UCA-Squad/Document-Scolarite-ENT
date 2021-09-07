@@ -278,6 +278,8 @@ class ImportController extends AbstractController
 		$cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' '" . $pdf->getPathname() . "'";
 		try {
 			$proc = Process::fromShellCommandline($cmd);
+			$proc->setTimeout(null);
+			$proc->setIdleTimeout(null);
 			$proc->run();
 		} catch (\Exception $e) {
 			return "";

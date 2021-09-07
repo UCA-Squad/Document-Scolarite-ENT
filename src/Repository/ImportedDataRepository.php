@@ -115,7 +115,7 @@ class ImportedDataRepository extends ServiceEntityRepository
 		return $query
 			->setMaxResults(1)
 			->getQuery()
-			->getOneOrNullResult();
+			->getOneOrNullResult();	// Retourne null si plusieurs entrées // a CHECK
 	}
 
 	public function findAttest(ImportedData $data, string $username, bool $admin = false): ?ImportedData
