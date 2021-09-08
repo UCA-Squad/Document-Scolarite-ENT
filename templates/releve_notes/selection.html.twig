@@ -47,7 +47,7 @@
                 des {{ mode == 1 ? 'attestations de réussite' : 'relevés de notes' }}</h2>
         </div>
 
-        <div style="margin-top: 40px" class="row justify-content-md-center">
+        <div style="margin-top: 40px" class="row justify-content-md-center opaker">
             {% if mode == 0 %}
                 <div class="form-group col-sm-2">
                     <label class="control-label">Semestre</label>
@@ -102,7 +102,14 @@
             </button>
         </div>
 
-        <div id="students_tab" class="container-fluid">
+        <div class="row justify-content-md-center" style="margin-top: 17px;margin-bottom: 17px">
+            <progress id="transfert_pg" class="progress-bar progress-bar-striped"
+                      style="width: 75%;visibility: collapse;margin-right: 50px"
+                      max="{{ students|length }}"
+                      value="0"></progress>
+        </div>
+
+        <div id="students_tab" class="container-fluid opaker">
 
             <table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
 
@@ -122,7 +129,7 @@
                 <tbody>
                 {% for stud in students %}
                     <tr id="cell_{{ stud.numero }}" style="text-align: center">
-                        <td style="padding: 10px">{{ stud.numero }}</td>
+                        <td class="stud" style="padding: 10px">{{ stud.numero }}</td>
                         <td style="padding: 10px">{{ stud.name }}</td>
                         <td style="padding: 10px">{{ stud.surname }}</td>
                         <td style="padding: 10px">{{ stud.birthday }}</td>
@@ -320,8 +327,11 @@
         }
 
         function onSucessAjax(msg) {
+            $('#transfert_pg').css("visibility", "collapse");
             document.getElementById("anim").style.visibility = "hidden";
-            document.getElementById("container").style.opacity = '1';
+            $(".opaker").each(function (c) {
+                $(this).css("opacity", "1");
+            });
 
             document.getElementById('students_tab').style.display = "none";
             document.getElementById('transfert_div').style.display = "none";
@@ -337,29 +347,51 @@
             $('#myModal').modal('hide');
         }
 
-        function ajax_delete_call(tmp) {
-            $('#myModal').modal('hide');
-            $('#btn_go').prop("disabled", true);
-            $('#btn_reload').prop("disabled", true);
+        var current = 0;
+        var studs = {{ students|json_encode }};
 
-            document.getElementById("anim").style.visibility = "visible";
-            document.getElementById("container").style.opacity = '0.4';
+        function AjaxCall(tmp) {
+            if (current >= studs.length)
+                return;
 
-            console.log("Ajax called with " + tmp);
             $.ajax({
                 method: 'POST',
                 url: '{{ mode == 1 ? path('transfert_attest') : path('transfert_rn') }}',
                 data: {
-                    'ids': tmp
+                    'ids': tmp,
+                    'num': studs[current]
                 },
                 success: function (msg) {
                     ids = tmp;
-                    onSucessAjax(msg);
+
+                    current++;
+                    $('#transfert_pg').attr("value", current);
+                    // console.log(msg);
+                    if (current >= studs.length) {
+                        onSucessAjax("Tous les documents ont été transférés dans les dossiers étudiants");
+                    }
+                    AjaxCall(tmp);
                 },
                 error: function (msg) {
                     console.log("error ajax : " + msg);
                 }
             });
+        }
+
+        function ajax_delete_call(tmp) {
+            $('#myModal').modal('hide');
+            $('#transfert_pg').css("visibility", "visible");
+            $('#btn_go').prop("disabled", true);
+            $('#btn_reload').prop("disabled", true);
+            document.getElementById("anim").style.visibility = "visible";
+
+            console.log($(".opaker"));
+            $(".opaker").each(function (c) {
+                $(this).css("opacity", "0.4");
+            });
+
+            console.log("Ajax called with " + tmp);
+            AjaxCall(tmp);
         }
 
         function send_mails(sending) {

@@ -51,92 +51,98 @@ class TransfertController extends AbstractController
 	public function transfert_rn(Request $request): JsonResponse
 	{
 		$ids = $request->get("ids");
+		$num = $request->get('num');
 
-		if ($this->transfert(ImportedData::RN, $ids))
-			$this->addFlash("success", 'Les relevés de notes ont été transférés dans les dossiers étudiants');
-		else
-			$this->addFlash("error", 'Une erreur est survenue lors du transfert des relevés de notes dans les dossiers étudiants');
-		return new JsonResponse('Les relevés de notes ont été transférés dans les dossiers étudiants');
+		try {
+			$result = $this->transfert(ImportedData::RN, $num, $ids);
+			return new JsonResponse($result);
+		} catch (\Exception $e) {
+			return new JsonResponse($e->getMessage());
+		}
+
+//		if ($this->transfert(ImportedData::RN, $num, $ids))
+//			$this->addFlash("success", 'Les relevés de notes ont été transférés dans les dossiers étudiants');
+//		else
+//			$this->addFlash("error", 'Une erreur est survenue lors du transfert des relevés de notes dans les dossiers étudiants');
+
+//		return new JsonResponse(in_array($num, $ids));
 	}
 
 	/**
 	 * @Route("/attests", name="transfert_attest")
 	 * @param Request $request
-	 * @param FileAccess $file_access
 	 * @return JsonResponse
 	 */
-	public function transfert_attest(Request $request, FileAccess $file_access): JsonResponse
+	public function transfert_attest(Request $request): JsonResponse
 	{
 		$ids = $request->get("ids");
+		$num = $request->get('num');
 
-		if ($this->transfert(ImportedData::ATTEST, $ids))
-			$this->addFlash("success", 'Les attestations de réussite ont été transférées dans les dossiers étudiants');
-		else
-			$this->addFlash("error", 'Une erreur est survenue lors du transfert des attestations de réussite dans les dossiers étudiants');
-		return new JsonResponse('Les attestations de réussite ont été transférées dans les dossiers étudiants');
+		try {
+			$result = $this->transfert(ImportedData::ATTEST, $num, $ids);
+			return new JsonResponse($result);
+		} catch (\Exception $e) {
+			return new JsonResponse($e->getMessage());
+		}
+
+//		if ($this->transfert(ImportedData::ATTEST, $ids))
+//			$this->addFlash("success", 'Les attestations de réussite ont été transférées dans les dossiers étudiants');
+//		else
+//			$this->addFlash("error", 'Une erreur est survenue lors du transfert des attestations de réussite dans les dossiers étudiants');
+//		return new JsonResponse('Les attestations de réussite ont été transférées dans les dossiers étudiants');
 	}
 
-	private function transfert(int $mode, array $ids = null): bool
+	private function transfert(int $mode, int $num, array $ids = null): bool
 	{
 		$from = $this->file_access->getTmpByMode($mode);
 		$to = $this->file_access->getDirByMode($mode);
 
-		$documents = $this->finder->getDirsName($from);
-		$docs_count = count($documents);
-		if ($docs_count == 0)
-			return false;
-
 		if (!is_dir($to))
 			mkdir($to);
 
-		$not_transfered = 0;
-		foreach ($documents as $doc) {
-			if (isset($ids) && in_array($doc, $ids)) {
-				// si pas séléctionné pour transfert mais déjà présent sur le serveur
-				if (!file_exists($to . $doc . '/' . $this->finder->getFirstFile($from . $doc)))
-					$not_transfered++;
-				continue;
-			}
-			if (!is_dir($to . $doc))
-				mkdir($to . $doc);
-			$fileFrom = $this->finder->getFirstFile($from . $doc);
-			$index = $this->finder->getFileIndex($to . $doc, $fileFrom);
-			if ($index != -1) {
-				unlink($to . $doc . '/' . $this->finder->getFileByIndex($to . $doc, $index));
-			}
-			if ($this->docapost->isEnable()) {
-				// Génére nom random
-				$randName = bin2hex(random_bytes(5)) . '.pdf';
-				// Met à jour le nom du fichier
-				rename($from . $doc . '/' . $fileFrom, $from . $doc . '/' . $randName);
-				// Envoi sur docapost
-				$id = $this->docapost->uploadDocument($from . $doc . '/' . $randName, 'test');
-				// Récupère le binaire pdf signé
-				$docaDoc = $this->docapost->downloadDocument($id);
-				// Écris le pdf reçu dans le dossier de destination
-				file_put_contents($to . $doc . '/' . $fileFrom, $docaDoc);
-				// Supprime le fichier temporaire
-				unlink($from . $doc . '/' . $randName);
-			} else {
-				rename($from . $doc . '/' . $fileFrom, $to . $doc . '/' . $fileFrom);
-			}
+		if (isset($ids) && in_array($num, $ids)) {
+			return false;
 		}
-		$this->finder->deleteDirectory($from);
-		$this->update_transfered_files($mode, $docs_count, $not_transfered);
+
+		if (!is_dir($to . $num))
+			mkdir($to . $num);
+
+		$fileFrom = $this->finder->getFirstFile($from . $num);
+		$index = $this->finder->getFileIndex($to . $num, $fileFrom);
+		if ($index != -1) {
+			unlink($to . $num . '/' . $this->finder->getFileByIndex($to . $num, $index));
+		}
+
+		if ($this->docapost->isEnable()) {
+			// Génére nom random
+			$randName = bin2hex(random_bytes(5)) . '.pdf';
+			// Met à jour le nom du fichier
+			rename($from . $num . '/' . $fileFrom, $from . $num . '/' . $randName);
+			// Envoi sur docapost
+			$id = $this->docapost->uploadDocument($from . $num . '/' . $randName, 'test');
+			// Récupère le binaire pdf signé
+			$docaDoc = $this->docapost->downloadDocument($id);
+			// Écris le pdf reçu dans le dossier de destination
+			file_put_contents($to . $num . '/' . $fileFrom, $docaDoc);
+			// Supprime le fichier temporaire
+			unlink($from . $num . '/' . $randName);
+		} else {
+			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
+		}
+//		$this->finder->deleteDirectory($from);
+		$this->update_transfered_files($mode);
 		return true;
 	}
 
 	/**
 	 * Update the field 'nbFiles' of the last ImportedData.
 	 * @param int $mode
-	 * @param int $docs_count
-	 * @param int $not_transfered
 	 */
-	private function update_transfered_files(int $mode, int $docs_count, int $not_transfered)
+	private function update_transfered_files(int $mode)
 	{
 		$data = $this->getDoctrine()->getRepository(ImportedData::class)->findLastDataByMode($mode, $this->getUser()->getUsername());
 
-		$data->getLastHistory()->setNbFiles($docs_count - $not_transfered);
+		$data->getLastHistory()->setNbFiles($data->getLastHistory()->getNbFiles() + 1);
 		$data->getLastHistory()->setState(History::Transfered);
 		$data->getLastHistory()->setDate();
 
