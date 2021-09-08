@@ -207,9 +207,9 @@
         </div>
     </div>
 
-    <div id="anim" style="visibility: hidden" class="centered">
-        <div class="loader"></div>
-    </div>
+{#    <div id="anim" style="visibility: hidden" class="centered">#}
+{#        <div class="loader"></div>#}
+{#    </div>#}
 
 {% endblock %}
 
@@ -218,18 +218,18 @@
         var isSelection = true;
         var ids = undefined;
 
-        setupAnim();
-        window.onresize = () => setupAnim();
-
-        function setupAnim() {
-            var windowHeight = $(window).height();
-            var windowWidth = $(window).width();
-            var main = $("#anim");
-            $("#anim").css({
-                top: ((windowHeight / 2) - (main.height() / 2)) + "px",
-                left: ((windowWidth / 2) - (main.width() / 2)) + "px"
-            });
-        }
+        // setupAnim();
+        // window.onresize = () => setupAnim();
+        //
+        // function setupAnim() {
+        //     var windowHeight = $(window).height();
+        //     var windowWidth = $(window).width();
+        //     var main = $("#anim");
+        //     $("#anim").css({
+        //         top: ((windowHeight / 2) - (main.height() / 2)) + "px",
+        //         left: ((windowWidth / 2) - (main.width() / 2)) + "px"
+        //     });
+        // }
 
         $('#btn_reload').click(function () {
             window.location = "{{ mode == 1 ? path('selection_attests') : path('selection_rn') }}";
@@ -328,7 +328,7 @@
 
         function onSucessAjax(msg) {
             $('#transfert_pg').css("visibility", "collapse");
-            document.getElementById("anim").style.visibility = "hidden";
+            // document.getElementById("anim").style.visibility = "hidden";
             $(".opaker").each(function (c) {
                 $(this).css("opacity", "1");
             });
@@ -383,7 +383,7 @@
             $('#transfert_pg').css("visibility", "visible");
             $('#btn_go').prop("disabled", true);
             $('#btn_reload').prop("disabled", true);
-            document.getElementById("anim").style.visibility = "visible";
+            // document.getElementById("anim").style.visibility = "visible";
 
             console.log($(".opaker"));
             $(".opaker").each(function (c) {
