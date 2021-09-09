@@ -46,7 +46,7 @@
                 des {{ mode == 1 ? 'attestations de réussite' : 'relevés de notes' }}</h2>
         </div>
 
-        <div style="margin-top: 40px" class="row justify-content-md-center opaker">
+        <div style="margin-top: 40px;width: 100%" class="row justify-content-md-center opaker">
             {% if mode == 0 %}
                 <div class="form-group col-sm-2">
                     <label class="control-label">Semestre</label>
@@ -88,7 +88,7 @@
             </div>
         </div>
 
-        <div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px">
+        <div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px;margin-right:50px;width: 100%">
             <button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_go" onclick="OnGO()">
                 Continuer
             </button>
@@ -112,7 +112,7 @@
             </div>
         </div>
 
-        <div id="students_tab" class="container-fluid opaker">
+        <div id="students_tab" class="opaker" style="padding-right: 50px">
 
             <table style="width:100%" class="table table-bordered table-striped" id="indexable_table">
 
@@ -172,7 +172,7 @@
         </div>
     </div>
 
-    <div style="text-align: center;visibility: collapse;margin-bottom: 20px;margin-top: 20px" id="mail_actions_div">
+    <div class="collapse" style="text-align: center;margin-bottom: 20px;margin-top: 20px" id="mail_actions_div">
         <h5><strong>Voulez-vous envoyer un mail de notification aux étudiants concernés ?</strong></h5>
         <div class="row justify-content-md-center">
             <button onclick="send_mails(false)" style="margin-right: 10px" class="btn btn-secondary" type="button">Non
@@ -181,7 +181,7 @@
         </div>
     </div>
 
-    <div id="mail_div" style="visibility: collapse" class="container">
+    <div id="mail_div" class="container collapse">
         <div style="border-style: outset; padding: 5px">
             <div class="row">
                 <div class="col-2">
@@ -211,255 +211,255 @@
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    <script>
-        var isSelection = true;
-        var ids = undefined;
+    {% block javascripts %}
+        <script>
+            var isSelection = true;
+            var ids = undefined;
 
-        $('#btn_reload').click(function () {
-            window.location = "{{ mode == 1 ? path('selection_attests') : path('selection_rn') }}";
-        });
-
-        function OnTransfer() {
-            var total = {{ students|length }};
-            var tmp = [];
-            let table = $('#indexable_table').DataTable();
-            {% for stud in students %}
-            var isChecked = getChbxById("{{ stud.numero }}", table);
-            if (!isChecked)
-                tmp.push({{ stud.numero }});
-            {% endfor %}
-            {% if mode == 0 %}
-            getRNTextForModal(tmp, total);
-            {% else %}
-            getAttestTextForModal(tmp, total);
-            {% endif %}
-            document.getElementById("btn_transfer").onclick = () => ajax_delete_call(tmp);
-            $('#myModal').modal();
-        }
-
-        function getChbxById(id, table) {
-            const node = table.row('#cell_' + id).node();
-            return node == null ? true : $(node).find("input:checkbox")[0].checked; // Box absente = on transfère
-        }
-
-        function getRNTextForModal(tmp, total) {
-            var len = tmp.length;
-            if (len === 0) {
-                $("#modal_txt_transfert").text("Tous les relevés (" + total + ") vont être transférés.");
-                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
-            } else {
-                $("#modal_txt_notransfert").text(len + " relevé" + (len > 1 ? 's' : '') + " sur " + total + " ne " + (len > 1 ? 'seront' : 'sera') + " pas transféré" + (len > 1 ? 's' : '') + ".");
-                $("#modal_txt_transfert").text(total - len + " relevé" + (total - len > 1 ? 's' : '') + " sur " + total + (total - len > 1 ? ' seront' : ' sera') + " transféré" + (total - len > 1 ? 's' : '') + ".");
-                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
-            }
-        }
-
-        function getAttestTextForModal(tmp, total) {
-            var len = tmp.length;
-            if (len === 0) {
-                $("#modal_txt_transfert").text("Tous les attestations (" + total + ") vont être transférées.");
-                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
-            } else {
-                $("#modal_txt_notransfert").text(len + " attestation" + (len > 1 ? 's' : '') + " sur " + total + " ne " + (len > 1 ? 'seront' : 'sera') + " pas transférée" + (len > 1 ? 's' : '') + ".");
-                $("#modal_txt_transfert").text(total - len + " attestation" + (total - len > 1 ? 's' : '') + " sur " + total + (total - len > 1 ? ' seront' : ' sera') + " transférée" + (total - len > 1 ? 's' : '') + ".");
-                document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
-            }
-        }
-
-        function OnGO() {
-            document.getElementById('btn_select').style.display = "none";
-            var table = $('#indexable_table').DataTable();
-            while (clearTable(table)) {
-            }
-            var btn = document.getElementById("btn_go");
-            btn.innerText = "Transférer";
-            btn.onclick = () => OnTransfer();
-            isSelection = false;
-            dynamicOpacity();
-            document.getElementById("btn_reload").style.visibility = "visible";
-            {% if mode == 1 %}
-            document.getElementById("title").textContent = "Attestations de réussite non sélectionnées";
-            {% else %}
-            document.getElementById("title").textContent = "Relevés de notes non sélectionnés";
-            {% endif %}
-            document.getElementById("title").style.color = "#d53343"; // red uca
-            document.getElementById("indexable_table").style.backgroundColor = "#faff8b"; // yellow
-        }
-
-        function dynamicOpacity() {
-            document.getElementById('indexable_table').style.opacity = 0;
-            $('#indexable_table').fadeTo(1500, 1);
-        }
-
-        function clearTable(table) {
-            res = false;
-
-            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
-                var rowNode = this.node();
-                $(rowNode).find("td").each(function (num, elem) {
-                    if (num === 7) {
-                        var box = elem.childNodes[1].childNodes[1];
-                        if (box.checked) {
-                            table.row(box.parentElement.parentElement).remove();
-                            res = true;
-                        }
-                    }
-                });
-            });
-            table.draw();
-            return res;
-        }
-
-        function onSucessAjax(msg) {
-            $('#pg_container').css("visibility", "collapse");
-            // document.getElementById("anim").style.visibility = "hidden";
-            $(".opaker").each(function (c) {
-                $(this).css("opacity", "1");
+            $('#btn_reload').click(function () {
+                window.location = "{{ mode == 1 ? path('selection_attests') : path('selection_rn') }}";
             });
 
-            document.getElementById('students_tab').style.display = "none";
-            document.getElementById('transfert_div').style.display = "none";
-            document.getElementById('cancel').style.display = "none";
-            document.getElementById('btn_reload').style.display = "none";
-            document.getElementById("title").classList.add("alert");
-            document.getElementById("title").classList.add("alert-success");
-            document.getElementById("title").style.color = "";
-            document.getElementById("title").textContent = msg;
-            document.getElementById("mail_div").style.visibility = "visible";
-            document.getElementById("mail_actions_div").style.visibility = "visible";
+            function OnTransfer() {
+                var total = {{ students|length }};
+                var tmp = [];
+                let table = $('#indexable_table').DataTable();
+                {% for stud in students %}
+                var isChecked = getChbxById("{{ stud.numero }}", table);
+                if (!isChecked)
+                    tmp.push({{ stud.numero }});
+                {% endfor %}
+                {% if mode == 0 %}
+                getRNTextForModal(tmp, total);
+                {% else %}
+                getAttestTextForModal(tmp, total);
+                {% endif %}
+                document.getElementById("btn_transfer").onclick = () => ajax_delete_call(tmp);
+                $('#myModal').modal();
+            }
 
-            $('#myModal').modal('hide');
-        }
+            function getChbxById(id, table) {
+                const node = table.row('#cell_' + id).node();
+                return node == null ? true : $(node).find("input:checkbox")[0].checked; // Box absente = on transfère
+            }
 
-        var current = 0;
-        var studs = {{ students|json_encode }};
-        var studsLen = studs.length;
-
-        function AjaxCall(tmp) {
-            if (current >= studs.length)
-                return;
-
-            $.ajax({
-                method: 'POST',
-                url: '{{ mode == 1 ? path('transfert_attest') : path('transfert_rn') }}',
-                data: {
-                    'ids': tmp,
-                    'num': studs[current]
-                },
-                success: function (msg) {
-                    ids = tmp;
-                    current++;
-                    var percent = Math.trunc((current / studsLen) * 100);
-                    $('#transfert_pg').attr("aria-valuenow", percent);
-                    $('#transfert_pg').css("width", percent + "%");
-                    $('#transfert_pg').text(percent + "%");
-                    // console.log(msg);
-                    if (current >= studs.length) {
-                        onSucessAjax("Tous les documents ont été transférés dans les dossiers étudiants");
-                    }
-                    AjaxCall(tmp);
-                },
-                error: function (msg) {
-                    console.log("error ajax : " + msg);
+            function getRNTextForModal(tmp, total) {
+                var len = tmp.length;
+                if (len === 0) {
+                    $("#modal_txt_transfert").text("Tous les relevés (" + total + ") vont être transférés.");
+                    document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
+                } else {
+                    $("#modal_txt_notransfert").text(len + " relevé" + (len > 1 ? 's' : '') + " sur " + total + " ne " + (len > 1 ? 'seront' : 'sera') + " pas transféré" + (len > 1 ? 's' : '') + ".");
+                    $("#modal_txt_transfert").text(total - len + " relevé" + (total - len > 1 ? 's' : '') + " sur " + total + (total - len > 1 ? ' seront' : ' sera') + " transféré" + (total - len > 1 ? 's' : '') + ".");
+                    document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
                 }
-            });
-        }
+            }
 
-        function ajax_delete_call(tmp) {
-            $('#myModal').modal('hide');
-            $('#pg_container').css("visibility", "visible");
-            $('#btn_go').prop("disabled", true);
-            $('#btn_reload').prop("disabled", true);
-            $(".opaker").each(function (c) {
-                $(this).css("opacity", "0.4");
-            });
-            // console.log("Ajax called with " + tmp);
-            AjaxCall(tmp);
-        }
+            function getAttestTextForModal(tmp, total) {
+                var len = tmp.length;
+                if (len === 0) {
+                    $("#modal_txt_transfert").text("Tous les attestations (" + total + ") vont être transférées.");
+                    document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "none";
+                } else {
+                    $("#modal_txt_notransfert").text(len + " attestation" + (len > 1 ? 's' : '') + " sur " + total + " ne " + (len > 1 ? 'seront' : 'sera') + " pas transférée" + (len > 1 ? 's' : '') + ".");
+                    $("#modal_txt_transfert").text(total - len + " attestation" + (total - len > 1 ? 's' : '') + " sur " + total + (total - len > 1 ? ' seront' : ' sera') + " transférée" + (total - len > 1 ? 's' : '') + ".");
+                    document.getElementById("modal_txt_notransfert").parentNode.parentElement.style.display = "";
+                }
+            }
 
-        function send_mails(sending) {
-            if (sending === false) {
-                window.location = "{{ path('scola') }}";
-            } else {
-                console.log("Sending mails - Exception : " + ids);
+            function OnGO() {
+                document.getElementById('btn_select').style.display = "none";
+                var table = $('#indexable_table').DataTable();
+                while (clearTable(table)) {
+                }
+                var btn = document.getElementById("btn_go");
+                btn.innerText = "Transférer";
+                btn.onclick = () => OnTransfer();
+                isSelection = false;
+                dynamicOpacity();
+                document.getElementById("btn_reload").style.visibility = "visible";
+                {% if mode == 1 %}
+                document.getElementById("title").textContent = "Attestations de réussite non sélectionnées";
+                {% else %}
+                document.getElementById("title").textContent = "Relevés de notes non sélectionnés";
+                {% endif %}
+                document.getElementById("title").style.color = "#d53343"; // red uca
+                document.getElementById("indexable_table").style.backgroundColor = "#faff8b"; // yellow
+            }
+
+            function dynamicOpacity() {
+                document.getElementById('indexable_table').style.opacity = 0;
+                $('#indexable_table').fadeTo(1500, 1);
+            }
+
+            function clearTable(table) {
+                res = false;
+
+                table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                    var rowNode = this.node();
+                    $(rowNode).find("td").each(function (num, elem) {
+                        if (num === 7) {
+                            var box = elem.childNodes[1].childNodes[1];
+                            if (box.checked) {
+                                table.row(box.parentElement.parentElement).remove();
+                                res = true;
+                            }
+                        }
+                    });
+                });
+                table.draw();
+                return res;
+            }
+
+            function onSucessAjax(msg) {
+                $('#pg_container').css("visibility", "collapse");
+                // document.getElementById("anim").style.visibility = "hidden";
+                $(".opaker").each(function (c) {
+                    $(this).css("opacity", "1");
+                });
+
+                document.getElementById('students_tab').style.display = "none";
+                document.getElementById('transfert_div').style.display = "none";
+                document.getElementById('cancel').style.display = "none";
+                document.getElementById('btn_reload').style.display = "none";
+                document.getElementById("title").classList.add("alert");
+                document.getElementById("title").classList.add("alert-success");
+                document.getElementById("title").style.color = "";
+                document.getElementById("title").textContent = msg;
+                document.getElementById("mail_div").classList.remove("collapse");
+                document.getElementById("mail_actions_div").classList.remove("collapse");
+
+                $('#myModal').modal('hide');
+            }
+
+            var current = 0;
+            var studs = {{ students|json_encode }};
+            var studsLen = studs.length;
+
+            function AjaxCall(tmp) {
+                if (current >= studs.length)
+                    return;
+
                 $.ajax({
                     method: 'POST',
-                    url: '{{ path('send_mails') }}',
+                    url: '{{ mode == 1 ? path('transfert_attest') : path('transfert_rn') }}',
                     data: {
-                        'ids': ids,
-                        'mode': '{{ mode }}'
+                        'ids': tmp,
+                        'num': studs[current]
                     },
                     success: function (msg) {
-                        console.log("Succes mails");
-                        window.location = "{{ path('scola') }}";
+                        ids = tmp;
+                        current++;
+                        var percent = Math.trunc((current / studsLen) * 100);
+                        $('#transfert_pg').attr("aria-valuenow", percent);
+                        $('#transfert_pg').css("width", percent + "%");
+                        $('#transfert_pg').text(percent + "%");
+                        // console.log(msg);
+                        if (current >= studs.length) {
+                            onSucessAjax("Tous les documents ont été transférés dans les dossiers étudiants");
+                        }
+                        AjaxCall(tmp);
                     },
                     error: function (msg) {
-                        console.log("Error mails : " + msg);
+                        console.log("error ajax : " + msg);
                     }
                 });
             }
-        }
-    </script>
 
-    <script>
-        let isAllSelect = true;
-
-        function OnAllSelect() {
-            isAllSelect = !isAllSelect;
-            let table = $('#indexable_table').DataTable();
-            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
-                let rowNode = this.node();
-                $(rowNode).find("td").each(function (num, elem) {
-                    if (num === 7) {
-                        let box = elem.childNodes[1].childNodes[1];
-                        if (!box.disabled)
-                            box.checked = isAllSelect;
-                    }
+            function ajax_delete_call(tmp) {
+                $('#myModal').modal('hide');
+                $('#pg_container').css("visibility", "visible");
+                $('#btn_go').prop("disabled", true);
+                $('#btn_reload').prop("disabled", true);
+                $(".opaker").each(function (c) {
+                    $(this).css("opacity", "0.4");
                 });
-            });
-            chbxClicked();
-            if (isAllSelect)
-                document.getElementById('btn_select').innerText = "Tout désélectionner";
-            else
-                document.getElementById('btn_select').innerText = "Tout sélectionner";
-        }
+                // console.log("Ajax called with " + tmp);
+                AjaxCall(tmp);
+            }
 
-        function chbxClicked() {
-            document.getElementById('btn_go').disabled = !IsOneChbxChecked();
-        }
-
-        function IsOneChbxChecked() {
-            let nb = false;
-            let table = $('#indexable_table').DataTable();
-            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
-                let rowNode = this.node();
-                $(rowNode).find("td").each(function (num, elem) {
-                    if (num === 7) {
-                        let box = elem.childNodes[1].childNodes[1];
-                        if (box.checked) {
-                            nb = true;
-                            return false;
+            function send_mails(sending) {
+                if (sending === false) {
+                    window.location = "{{ path('scola') }}";
+                } else {
+                    console.log("Sending mails - Exception : " + ids);
+                    $.ajax({
+                        method: 'POST',
+                        url: '{{ path('send_mails') }}',
+                        data: {
+                            'ids': ids,
+                            'mode': '{{ mode }}'
+                        },
+                        success: function (msg) {
+                            console.log("Succes mails");
+                            window.location = "{{ path('scola') }}";
+                        },
+                        error: function (msg) {
+                            console.log("Error mails : " + msg);
                         }
-                    }
+                    });
+                }
+            }
+        </script>
+
+        <script>
+            let isAllSelect = true;
+
+            function OnAllSelect() {
+                isAllSelect = !isAllSelect;
+                let table = $('#indexable_table').DataTable();
+                table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                    let rowNode = this.node();
+                    $(rowNode).find("td").each(function (num, elem) {
+                        if (num === 7) {
+                            let box = elem.childNodes[1].childNodes[1];
+                            if (!box.disabled)
+                                box.checked = isAllSelect;
+                        }
+                    });
                 });
-                if (nb)
-                    return false;
-            });
-            console.log("IsOneChbxChecked : " + nb);
-            return nb;
-        }
+                chbxClicked();
+                if (isAllSelect)
+                    document.getElementById('btn_select').innerText = "Tout désélectionner";
+                else
+                    document.getElementById('btn_select').innerText = "Tout sélectionner";
+            }
 
-    </script>
+            function chbxClicked() {
+                document.getElementById('btn_go').disabled = !IsOneChbxChecked();
+            }
 
-    <script>
-        $(document).ready(function () {
-            $('#indexable_table').DataTable({
-                'lengthMenu': [[10, 50, 100, 500, -1], [10, 50, 100, 500, "All"]],
-                'language': {
-                    'emptyTable': 'Tous les relevés ont été sélectionnés pour le transfert'
-                },
+            function IsOneChbxChecked() {
+                let nb = false;
+                let table = $('#indexable_table').DataTable();
+                table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                    let rowNode = this.node();
+                    $(rowNode).find("td").each(function (num, elem) {
+                        if (num === 7) {
+                            let box = elem.childNodes[1].childNodes[1];
+                            if (box.checked) {
+                                nb = true;
+                                return false;
+                            }
+                        }
+                    });
+                    if (nb)
+                        return false;
+                });
+                console.log("IsOneChbxChecked : " + nb);
+                return nb;
+            }
+
+        </script>
+
+        <script>
+            $(document).ready(function () {
+                $('#indexable_table').DataTable({
+                    'lengthMenu': [[10, 50, 100, 500, -1], [10, 50, 100, 500, "All"]],
+                    'language': {
+                        'emptyTable': 'Tous les relevés ont été sélectionnés pour le transfert'
+                    },
+                });
             });
-        });
-    </script>
-{% endblock %}
+        </script>
+    {% endblock %}
