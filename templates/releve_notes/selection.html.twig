@@ -39,7 +39,7 @@
     </div>
 
     <div id="container">
-        <div style="text-align: center">
+        <div style="text-align: center;width: 100%">
             <a id="cancel" style="float: left" class="btn btn-primary"
                href="{{ mode == 1 ? path('cancel_attest') : path('cancel_rn') }}"><-</a>
             <h2 id="title" style="display: inline-block;margin: 0 auto">Sélection
@@ -88,7 +88,8 @@
             </div>
         </div>
 
-        <div id="transfert_div" class="row justify-content-md-center" style="margin-top: 10px;margin-right:50px;width: 100%">
+        <div id="transfert_div" class="row justify-content-md-center"
+             style="margin-top: 10px;margin-right:50px;width: 100%">
             <button type="button" style="margin-left: 10px" class="btn btn-primary" id="btn_go" onclick="OnGO()">
                 Continuer
             </button>
@@ -101,8 +102,8 @@
             </button>
         </div>
 
-        <div class="row justify-content-md-center" style="margin-top: 17px;margin-bottom: 17px;width: 100%">
-            <div class="progress" id="pg_container" style="width: 75%;height: 35px;visibility: collapse">
+        <div class="row justify-content-md-center collapse" id="pg_container" style="margin-top: 17px;margin-bottom: 17px;width: 100%">
+            <div class="progress" style="width: 75%;height: 35px">
                 <div class="progress-bar progress-bar-striped active" id="transfert_pg" role="progressbar"
                      aria-valuenow="0" aria-valuemin="0"
                      aria-valuemax="100"
@@ -172,7 +173,9 @@
         </div>
     </div>
 
-    <div class="collapse" style="text-align: center;margin-bottom: 20px;margin-top: 20px" id="mail_actions_div">
+    <div class="container-fluid collapse"
+         style="text-align: center;margin-bottom: 20px;margin-top: 20px;margin-right: 50px"
+         id="mail_actions_div">
         <h5><strong>Voulez-vous envoyer un mail de notification aux étudiants concernés ?</strong></h5>
         <div class="row justify-content-md-center">
             <button onclick="send_mails(false)" style="margin-right: 10px" class="btn btn-secondary" type="button">Non
@@ -181,7 +184,7 @@
         </div>
     </div>
 
-    <div id="mail_div" class="container collapse">
+    <div id="mail_div" class="container collapse" style="width: 100%">
         <div style="border-style: outset; padding: 5px">
             <div class="row">
                 <div class="col-2">
@@ -312,7 +315,7 @@
             }
 
             function onSucessAjax(msg) {
-                $('#pg_container').css("visibility", "collapse");
+                $('#pg_container').addClass("collapse");
                 // document.getElementById("anim").style.visibility = "hidden";
                 $(".opaker").each(function (c) {
                     $(this).css("opacity", "1");
@@ -368,7 +371,7 @@
 
             function ajax_delete_call(tmp) {
                 $('#myModal').modal('hide');
-                $('#pg_container').css("visibility", "visible");
+                $('#pg_container').removeClass("collapse");
                 $('#btn_go').prop("disabled", true);
                 $('#btn_reload').prop("disabled", true);
                 $(".opaker").each(function (c) {
