@@ -24,7 +24,7 @@ class MaintenanceListener
 	{
 		$isMaintenance = $this->params->has('is_maintenance') ? $this->params->get('is_maintenance') : false;
 
-		if ($isMaintenance === true) {
+		if ($isMaintenance == true) {
 			$content = $this->twig->render('closed.html.twig');
 			$event->setResponse(new Response($content, 200));
 			$event->stopPropagation();

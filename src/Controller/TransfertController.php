@@ -59,13 +59,6 @@ class TransfertController extends AbstractController
 		} catch (\Exception $e) {
 			return new JsonResponse($e->getMessage());
 		}
-
-//		if ($this->transfert(ImportedData::RN, $num, $ids))
-//			$this->addFlash("success", 'Les relevés de notes ont été transférés dans les dossiers étudiants');
-//		else
-//			$this->addFlash("error", 'Une erreur est survenue lors du transfert des relevés de notes dans les dossiers étudiants');
-
-//		return new JsonResponse(in_array($num, $ids));
 	}
 
 	/**
@@ -84,12 +77,6 @@ class TransfertController extends AbstractController
 		} catch (\Exception $e) {
 			return new JsonResponse($e->getMessage());
 		}
-
-//		if ($this->transfert(ImportedData::ATTEST, $ids))
-//			$this->addFlash("success", 'Les attestations de réussite ont été transférées dans les dossiers étudiants');
-//		else
-//			$this->addFlash("error", 'Une erreur est survenue lors du transfert des attestations de réussite dans les dossiers étudiants');
-//		return new JsonResponse('Les attestations de réussite ont été transférées dans les dossiers étudiants');
 	}
 
 	private function transfert(int $mode, int $num, array $ids = null): bool

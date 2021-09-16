@@ -78,7 +78,7 @@ class ScolaController extends AbstractController
 		return $this->render('etudiant/search.html.twig', [
 			'form_by_num' => $student_form->createView(),
 			'form_by_name' => $student_form_name->createView(),
-			'users' => isset($filtered_users) ? $filtered_users : null
+			'users' => $filtered_users ?? null
 		]);
 	}
 
