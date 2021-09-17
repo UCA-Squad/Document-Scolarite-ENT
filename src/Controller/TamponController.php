@@ -64,7 +64,7 @@ class TamponController extends AbstractController
 		if (!isset($tampon_position) || !isset($mode))
 			return new JsonResponse("Missing variable", 404);
 
-//		try {
+		try {
 		$etu_file = $file_acces->getEtuByMode($mode);
 		$tmp_folder = $file_acces->getTmpByMode($mode);
 		$gsPdf = $file_acces->getPdfByMode($mode);
@@ -73,16 +73,15 @@ class TamponController extends AbstractController
 		$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
 		$pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
 		$pdfTool->setupImage($file_acces->getTamponByMode($mode)); //
-
 		$etu = $parser->parseETU($etu_file);
 		$indexes = $pdfTool->indexPages($parser, $gsPdf, $etu);
 		$pdfTool->truncateFile($parser, $gsPdf, $data, $tmp_folder, $indexes, $etu);
 
 		$this->clearTamponFiles($file_acces, new CustomFinder(), $mode);
 
-//		} catch (\Exception $e) {
-//			return new JsonResponse($e->getMessage(), 404);
-//		}
+		} catch (\Exception $e) {
+			return new JsonResponse($e->getMessage(), 404);
+		}
 
 		return new JsonResponse();
 	}
