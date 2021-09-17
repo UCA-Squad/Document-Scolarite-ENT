@@ -117,7 +117,7 @@ class TransfertController extends AbstractController
 			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
 		}
 //		$this->finder->deleteDirectory($from);
-		$this->update_transfered_files($mode, $ids, $from);
+		$this->update_transfered_files($mode, $from, $ids ?? []);
 		return true;
 	}
 
@@ -127,7 +127,7 @@ class TransfertController extends AbstractController
 	 * @param array $ids
 	 * @param string $from
 	 */
-	private function update_transfered_files(int $mode, array $ids, string $from)
+	private function update_transfered_files(int $mode, string $from, array $ids = [])
 	{
 		$data = $this->getDoctrine()->getRepository(ImportedData::class)->findLastDataByMode($mode, $this->getUser()->getUsername());
 
