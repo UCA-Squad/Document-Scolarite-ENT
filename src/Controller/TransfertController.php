@@ -117,15 +117,17 @@ class TransfertController extends AbstractController
 			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
 		}
 //		$this->finder->deleteDirectory($from);
-		$this->update_transfered_files($mode);
+		$this->update_transfered_files($mode, $ids, $from);
 		return true;
 	}
 
 	/**
 	 * Update the field 'nbFiles' of the last ImportedData.
 	 * @param int $mode
+	 * @param array $ids
+	 * @param string $from
 	 */
-	private function update_transfered_files(int $mode)
+	private function update_transfered_files(int $mode, array $ids, string $from)
 	{
 		$data = $this->getDoctrine()->getRepository(ImportedData::class)->findLastDataByMode($mode, $this->getUser()->getUsername());
 
@@ -136,6 +138,11 @@ class TransfertController extends AbstractController
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($data);
 		$em->flush();
+
+		// Si on a transféré tous les documents séléctionnés
+		if ($data->getLastHistory()->getNbFiles() == $data->getNbStudents() - count($ids)) {
+			$this->finder->deleteDirectory($from);
+		}
 	}
 
 	/**
