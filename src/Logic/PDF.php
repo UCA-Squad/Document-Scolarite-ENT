@@ -105,7 +105,7 @@ class PDF
 				$pageStudent['indexes'][$i]['num'] = $index;
 			else if (!empty($pageStudent['indexes'])) {
 				if ($this->env == "dev")
-					throw new Exception("IMPOSSIBLE DE RECUPERER LES INFORMATIONS POUR LE CONTENU - REGEX MISSIING :\n\n$content");
+					throw new Exception("Impossible d'extraire les identifiants de l'étudiant page $i :\n\n$content");
 				return false;
 			}
 		}
