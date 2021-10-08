@@ -135,7 +135,7 @@ class EtuParser implements IEtuParser
 		foreach ($this->num_regexes as $regex) {
 			if (preg_match($regex, $content, $matches)) {
 				for ($i = 1; $i < count($matches); $i++) {
-					$res = array_search($this->getEtuByNum($matches[$i], $students), $students);
+					$res = array_search($this->getEtuByNum(str_replace(' ', '', $matches[$i]), $students), $students);
 					if ($res !== false)
 						return $res;
 				}

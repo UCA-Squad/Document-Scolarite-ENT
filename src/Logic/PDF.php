@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class PDF
 {
 	protected $dateRegex = '/(A?a?nné?e+.*)?([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
+	protected $dateRegex1 = '/([Aa]\s?n\s?n\s?é?\s?e+\s?.*)([0-9 ]{8,})[ \/-]+[0-9 ]{3,}([0-9 ]{3,})/';
 
 	protected $getFilename = ImportedData::RN;
 
@@ -96,26 +97,30 @@ class PDF
 				$index1 = count(($ymatches)) == 4 ? 2 : 1;
 				$index2 = count(($ymatches)) == 4 ? 3 : 2;
 				$pageStudent['date'] = $ymatches[$index1] . '-' . $ymatches[$index2];
+			} else if ($pageStudent['date'] == "" && preg_match($this->dateRegex1, $content, $ymatches)) {
+				$pageStudent['date'] = str_replace(' ', '', $ymatches[2]) . '-' . str_replace(' ', '', $ymatches[3]);
 			}
 
 			if ($index !== false)
 				$pageStudent['indexes'][$i]['num'] = $index;
 			else if (!empty($pageStudent['indexes'])) {
 				if ($this->env == "dev")
-					throw new Exception("IMPOSSIBLE DE RECUPERER LES INFORMATIONS POUR LE CONTENU - REGEX MISSIING :\n\n$content");
+					throw new Exception("Impossible d'extraire les identifiants de l'étudiant page $i :\n\n$content");
 				return false;
 			}
 		}
 
-		if ((count($students) + $etu_parser->getNbDoublons() === count($pageStudent['indexes']) ||
-				count($students) + $this->getNbDoublonPagination($pageStudent) === count($pageStudent['indexes']))
-			&& $pageStudent['date'] != "")
+		if (!isset($pageStudent['date']) || $pageStudent['date'] == "")
+			throw new Exception("Impossible d'extraire l'année universitaire");
+
+		if (count($students) + $etu_parser->getNbDoublons() === count($pageStudent['indexes']) ||
+			count($students) + $this->getNbDoublonPagination($pageStudent) === count($pageStudent['indexes']))
 			return $pageStudent;
 
 		if ($this->env == "dev") {
-//			dump(count($students));
-//			dump(count($pageStudent['indexes']));
-//			dump($etu_parser->getNbDoublons());
+//			dump("Nb students : " . count($students));
+//			dump("Nb Index : " . count($pageStudent['indexes']));
+//			dump("Nb doublon : " . $etu_parser->getNbDoublons());
 //			dump($pageStudent);
 			throw new Exception("Nombre d'étudiants et de pages pdf incohérent");
 		}
@@ -186,9 +191,9 @@ class PDF
 				if ($this->image_position != null && $this->image != null)
 					$newPdf->Image($this->image, $this->image_position['x'], $this->image_position['y'], 0, 0);
 				if ($this->getFilename == ImportedData::RN)
-					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') :  $parser->getReleveFileName($index['date'], $stud, $data));
+					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $parser->getReleveFileName($index['date'], $stud, $data));
 				else
-					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') :  $parser->getAttestFileName($index['date'], $stud, $data));
+					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $parser->getAttestFileName($index['date'], $stud, $data));
 				$newPdf->output($str, 'F');
 				$newPdf->Close();
 				$pdfCount++;

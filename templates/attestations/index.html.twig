@@ -57,13 +57,19 @@
         }
 	</script>
 
-
 	<script type="text/javascript">
-        $('.custom-file input').change(function (e) {
-            if (e.target.files.length)
-                $(this).next('.custom-file-label').html(e.target.files[0].name);
-            else
-                $(this).next('.custom-file-label').html("");
-        });
+		$("#import_num_page").attr("disabled", "disabled");
+		$('.custom-file input').change(function (e) {
+			if (e.target.files.length) {
+				$(this).next('.custom-file-label').html(e.target.files[0].name);
+				if (($(this)).attr('id') === 'import_tampon')
+					$("#import_num_page").removeAttr("disabled");
+			} else {
+				$(this).next('.custom-file-label').html("");
+				if (($(this)).attr('id') === 'import_tampon')
+					$("#import_num_page").attr("disabled", "disabled");
+			}
+		});
 	</script>
+
 {% endblock %}

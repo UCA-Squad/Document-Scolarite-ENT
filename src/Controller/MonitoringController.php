@@ -101,8 +101,10 @@ class MonitoringController extends AbstractController
 			$etu = $parser->parseETU($data->getEtu());
 			$finder = new CustomFinder();
 
+			$admin = in_array("ROLE_ADMIN", $this->getUser()->getRoles());
+
 			$repo = $this->getDoctrine()->getManager()->getRepository(ImportedData::class);
-			$bddData = $mode == ImportedData::RN ? $repo->findRn($data, $this->getUser()->getUsername()) : $repo->findAttest($data, $this->getUser()->getUsername());
+			$bddData = $mode == ImportedData::RN ? $repo->findRn($data, $this->getUser()->getUsername(), $admin) : $repo->findAttest($data, $this->getUser()->getUsername(), $admin);
 
 			$error = true;
 			if ($bddData != null) {

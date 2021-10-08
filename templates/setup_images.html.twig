@@ -78,7 +78,11 @@
                     window.location = "{{ mode }}" == 0 ? "{{ path('selection_rn') }}" : "{{ path('selection_attests') }}";
                 },
                 error: function (error) {
-                    console.log(error);
+                    document.getElementById("anim").style.visibility = "collapse";
+                    document.getElementById("main").style.opacity = '1';
+                    document.getElementById("btn").disabled = false;
+                    $('#draggable').draggable("enable");
+                    alert("Une erreur est survenue.")
                 }
             });
 

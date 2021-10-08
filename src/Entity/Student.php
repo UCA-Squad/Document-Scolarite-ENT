@@ -6,7 +6,7 @@ namespace App\Entity;
 
 use App\Logic\CustomFinder;
 
-class Student
+class Student implements \JsonSerializable
 {
 	protected $numero;
 	protected $name;
@@ -157,5 +157,10 @@ class Student
 	protected function setBirthday($birthday): void
 	{
 		$this->birthday = $birthday;
+	}
+
+	public function jsonSerialize()
+	{
+		return $this->getNumero();
 	}
 }
