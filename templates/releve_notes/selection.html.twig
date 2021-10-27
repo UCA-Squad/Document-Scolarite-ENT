@@ -100,8 +100,10 @@
 			<button id="btn_reload" style="margin-left: 10px;visibility: hidden" class="btn btn-primary">
 				Annuler
 			</button>
-			<a class="btn btn-primary" style="margin-left: 30px" href="{{ path('rebuild_doc', {'mode' : mode}) }}">Document
-				complet</a>
+			{% if tampon %}
+				<a class="btn btn-primary" style="margin-left: 30px" href="{{ path('rebuild_doc', {'mode' : mode}) }}">Document
+					complet</a>
+			{% endif %}
 		</div>
 
 		<div class="row justify-content-md-center collapse" id="pg_container"

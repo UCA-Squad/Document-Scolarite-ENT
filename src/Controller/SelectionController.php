@@ -18,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -44,16 +45,17 @@ class SelectionController extends AbstractController
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
-	public function selection_rn(IEtuParser $parser, ImportedDataRepository $repo)
+	public function selection_rn(IEtuParser $parser, ImportedDataRepository $repo, SessionInterface $session)
 	{
 		$redirect = $this->selection(ImportedData::RN);
 		if ($redirect)
 			return $this->redirectToRoute('import_rn');
 
+		$tampon = $session->remove('tampon') !== null ?? false;
 		$bddData = $repo->findLastRnData($this->getUser()->getUsername());
 		$etu = $this->LoadEtu($parser, ImportedData::RN);
 
-		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::RN]);
+		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::RN, 'tampon' => $tampon]);
 	}
 
 	/**
@@ -63,16 +65,17 @@ class SelectionController extends AbstractController
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
-	public function selection_attests(IEtuParser $parser, ImportedDataRepository $repo)
+	public function selection_attests(IEtuParser $parser, ImportedDataRepository $repo, SessionInterface $session)
 	{
 		$redirect = $this->selection(ImportedData::ATTEST);
 		if ($redirect)
 			return $this->redirectToRoute('import_attests');
 
+		$tampon = $session->get('tampon') !== null ?? false;
 		$bddData = $repo->findLastAttestData($this->getUser()->getUsername());
 		$etu = $this->LoadEtu($parser, ImportedData::ATTEST);
 
-		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::ATTEST]);
+		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::ATTEST, 'tampon' => $tampon]);
 	}
 
 	private function selection(int $mode): bool
@@ -154,7 +157,7 @@ class SelectionController extends AbstractController
 	/**
 	 * @Route("/rebuild/{mode}", name="rebuild_doc")
 	 */
-	public function reBuild(int $mode)
+	public function reBuild(int $mode, IEtuParser $parser, CustomFinder $finder)
 	{
 		$folder = $this->file_access->getTmpByMode($mode);
 		$files = $this->finder->getFiles($folder);
@@ -162,7 +165,16 @@ class SelectionController extends AbstractController
 
 		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 
-		foreach ($files as $file) {
+		// Trie des étudiants par nom,prenom
+		$etu = $parser->parseETU($this->file_access->getEtuByMode($mode));
+		usort($etu, function ($a, $b) {
+			$cmpNom = strcmp($a->getName(), $b->getName());
+			$cmpPrenom = strcmp($a->getSurname(), $b->getSurname());
+			return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
+		});
+
+		foreach ($etu as $stud) {
+			$file = $folder . $stud->getNumero() . "/" . $finder->getFirstFile($folder . $stud->getNumero());
 			$filepath = str_replace(' ', "\ ", $file);
 			$filepath = str_replace('(', "\(", $filepath);
 			$filepath = str_replace(')', "\)", $filepath);

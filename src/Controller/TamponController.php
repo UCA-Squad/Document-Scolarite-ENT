@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -56,7 +57,7 @@ class TamponController extends AbstractController
 	 * @return JsonResponse
 	 * @Route("/apply_images", name="apply_images")
 	 */
-	public function apply_images(Request $request, PDF $pdfTool, EtuParser $parser, ImportedDataRepository $repo, FileAccess $file_acces): JsonResponse
+	public function apply_images(Request $request, PDF $pdfTool, EtuParser $parser, ImportedDataRepository $repo, FileAccess $file_acces, SessionInterface $session): JsonResponse
 	{
 		$tampon_position = $request->get('tampon');
 		$mode = $request->get('mode');
@@ -65,19 +66,20 @@ class TamponController extends AbstractController
 			return new JsonResponse("Missing variable", 404);
 
 		try {
-		$etu_file = $file_acces->getEtuByMode($mode);
-		$tmp_folder = $file_acces->getTmpByMode($mode);
-		$gsPdf = $file_acces->getPdfByMode($mode);
-		$data = $mode == 0 ? $repo->findLastRnData($this->getUser()->getUsername()) : $repo->findLastAttestData($this->getUser()->getUsername());
+			$etu_file = $file_acces->getEtuByMode($mode);
+			$tmp_folder = $file_acces->getTmpByMode($mode);
+			$gsPdf = $file_acces->getPdfByMode($mode);
+			$data = $mode == 0 ? $repo->findLastRnData($this->getUser()->getUsername()) : $repo->findLastAttestData($this->getUser()->getUsername());
 
-		$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
-		$pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
-		$pdfTool->setupImage($file_acces->getTamponByMode($mode)); //
-		$etu = $parser->parseETU($etu_file);
-		$indexes = $pdfTool->indexPages($parser, $gsPdf, $etu);
-		$pdfTool->truncateFile($parser, $gsPdf, $data, $tmp_folder, $indexes, $etu);
+			$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
+			$pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
+			$pdfTool->setupImage($file_acces->getTamponByMode($mode)); //
+			$etu = $parser->parseETU($etu_file);
+			$indexes = $pdfTool->indexPages($parser, $gsPdf, $etu);
+			$pdfTool->truncateFile($parser, $gsPdf, $data, $tmp_folder, $indexes, $etu);
 
-		$this->clearTamponFiles($file_acces, new CustomFinder(), $mode);
+			$this->clearTamponFiles($file_acces, new CustomFinder(), $mode);
+			$session->set('tampon', true);
 
 		} catch (\Exception $e) {
 			return new JsonResponse($e->getMessage(), 404);
