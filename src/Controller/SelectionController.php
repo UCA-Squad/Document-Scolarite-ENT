@@ -7,14 +7,18 @@ namespace App\Controller;
 use App\Entity\ImportedData;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
+use App\Logic\PDF;
+use App\Logic\PdfResponse;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -145,5 +149,33 @@ class SelectionController extends AbstractController
 		else                                  // else réimport
 			$em->remove($data->getLastHistory());
 		$em->flush();
+	}
+
+	/**
+	 * @Route("/rebuild/{mode}", name="rebuild_doc")
+	 */
+	public function reBuild(int $mode)
+	{
+		$folder = $this->file_access->getTmpByMode($mode);
+		$files = $this->finder->getFiles($folder);
+		$new_path = $folder . 'rebuild.pdf';
+
+		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
+
+		foreach ($files as $file) {
+			$cmd .= str_replace(' ', "\ ", $file) . " ";
+		}
+
+		try {
+			$proc = Process::fromShellCommandline($cmd);
+			$proc->setTimeout(null);
+			$proc->setIdleTimeout(null);
+			$proc->run();
+
+			$index = $this->finder->getFileIndex($folder, "rebuild.pdf");
+			return PdfResponse::getPdfResponse($index, $folder);
+		} catch (\Exception $e) {
+			return "";
+		}
 	}
 }
