@@ -163,7 +163,10 @@ class SelectionController extends AbstractController
 		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 
 		foreach ($files as $file) {
-			$cmd .= str_replace(' ', "\ ", $file) . " ";
+			$filepath = str_replace(' ', "\ ", $file);
+			$filepath = str_replace('(', "\(", $filepath);
+			$filepath = str_replace(')', "\)", $filepath);
+			$cmd .= $filepath . " ";
 		}
 
 		try {
