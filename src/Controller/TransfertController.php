@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -34,13 +35,15 @@ class TransfertController extends AbstractController
 	private $finder;
 	private $params;
 	private $docapost;
+	private $session;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost, SessionInterface $session)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
 		$this->params = $params;
 		$this->docapost = $docapost;
+		$this->session = $session;
 	}
 
 	/**
@@ -116,9 +119,18 @@ class TransfertController extends AbstractController
 		} else {
 			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
 		}
-//		$this->finder->deleteDirectory($from);
+		$this->addTransfertToSession($to . $num . '/' . $fileFrom);
 		$this->update_transfered_files($mode, $from, $ids ?? []);
 		return true;
+	}
+
+	private function addTransfertToSession(string $pathname)
+	{
+		$transfered = $this->session->get('transfered');
+		if (!isset($transfered))
+			$transfered = [];
+		$transfered[] = $pathname;
+		$this->session->set('transfered', $transfered);
 	}
 
 	/**
@@ -140,9 +152,9 @@ class TransfertController extends AbstractController
 		$em->flush();
 
 		// Si on a transféré tous les documents séléctionnés
-		if ($data->getLastHistory()->getNbFiles() == $data->getNbStudents() - count($ids)) {
-			$this->finder->deleteDirectory($from);
-		}
+//		if ($data->getLastHistory()->getNbFiles() == $data->getNbStudents() - count($ids)) {
+//			$this->finder->deleteDirectory($from);
+//		}
 	}
 
 	/**

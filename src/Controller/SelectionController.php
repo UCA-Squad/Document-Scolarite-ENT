@@ -16,7 +16,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Process\Process;
@@ -42,6 +45,7 @@ class SelectionController extends AbstractController
 	 * @Cache(vary={"no-cache", "must-revalidate", "no-store"})
 	 * @param IEtuParser $parser
 	 * @param ImportedDataRepository $repo
+	 * @param SessionInterface $session
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
@@ -51,7 +55,7 @@ class SelectionController extends AbstractController
 		if ($redirect)
 			return $this->redirectToRoute('import_rn');
 
-		$tampon = $session->remove('tampon') !== null ?? false;
+		$tampon = $session->get('tampon') !== null ?? false;
 		$bddData = $repo->findLastRnData($this->getUser()->getUsername());
 		$etu = $this->LoadEtu($parser, ImportedData::RN);
 
@@ -62,6 +66,7 @@ class SelectionController extends AbstractController
 	 * @Route("/attests", name="selection_attests")
 	 * @param IEtuParser $parser
 	 * @param ImportedDataRepository $repo
+	 * @param SessionInterface $session
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
@@ -155,14 +160,14 @@ class SelectionController extends AbstractController
 	}
 
 	/**
-	 * @Route("/rebuild/{mode}", name="rebuild_doc")
+	 * @Route("/rebuild", name="rebuild_doc")
 	 */
-	public function reBuild(int $mode, IEtuParser $parser, CustomFinder $finder)
+	public function reBuild(Request $request, IEtuParser $parser, CustomFinder $finder, SessionInterface $session)
 	{
+		$mode = 0;//$request->get('mode');
 		$folder = $this->file_access->getTmpByMode($mode);
-		$files = $this->finder->getFiles($folder);
 		$new_path = $folder . 'rebuild.pdf';
-
+//
 		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 
 		// Trie des étudiants par nom,prenom
@@ -173,9 +178,10 @@ class SelectionController extends AbstractController
 			return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
 		});
 
-		foreach ($etu as $stud) {
-			$file = $folder . $stud->getNumero() . "/" . $finder->getFirstFile($folder . $stud->getNumero());
-			$filepath = str_replace(' ', "\ ", $file);
+		$transfered = $session->get('transfered');
+
+		foreach ($transfered as $transfer) {
+			$filepath = str_replace(' ', "\ ", $transfer);
 			$filepath = str_replace('(', "\(", $filepath);
 			$filepath = str_replace(')', "\)", $filepath);
 			$cmd .= $filepath . " ";
@@ -188,9 +194,39 @@ class SelectionController extends AbstractController
 			$proc->run();
 
 			$index = $this->finder->getFileIndex($folder, "rebuild.pdf");
-			return PdfResponse::getPdfResponse($index, $folder);
+			return new JsonResponse([
+				'index' => $index
+			], 200);
 		} catch (\Exception $e) {
 			return "";
 		}
+	}
+
+	private function getEtuTransfered(array $transfered, array $studs)
+	{
+		$res = [];
+		foreach ($studs as $stud) {
+			foreach ($transfered as $transfert) {
+				if (str_contains($transfert, $stud->getNumero())) {
+					$res[] = $stud;
+					break;
+				}
+			}
+		}
+		return $res;
+	}
+
+	/**
+	 * @Route("/rebuild/{mode}", name="get_rebuilded_doc")
+	 * @param int $mode
+	 * @param Request $request
+	 * @return BinaryFileResponse|Response
+	 */
+	public function get_rebuilded_doc(int $mode, Request $request)
+	{
+		$folder = $this->file_access->getTmpByMode($mode);
+		$index = $this->finder->getFileIndex($folder, "rebuild.pdf");
+
+		return PdfResponse::getPdfResponse($index, $folder);
 	}
 }

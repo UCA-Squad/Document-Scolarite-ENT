@@ -100,10 +100,6 @@
 			<button id="btn_reload" style="margin-left: 10px;visibility: hidden" class="btn btn-primary">
 				Annuler
 			</button>
-			{% if tampon %}
-				<a class="btn btn-primary" style="margin-left: 30px" href="{{ path('rebuild_doc', {'mode' : mode}) }}">Document
-					complet</a>
-			{% endif %}
 		</div>
 
 		<div class="row justify-content-md-center collapse" id="pg_container"
@@ -218,6 +214,13 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="rebuild_div" class="row justify-content-md-center collapse">
+		{% if tampon %}
+			<a class="btn btn-primary" id="btn_rebuild" style="margin-left: 30px" href="#">Reconstruire le
+				document</a>
+		{% endif %}
+	</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -329,7 +332,7 @@
 
             document.getElementById('students_tab').style.display = "none";
             document.getElementById('transfert_div').style.display = "none";
-            document.getElementById('cancel').style.display = "none";
+            // document.getElementById('cancel').style.display = "none";
             document.getElementById('btn_reload').style.display = "none";
             document.getElementById("title").classList.add("alert");
             document.getElementById("title").classList.add("alert-success");
@@ -389,7 +392,8 @@
 
         function send_mails(sending) {
             if (sending === false) {
-                window.location = "{{ path('scola') }}";
+                if ("{{ tampon == false }}" === "1")
+                    window.location = "{{ path('scola') }}";
             } else {
                 console.log("Sending mails - Exception : " + ids);
                 $.ajax({
@@ -401,14 +405,23 @@
                     },
                     success: function (msg) {
                         console.log("Succes mails");
-                        window.location = "{{ path('scola') }}";
+                        if ("{{ tampon == false }}" === "1")
+                            window.location = "{{ path('scola') }}";
                     },
                     error: function (msg) {
                         console.log("Error mails : " + msg);
                     }
                 });
             }
+            openRebuild();
         }
+
+        function openRebuild() {
+            $("#mail_div").addClass("collapse");
+            $("#mail_actions_div").addClass("collapse");
+            $("#rebuild_div").removeClass("collapse");
+        }
+
 	</script>
 
 	<script>
@@ -471,4 +484,35 @@
             });
         });
 	</script>
+
+	<script>
+        $("#btn_rebuild").click(function () {
+            Rebuild();
+            $("#btn_rebuild").click(function () {
+            });
+        });
+
+        function Rebuild() {
+            if ($("#btn_rebuild").attr("href") !== "#")
+                return;
+            $("#btn_rebuild").html("Construction en cours");
+            $("#btn_rebuild").addClass("progress-bar progress-bar-striped progress-bar-animated");
+            $.ajax({
+                method: 'POST',
+                url: '{{ path('rebuild_doc') }}',
+                data: {
+                    'mode': "{{ mode }}"
+                },
+                success: function (msg) {
+                    $("#btn_rebuild").removeClass("progress-bar progress-bar-striped progress-bar-animated");
+                    $("#btn_rebuild").attr("href", "{{ path('get_rebuilded_doc', {'mode': mode}) }}");
+                    $("#btn_rebuild").html("Télécharger le document complet");
+                },
+                error: function (msg) {
+                    console.log("rebuild error");
+                }
+            });
+        }
+	</script>
+
 {% endblock %}

@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -37,11 +38,13 @@ class ImportController extends AbstractController
 {
 	private $file_acess;
 	private $parser;
+	private $session;
 
-	public function __construct(FileAccess $file_acess, IEtuParser $parser)
+	public function __construct(FileAccess $file_acess, IEtuParser $parser, SessionInterface $session)
 	{
 		$this->file_acess = $file_acess;
 		$this->parser = $parser;
+		$this->session = $session;
 	}
 
 	/**
@@ -60,6 +63,9 @@ class ImportController extends AbstractController
 		$tampon_pdf = $this->file_acess->getPdfTamponByMode($mode);
 
 		$finder = new CustomFinder();
+
+		$this->session->remove('tampon');
+		$this->session->remove('transfered');
 
 		// Tamponnage vérif
 		if (is_dir($tampon_folder) && file_exists($tampon_image) && file_exists($tampon_pdf) && file_exists($pdf_file))
@@ -120,7 +126,7 @@ class ImportController extends AbstractController
 
 		return $this->render('releve_notes/index.html.twig', [
 			'form' => $form->createView(),
-			'cancel' => isset($error) ? $error : null,
+			'cancel' => $error ?? null,
 		]);
 	}
 
@@ -165,7 +171,7 @@ class ImportController extends AbstractController
 
 		return $this->render('attestations/index.html.twig', [
 			'form' => $form->createView(),
-			'cancel' => isset($error) ? $error : null
+			'cancel' => $error ?? null
 		]);
 	}
 
@@ -197,7 +203,6 @@ class ImportController extends AbstractController
 
 		// Images
 		if (isset($tampon_img)) {
-//			dd($this->file_acess->getTamponByMode($mode, 'd'));
 			$tampon_img->move($this->file_acess->getTamponByMode($mode, 'd'), $this->file_acess->getTamponByMode($mode, 'f'));
 		}
 
