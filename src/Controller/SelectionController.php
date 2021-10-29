@@ -164,7 +164,7 @@ class SelectionController extends AbstractController
 	 */
 	public function reBuild(Request $request, IEtuParser $parser, CustomFinder $finder, SessionInterface $session)
 	{
-		$mode = 0;//$request->get('mode');
+		$mode = $request->get('mode');
 		$folder = $this->file_access->getTmpByMode($mode);
 		$new_path = $folder . 'rebuild.pdf';
 //
