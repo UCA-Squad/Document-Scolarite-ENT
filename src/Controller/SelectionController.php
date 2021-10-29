@@ -170,18 +170,18 @@ class SelectionController extends AbstractController
 //
 		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 
-		// Trie des étudiants par nom,prenom
 		$etu = $parser->parseETU($this->file_access->getEtuByMode($mode));
-		usort($etu, function ($a, $b) {
-			$cmpNom = strcmp($a->getName(), $b->getName());
-			$cmpPrenom = strcmp($a->getSurname(), $b->getSurname());
+		$transfered = $this->getEtuTransfered($session->get('transfered'), $etu);
+
+		// Trie des étudiants par nom,prenom
+		usort($transfered, function ($a, $b) {
+			$cmpNom = strcmp($a[0]->getName(), $b[0]->getName());
+			$cmpPrenom = strcmp($a[0]->getSurname(), $b[0]->getSurname());
 			return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
 		});
 
-		$transfered = $session->get('transfered');
-
-		foreach ($transfered as $transfer) {
-			$filepath = str_replace(' ', "\ ", $transfer);
+		foreach ($transfered as $key => $transfer) {
+			$filepath = str_replace(' ', "\ ", $transfer[1]);
 			$filepath = str_replace('(', "\(", $filepath);
 			$filepath = str_replace(')', "\)", $filepath);
 			$cmd .= $filepath . " ";
@@ -208,7 +208,7 @@ class SelectionController extends AbstractController
 		foreach ($studs as $stud) {
 			foreach ($transfered as $transfert) {
 				if (str_contains($transfert, $stud->getNumero())) {
-					$res[] = $stud;
+					$res[$stud->getNumero()] = [$stud, $transfert];
 					break;
 				}
 			}
