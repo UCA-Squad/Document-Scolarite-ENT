@@ -162,13 +162,11 @@ class SelectionController extends AbstractController
 	/**
 	 * @Route("/rebuild", name="rebuild_doc")
 	 */
-	public function reBuild(Request $request, IEtuParser $parser, CustomFinder $finder, SessionInterface $session)
+	public function reBuild(Request $request, IEtuParser $parser, CustomFinder $finder, SessionInterface $session): JsonResponse
 	{
 		$mode = $request->get('mode');
 		$folder = $this->file_access->getTmpByMode($mode);
 		$new_path = $folder . 'rebuild.pdf';
-//
-		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 
 		$etu = $parser->parseETU($this->file_access->getEtuByMode($mode));
 		$transfered = $this->getEtuTransfered($session->get('transfered'), $etu);
@@ -180,6 +178,7 @@ class SelectionController extends AbstractController
 			return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
 		});
 
+		$cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
 		foreach ($transfered as $key => $transfer) {
 			$filepath = str_replace(' ', "\ ", $transfer[1]);
 			$filepath = str_replace('(', "\(", $filepath);
@@ -194,15 +193,19 @@ class SelectionController extends AbstractController
 			$proc->run();
 
 			$index = $this->finder->getFileIndex($folder, "rebuild.pdf");
-			return new JsonResponse([
-				'index' => $index
-			], 200);
+			return new JsonResponse(['index' => $index], 200);
 		} catch (\Exception $e) {
-			return "";
+			return new JsonResponse(['index' => -1], 500);
 		}
 	}
 
-	private function getEtuTransfered(array $transfered, array $studs)
+	/**
+	 * Map les documents transférés à l'étudiant correspondant.
+	 * @param array $transfered
+	 * @param array $studs
+	 * @return array
+	 */
+	private function getEtuTransfered(array $transfered, array $studs): array
 	{
 		$res = [];
 		foreach ($studs as $stud) {

@@ -21,13 +21,23 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ScolaController extends AbstractController
 {
+
+	private $file_access;
+	private $finder;
+
+	public function __construct(FileAccess $fileAccess, CustomFinder $finder)
+	{
+		$this->file_access = $fileAccess;
+		$this->finder = $finder;
+	}
+
 	/**
 	 * @Route("/search", name="student_search")
 	 * @param Request $request
 	 * @param LDAP $ldap
-	 * @return RedirectResponse|Response
+	 * @return Response
 	 */
-	public function search(Request $request, LDAP $ldap, FileAccess $fileAccess, CustomFinder $finder)
+	public function search(Request $request, LDAP $ldap): Response
 	{
 		$student_form = $this->get("form.factory")->createNamedBuilder("form_by_num")
 			->add('num', TextType::class, ['label' => 'Numéro étudiant', 'attr' => ['pattern' => "\d+"]])
@@ -45,34 +55,13 @@ class ScolaController extends AbstractController
 		if ($student_form->isSubmitted() && $student_form->isValid()) {
 			$num = $student_form->get('num')->getData();
 			$users = $ldap->search("(CLFDcodeEtu=$num)", "ou=people,", ["eduPersonAffiliation", "CLFDcodeEtu", "sn", "givenName", "supannEntiteAffectationPrincipale"]);
-
-			$filtered_users = [];
-			foreach ($users as $user) {
-				if ($user->hasAttribute("CLFDcodeEtu") && in_array("student", $user->getAttribute("eduPersonAffiliation"))) {
-					$num = $user->getAttribute("CLFDcodeEtu")[0];
-					$nb_rn = count($finder->getFilesName($fileAccess->getRn() . $num . '/'));
-					$nb_attest = count($finder->getFilesName($fileAccess->getAttest() . $num . '/'));
-					$user->setAttribute('nb_docs', [$nb_rn + $nb_attest]);
-					array_push($filtered_users, $user);
-				}
-			}
-//			return $this->redirectToRoute('etudiant_home', ['numero' => $num]);
+			$filtered_users = $this->getFilteredUsers($users);
 		}
 
 		if ($student_form_name->isSubmitted() && $student_form_name->isValid()) {
 			$name = $student_form_name->get('name')->getData();
 			$users = $ldap->search("(sn=$name)", "ou=people,", ["eduPersonAffiliation", "CLFDcodeEtu", "sn", "givenName", "supannEntiteAffectationPrincipale"]);
-
-			$filtered_users = [];
-			foreach ($users as $user) {
-				if ($user->hasAttribute("CLFDcodeEtu") && in_array("student", $user->getAttribute("eduPersonAffiliation"))) {
-					$num = $user->getAttribute("CLFDcodeEtu")[0];
-					$nb_rn = count($finder->getFilesName($fileAccess->getRn() . $num . '/'));
-					$nb_attest = count($finder->getFilesName($fileAccess->getAttest() . $num . '/'));
-					$user->setAttribute('nb_docs', [$nb_rn + $nb_attest]);
-					array_push($filtered_users, $user);
-				}
-			}
+			$filtered_users = $this->getFilteredUsers($users);
 		}
 
 		return $this->render('etudiant/search.html.twig', [
@@ -80,6 +69,21 @@ class ScolaController extends AbstractController
 			'form_by_name' => $student_form_name->createView(),
 			'users' => $filtered_users ?? null
 		]);
+	}
+
+	private function getFilteredUsers(array $users): array
+	{
+		$filtered_users = [];
+		foreach ($users as $user) {
+			if ($user->hasAttribute("CLFDcodeEtu") && in_array("student", $user->getAttribute("eduPersonAffiliation"))) {
+				$num = $user->getAttribute("CLFDcodeEtu")[0];
+				$nb_rn = count($this->finder->getFilesName($this->file_access->getRn() . $num . '/'));
+				$nb_attest = count($this->finder->getFilesName($this->file_access->getAttest() . $num . '/'));
+				$user->setAttribute('nb_docs', [$nb_rn + $nb_attest]);
+				array_push($filtered_users, $user);
+			}
+		}
+		return $filtered_users;
 	}
 
 }

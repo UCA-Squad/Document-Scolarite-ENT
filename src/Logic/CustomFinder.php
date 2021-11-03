@@ -35,7 +35,7 @@ class CustomFinder
 	 * @param string $directory
 	 * @return array
 	 */
-	public function getFiles(string $directory): array
+	public function getFilesPath(string $directory): array
 	{
 		$results = [];
 
@@ -47,6 +47,27 @@ class CustomFinder
 
 		foreach ($finder as $file) {
 			array_push($results, $file->getPathname());
+		}
+		return $results;
+	}
+
+	/**
+	 * Return each file in $directory
+	 * @param string $directory
+	 * @return array
+	 */
+	public function getFiles(string $directory): array
+	{
+		$results = [];
+
+		if (!is_dir($directory))
+			return $results;
+
+		$finder = new Finder();
+		$finder->ignoreDotFiles(true)->in($directory)->files();
+
+		foreach ($finder as $file) {
+			array_push($results, $file);
 		}
 		return $results;
 	}
