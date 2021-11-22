@@ -1,47 +1,47 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
-    <script type="text/javascript"
-            src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/loader.css') }}">
+	<script type="text/javascript"
+			src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="{{ asset('css/loader.css') }}">
 
 {% endblock %}
 
 {% block body %}
 
-    <div style="text-align: center">
-        <a id="cancel" style="float: left" class="btn btn-primary" href="{{ path('cancel_images', {'mode' : mode}) }}"><-</a>
-        <h2 id="title" style="display: inline-block;margin: 0 auto">Positionnement du tampon</h2>
-    </div>
+	<div style="text-align: center">
+		<a id="cancel" style="float: left" class="btn btn-primary" href="{{ path('cancel_images', {'mode' : mode}) }}"><-</a>
+		<h2 id="title" style="display: inline-block;margin: 0 auto">Positionnement du tampon</h2>
+	</div>
 
-    <div id="main" class="container">
+	<div id="main" class="container">
 
-        <div class="d-flex">
-            <div class="p-2">
-                <img ondrag="dragged(this)" style="z-index: 1" id="draggable" draggable="true"
-                     src="{{ asset("tampons/" ~ user ~ "/" ~ image.filename) }}">
-            </div>
-            <div class="ml-auto p-2">
-                <button id="btn" onclick="applyImages()" class="btn btn-primary">Appliquer les images</button>
-            </div>
-        </div>
+		<div class="d-flex">
+			<div class="p-2">
+				<img ondrag="dragged(this)" style="z-index: 1" id="draggable" draggable="true"
+					 src="{{ asset("tampons/" ~ user ~ "/" ~ image.filename) }}">
+			</div>
+			<div class="ml-auto p-2">
+				<button id="btn" onclick="applyImages()" class="btn btn-primary">Appliquer les images</button>
+			</div>
+		</div>
 
-        <div style="z-index: 0" class="row justify-content-md-center">
-            <iframe id="pdf" width="840px" height="1180px"
-                    src="{{ asset("tampons/" ~ user ~ '/' ~ pdf.filename) }}#zoom=100&pagemode=none&scrollbar=0&toolbar=0&statusbar=1&messages=0&navpanes=0"
-                    style="pointer-events: none;"></iframe>
-        </div>
+		<div style="z-index: 0" class="row justify-content-md-center">
+			<iframe id="pdf" width="840px" height="1180px"
+					src="{{ asset("tampons/" ~ user ~ '/' ~ pdf.filename) }}#zoom=100&pagemode=none&scrollbar=0&toolbar=0&statusbar=1&messages=0&navpanes=0"
+					style="pointer-events: none;"></iframe>
+		</div>
 
-    </div>
+	</div>
 
-    <div id="anim" style="visibility: hidden" class="centered">
-        <div class="loader"></div>
-    </div>
+	<div id="anim" style="visibility: hidden" class="centered">
+		<div class="loader"></div>
+	</div>
 
 {% endblock %}
 
 {% block javascripts %}
-    <script>
+	<script>
         setupAnim();
         window.onresize = () => setupAnim();
         window.onscroll = () => setupAnim();
@@ -71,11 +71,11 @@
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    'mode': "{{ mode }}",
+					{# 'mode': "{{ mode }}",#}
                     'tampon': position,
                 },
                 success: function () {
-                    window.location = "{{ mode }}" == 0 ? "{{ path('selection_rn') }}" : "{{ path('selection_attests') }}";
+                    window.location = "{{ path('truncate', {'mode': mode}) }}";
                 },
                 error: function (error) {
                     document.getElementById("anim").style.visibility = "collapse";
@@ -151,6 +151,6 @@
                 'y': position.y * 297 / pdf_height
             };
         }
-    </script>
+	</script>
 
 {% endblock %}

@@ -25,7 +25,7 @@ class EtuParser implements IEtuParser
 		return (int)$this->nb_doublons;
 	}
 
-	public function __construct(ContainerInterface $container, SerializerInterface $serializer)
+	public function __construct(ContainerInterface $container)
 	{
 		$this->container = $container;
 		$this->nb_doublons = 0;
@@ -39,7 +39,6 @@ class EtuParser implements IEtuParser
 
 		if ($this->name_regexes == null || $this->num_regexes == null)
 			throw new \Exception("L'un des fichiers regex json n'est pas valide");
-
 	}
 
 	/**
@@ -126,7 +125,8 @@ class EtuParser implements IEtuParser
 		return null;
 	}
 
-	function stripAccents($str) {
+	function stripAccents($str)
+	{
 		return strtr(utf8_decode($str), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
 	}
 

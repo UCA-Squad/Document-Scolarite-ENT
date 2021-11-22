@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Entity\ImportedData;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
-use App\Logic\PDF;
 use App\Logic\PdfResponse;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
@@ -15,7 +14,6 @@ use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -33,67 +31,66 @@ class SelectionController extends AbstractController
 {
 	private $file_access;
 	private $finder;
+	private $session;
 
-	public function __construct(FileAccess $file_access, CustomFinder $finder)
+	public function __construct(FileAccess $file_access, CustomFinder $finder, SessionInterface $session)
 	{
 		$this->file_access = $file_access;
 		$this->finder = $finder;
+		$this->session = $session;
 	}
 
 	/**
 	 * @Route("/releves", name="selection_rn")
 	 * @Cache(vary={"no-cache", "must-revalidate", "no-store"})
-	 * @param IEtuParser $parser
 	 * @param ImportedDataRepository $repo
-	 * @param SessionInterface $session
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
-	public function selection_rn(IEtuParser $parser, ImportedDataRepository $repo, SessionInterface $session)
+	public function selection_rn(ImportedDataRepository $repo)
 	{
 		$redirect = $this->selection(ImportedData::RN);
 		if ($redirect)
 			return $this->redirectToRoute('import_rn');
 
-		$tampon = $session->get('tampon') !== null ?? false;
+		$tampon = $this->session->get('tampon') !== null ?? false;
 		$bddData = $repo->findLastRnData($this->getUser()->getUsername());
-		$etu = $this->LoadEtu($parser, ImportedData::RN);
+		$etu = $this->LoadEtu(ImportedData::RN);
 
 		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::RN, 'tampon' => $tampon]);
 	}
 
 	/**
 	 * @Route("/attests", name="selection_attests")
-	 * @param IEtuParser $parser
 	 * @param ImportedDataRepository $repo
-	 * @param SessionInterface $session
 	 * @return RedirectResponse|Response
 	 * @throws NonUniqueResultException
 	 */
-	public function selection_attests(IEtuParser $parser, ImportedDataRepository $repo, SessionInterface $session)
+	public function selection_attests(ImportedDataRepository $repo)
 	{
 		$redirect = $this->selection(ImportedData::ATTEST);
 		if ($redirect)
 			return $this->redirectToRoute('import_attests');
 
-		$tampon = $session->get('tampon') !== null ?? false;
+		$tampon = $this->session->get('tampon') !== null ?? false;
 		$bddData = $repo->findLastAttestData($this->getUser()->getUsername());
-		$etu = $this->LoadEtu($parser, ImportedData::ATTEST);
+		$etu = $this->LoadEtu(ImportedData::ATTEST);
 
 		return $this->render('releve_notes/selection.html.twig', ['students' => $etu, 'bddData' => $bddData, 'mode' => ImportedData::ATTEST, 'tampon' => $tampon]);
 	}
 
 	private function selection(int $mode): bool
 	{
-		if (file_exists($this->file_access->getEtuByMode($mode)) && !empty($this->finder->getFilesName($this->file_access->getTmpByMode($mode))))
+		TamponController::clearTamponFiles($this->file_access, new CustomFinder(), $this->session, $mode);
+		if ($this->session->get('students') !== null && !empty($this->finder->getFilesName($this->file_access->getTmpByMode($mode))))
 			return false;
 		$this->clearTmpFiles($mode);
 		return true;
 	}
 
-	private function LoadEtu(IEtuParser $parser, int $mode): array
+	private function LoadEtu(int $mode): array
 	{
-		$etu = $parser->parseETU($this->file_access->getEtuByMode($mode));
+		$etu = $this->session->get('students');
 
 		foreach ($etu as $entry) {
 			$entry->LoadFile($this->file_access->getTmpByMode($mode), $this->file_access->getDirByMode($mode));
@@ -136,15 +133,15 @@ class SelectionController extends AbstractController
 	private function clearTmpFiles(int $mode)
 	{
 		$etu = $this->file_access->getEtuByMode($mode);
-		$tmp = $this->file_access->getTmpByMode($mode);
-
 		if (file_exists($etu)) unlink($etu);
 
+		$tmp = $this->file_access->getTmpByMode($mode);
 		$this->finder->deleteDirectory($tmp);
 	}
 
 	private function cancel(int $mode, ImportedData $data = null)
 	{
+		ImportController::clearCache($this->session, $this->file_access, $mode);
 		$this->clearTmpFiles($mode);
 
 		if ($data == null)
@@ -160,15 +157,16 @@ class SelectionController extends AbstractController
 	}
 
 	/**
+	 * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
 	 * @Route("/rebuild", name="rebuild_doc")
 	 */
-	public function reBuild(Request $request, IEtuParser $parser, CustomFinder $finder, SessionInterface $session): JsonResponse
+	public function reBuild(Request $request, SessionInterface $session): JsonResponse
 	{
 		$mode = $request->get('mode');
 		$folder = $this->file_access->getTmpByMode($mode);
 		$new_path = $folder . 'rebuild.pdf';
 
-		$etu = $parser->parseETU($this->file_access->getEtuByMode($mode));
+		$etu = $session->get('students');
 		$transfered = $this->getEtuTransfered($session->get('transfered'), $etu);
 
 		// Trie des étudiants par nom,prenom
@@ -220,12 +218,12 @@ class SelectionController extends AbstractController
 	}
 
 	/**
+	 * Retourne le document pdf rebuild sous forme de réponse PDF.
 	 * @Route("/rebuild/{mode}", name="get_rebuilded_doc")
 	 * @param int $mode
-	 * @param Request $request
 	 * @return BinaryFileResponse|Response
 	 */
-	public function get_rebuilded_doc(int $mode, Request $request)
+	public function get_rebuilded_doc(int $mode)
 	{
 		$folder = $this->file_access->getTmpByMode($mode);
 		$index = $this->finder->getFileIndex($folder, "rebuild.pdf");

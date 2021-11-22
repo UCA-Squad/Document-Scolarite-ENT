@@ -8,7 +8,6 @@ use App\Entity\ImportedData;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Logic\PDF;
-use App\Parser\EtuParser;
 use App\Repository\ImportedDataRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -28,18 +27,17 @@ class TamponController extends AbstractController
 	/**
 	 * @Route("/setup_images", name="setup_images")
 	 * @param Request $request
-	 * @param CustomFinder $finder
-	 * @param FileAccess $file_acces
+	 * @param FileAccess $file_access
 	 * @return Response
 	 */
-	public function setup_images(Request $request, CustomFinder $finder, FileAccess $file_acces): Response
+	public function setup_images(Request $request, FileAccess $file_access): Response
 	{
 		$mode = $request->get('mode');
 
-		$pdf_folder = $file_acces->getTamponFolder();
+		$pdf_folder = $file_access->getTamponFolder();
 
-		$image = new UploadedFile($pdf_folder . $file_acces->getTamponByMode($mode, 'f'), 'tampon_rn.png');
-		$pdf = new UploadedFile($pdf_folder . $file_acces->getPdfTamponByMode($mode, 'f'), 'pdf.pdf');
+		$image = new UploadedFile($pdf_folder . $file_access->getTamponByMode($mode, 'f'), 'tampon_rn.png');
+		$pdf = new UploadedFile($pdf_folder . $file_access->getPdfTamponByMode($mode, 'f'), 'pdf.pdf');
 		return $this->render('setup_images.html.twig', [
 			'image' => $image,
 			'pdf' => $pdf,
@@ -49,41 +47,20 @@ class TamponController extends AbstractController
 	}
 
 	/**
+	 * Enregistre dans la session la position du tampon.
 	 * @param Request $request
-	 * @param PDF $pdfTool
-	 * @param EtuParser $parser
-	 * @param ImportedDataRepository $repo
-	 * @param FileAccess $file_acces
+	 * @param SessionInterface $session
 	 * @return JsonResponse
 	 * @Route("/apply_images", name="apply_images")
 	 */
-	public function apply_images(Request $request, PDF $pdfTool, EtuParser $parser, ImportedDataRepository $repo, FileAccess $file_acces, SessionInterface $session): JsonResponse
+	public function apply_images(Request $request, SessionInterface $session): JsonResponse
 	{
 		$tampon_position = $request->get('tampon');
-		$mode = $request->get('mode');
 
-		if (!isset($tampon_position) || !isset($mode))
+		if (!isset($tampon_position))
 			return new JsonResponse("Missing variable", 404);
 
-		try {
-			$etu_file = $file_acces->getEtuByMode($mode);
-			$tmp_folder = $file_acces->getTmpByMode($mode);
-			$gsPdf = $file_acces->getPdfByMode($mode);
-			$data = $mode == 0 ? $repo->findLastRnData($this->getUser()->getUsername()) : $repo->findLastAttestData($this->getUser()->getUsername());
-
-			$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
-			$pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
-			$pdfTool->setupImage($file_acces->getTamponByMode($mode)); //
-			$etu = $parser->parseETU($etu_file);
-			$indexes = $pdfTool->indexPages($parser, $gsPdf, $etu);
-			$pdfTool->truncateFile($parser, $gsPdf, $data, $tmp_folder, $indexes, $etu);
-
-			$this->clearTamponFiles($file_acces, new CustomFinder(), $mode);
-			$session->set('tampon', true);
-
-		} catch (\Exception $e) {
-			return new JsonResponse($e->getMessage(), 404);
-		}
+		$session->set('tampon', $tampon_position);
 
 		return new JsonResponse();
 	}
@@ -94,34 +71,33 @@ class TamponController extends AbstractController
 	 * @param Request $request
 	 * @param CustomFinder $finder
 	 * @param FileAccess $file_access
+	 * @param SessionInterface $session
 	 * @return RedirectResponse
 	 */
-	public function cancel(Request $request, CustomFinder $finder, FileAccess $file_access): RedirectResponse
+	public function cancel(Request $request, CustomFinder $finder, FileAccess $file_access, SessionInterface $session): RedirectResponse
 	{
 		$mode = $request->get('mode');
 
-		$this->clearTamponFiles($file_access, $finder, $mode);
-
-		$etu_file = $file_access->getEtuByMode($mode);
-		if (file_exists($etu_file)) unlink($etu_file);
+		ImportController::clearCache($session, $file_access, $mode);
+		$this->clearTamponFiles($file_access, $finder, $session, $mode);
 
 		return $this->redirectToRoute($mode == ImportedData::RN ? 'import_rn' : 'import_attests');
 	}
 
 	/**
-	 * Supprime le tampon image, le pdf cible et le pdf complet
+	 * Supprime le tampon et le pdf de tamponnage.
 	 * @param FileAccess $file_access
 	 * @param CustomFinder $finder
+	 * @param SessionInterface $session
 	 * @param int $mode
 	 */
-	private function clearTamponFiles(FileAccess $file_access, CustomFinder $finder, int $mode)
+	public static function clearTamponFiles(FileAccess $file_access, CustomFinder $finder, SessionInterface $session, int $mode)
 	{
+//		$session->remove('tampon'); Besoin pour afficher la reconstruction du document ou non
 		$tampon_image = $file_access->getTamponByMode($mode);
 		$tampon_pdf = $file_access->getPdfTamponByMode($mode);
 		$tampon_folder = $file_access->getTamponFolder();
-		$pdf_file = $file_access->getPdfByMode($mode);
 
-		if (file_exists($pdf_file)) unlink($pdf_file);
 		if (file_exists($tampon_image)) unlink($tampon_image);
 		if (file_exists($tampon_pdf)) unlink($tampon_pdf);
 		// Si dossier vide on supprime le dossier de tamponnage

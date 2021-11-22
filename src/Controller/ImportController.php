@@ -11,16 +11,13 @@ use App\Form\ImportType;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Logic\PDF;
-use App\Parser\EtuParser;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
-use setasign\Fpdi\PdfParser\Filter\FilterException;
 use setasign\Fpdi\PdfParser\PdfParserException;
-use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use setasign\Fpdi\PdfReader\PdfReaderException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -36,13 +33,13 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ImportController extends AbstractController
 {
-	private $file_acess;
+	private $file_access;
 	private $parser;
 	private $session;
 
-	public function __construct(FileAccess $file_acess, IEtuParser $parser, SessionInterface $session)
+	public function __construct(FileAccess $file_access, IEtuParser $parser, SessionInterface $session)
 	{
-		$this->file_acess = $file_acess;
+		$this->file_access = $file_access;
 		$this->parser = $parser;
 		$this->session = $session;
 	}
@@ -54,13 +51,13 @@ class ImportController extends AbstractController
 	 */
 	private function selection_check(int $mode): ?RedirectResponse
 	{
-		$tmp_folder = $this->file_acess->getTmpByMode($mode);
-		$etu_file = $this->file_acess->getEtuByMode($mode);
-		$pdf_file = $this->file_acess->getPdfByMode($mode);
+		$tmp_folder = $this->file_access->getTmpByMode($mode);
+		$etu_file = $this->file_access->getEtuByMode($mode);
+		$pdf_file = $this->file_access->getPdfByMode($mode);
 
-		$tampon_folder = $this->file_acess->getTamponFolder();
-		$tampon_image = $this->file_acess->getTamponByMode($mode);
-		$tampon_pdf = $this->file_acess->getPdfTamponByMode($mode);
+		$tampon_folder = $this->file_access->getTamponFolder();
+		$tampon_image = $this->file_access->getTamponByMode($mode);
+		$tampon_pdf = $this->file_access->getPdfTamponByMode($mode);
 
 		$finder = new CustomFinder();
 
@@ -90,142 +87,151 @@ class ImportController extends AbstractController
 	/**
 	 * @Route("/releves", name="import_rn")
 	 * @param Request $request
-	 * @param IEtuParser $parser
 	 * @param PDF $pdfTool
-	 * @param FileAccess $file_access
 	 * @return RedirectResponse|Response
-	 * @throws CrossReferenceException
-	 * @throws FilterException
-	 * @throws PdfParserException
-	 * @throws PdfReaderException
-	 * @throws PdfTypeException
 	 */
-	public function import_rn(Request $request, IEtuParser $parser, PDF $pdfTool, FileAccess $file_access)
+	public function import_rn(Request $request, PDF $pdfTool): Response
 	{
-		$redirect = $this->selection_check(ImportedData::RN);
-		if (isset($redirect)) return $redirect;
-
-		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::IMPORT, "type" => ImportType::RELEVE]);
-		$form->handleRequest($request);
-
-		if ($form->isSubmitted() && $form->isValid()) {
-			$data = $form->getData();
-			$tampon_img = $form->get('tampon')->getData();
-			$pdfTool->setupRn();
-			try {
-				$infos = $this->import_process($pdfTool, $data, ImportedData::RN, $tampon_img);
-				if (!$infos)
-					return $this->redirectToRoute('selection_rn');
-				$solo_index = $this->extractFirstIndex($infos, $form->get('num_page')->getData());
-				$pdfTool->truncateFile($parser, $infos["gsPdf"], $data, $file_access->getPdfTamponRn('d'), $solo_index, $infos["etu"], true);
-				return $this->redirectToRoute('setup_images', ['mode' => ImportedData::RN]);
-			} catch (ImportException $e) {
-				$error = $e->getMessage();
-			}
-		}
-
-		return $this->render('releve_notes/index.html.twig', [
-			'form' => $form->createView(),
-			'cancel' => $error ?? null,
-		]);
+		return $this->import_generique($request, $pdfTool, ImportedData::RN);
 	}
 
 	/**
 	 * @Route("/attests", name="import_attests")
 	 * @param Request $request
-	 * @param IEtuParser $parser
 	 * @param PDF $pdfTool
-	 * @param FileAccess $file_access
-	 * @return RedirectResponse|Response
-	 * @throws CrossReferenceException
-	 * @throws FilterException
-	 * @throws PdfParserException
-	 * @throws PdfReaderException
-	 * @throws PdfTypeException
+	 * @return Response
 	 */
-	public function import_attests(Request $request, IEtuParser $parser, PDF $pdfTool, FileAccess $file_access)
+	public function import_attests(Request $request, PDF $pdfTool): Response
 	{
-		$redirect = $this->selection_check(ImportedData::ATTEST);
-		if (isset($redirect))
-			return $redirect;
+		return $this->import_generique($request, $pdfTool, ImportedData::ATTEST);
+	}
 
-		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::IMPORT, "type" => ImportType::ATTEST]);
+	/**
+	 * @Route("/truncate_unit", name="truncate_by_unit")
+	 */
+	public function truncateByUnit(Request $request, PDF $pdfTool, ImportedDataRepository $repo): JsonResponse
+	{
+		$mode = $request->get('mode');
+		$page = $request->get('page');
 
+		if (!isset($mode) || !isset($page))
+			return new JsonResponse("Paramètre incomplet", 404);
+
+		$tampon_position = $this->session->get('tampon');
+		if (isset($tampon_position)) {
+			$pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
+			$pdfTool->setupImage($this->file_access->getTamponByMode($mode));
+		}
+
+		$username = $this->getUser()->getUsername();
+		$importedData = $repo->findLastDataByMode($mode, $username);
+
+		$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
+
+		$tmp_folder = $this->file_access->getTmpByMode($mode);
+		$indexes = $this->session->get('indexes');
+		$etu = $this->session->get('students');
+
+		$page = $pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
+
+		return new JsonResponse($page);
+	}
+
+	private function import_generique(Request $request, PDF $pdfTool, int $mode): Response
+	{
+		$redirect = $this->selection_check($mode);
+		if (isset($redirect)) return $redirect;
+
+		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::IMPORT, "type" => $mode == ImportedData::RN ? ImportType::RELEVE : ImportType::ATTEST]);
 		$form->handleRequest($request);
 
 		if ($form->isSubmitted() && $form->isValid()) {
 			$data = $form->getData();
-			$tampon_img = $form->get('tampon')->getData();
-			$pdfTool->setupAttest();
-			try {
-				$infos = $this->import_process($pdfTool, $data, ImportedData::ATTEST, $tampon_img);
-				if (!$infos)
-					return $this->redirectToRoute('selection_attests');
-				$solo_index = $this->extractFirstIndex($infos, $form->get('num_page')->getData());
-				$pdfTool->truncateFile($parser, $infos["gsPdf"], $data, $this->getUser()->getUsername() . '/', $solo_index, $infos["etu"], true);
-				return $this->redirectToRoute('setup_images', ['mode' => ImportedData::ATTEST]);
-			} catch (ImportException $e) {
-				$error = $e->getMessage();
-			}
+			$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
+			$res = $this->import($mode, $pdfTool, $data, $form);
+			if (isset($res))
+				return $res;
+			return $this->redirectToRoute('truncate', ['mode' => $mode]);
 		}
 
-		return $this->render('attestations/index.html.twig', [
+		return $this->render('releve_notes/index.html.twig', [
 			'form' => $form->createView(),
-			'cancel' => $error ?? null
+			'cancel' => $error ?? null,
+			'mode' => $mode,
 		]);
 	}
 
 	/**
+	 * @Route("/truncate/{mode}", name="truncate")
+	 */
+	public function truncate(int $mode, PDF $pdfTool): Response
+	{
+		$pageCount = $pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
+		$pageFirst = $this->session->get('indexes') !== null ? array_key_first($this->session->get('indexes')['indexes']) : null;
+
+		return $this->render('truncate.html.twig', [
+			'mode' => $mode,
+			'pageCount' => $pageCount,
+			'pageFirst' => $pageFirst
+		]);
+	}
+
+	private function import(int $mode, PDF $pdfTool, ImportedData $data, FormInterface $form): ?Response
+	{
+		try {
+			$this->import_process($pdfTool, $data, $mode, $form->get('tampon')->getData());
+
+			if ($form->get('tampon')->getData() !== null) {
+				$solo_index = $this->extractFirstIndex($this->session->get('indexes'), $form->get('num_page')->getData());
+				$pdfTool->truncateFile($this->file_access->getPdfByMode($mode), $data, $this->getUser()->getUsername() . '/', $solo_index, $this->session->get('students'),
+					true);
+				return $this->redirectToRoute('setup_images', ['mode' => $mode]);
+			}
+
+		} catch (ImportException | PdfParserException | PdfReaderException $e) {
+			return null;
+		}
+		return null;
+	}
+
+	/**
+	 * Traitement commun : initialise les données.
 	 * @param PDF $pdfTool
 	 * @param ImportedData $data
 	 * @param int $mode
 	 * @param UploadedFile|null $tampon_img
-	 * @return array|null
-	 * @throws CrossReferenceException
-	 * @throws FilterException
+	 * @return void
 	 * @throws ImportException
-	 * @throws PdfParserException
-	 * @throws PdfReaderException
-	 * @throws PdfTypeException
 	 */
-	private function import_process(PDF $pdfTool, ImportedData $data, int $mode, UploadedFile $tampon_img = null): ?array
+	private function import_process(PDF $pdfTool, ImportedData $data, int $mode, UploadedFile $tampon_img = null)
 	{
 		// Rewrite the pdf file with GhostScript to use it with pdf lib
-		$gsPDF = $this->rewritePdf($data->getPdf(), $mode);
-		if ($gsPDF == "")
+		if (!$this->rewritePdf($data->getPdf(), $mode))
 			throw new ImportException("L'application n'a pas réussi à convertir le fichier " . $data->getPdf()->getClientOriginalName());
 
 		// Parse the file into Student array with the defined normalizer service
 		$etu = $this->parser->parseETU($data->getEtu());
-
+		$this->session->set('students', $etu);
 		// Move the file into the defined location
-		$data->getEtu()->move($this->file_acess->getEtuByMode($mode, 'd'), $this->file_acess->getEtuByMode($mode, 'f'));
+		$data->getEtu()->move($this->file_access->getEtuByMode($mode, 'd'), $this->file_access->getEtuByMode($mode, 'f'));
 
 		// Images
 		if (isset($tampon_img)) {
-			$tampon_img->move($this->file_acess->getTamponByMode($mode, 'd'), $this->file_acess->getTamponByMode($mode, 'f'));
+			$tampon_img->move($this->file_access->getTamponByMode($mode, 'd'), $this->file_access->getTamponByMode($mode, 'f'));
 		}
 
 		// Index process to handle pagination
-		$indexes = $pdfTool->indexPages($this->parser, $gsPDF, $etu);
+		$indexes = $pdfTool->indexPages($this->file_access->getPdfByMode($mode), $etu);
+		$this->session->set('indexes', $indexes);
 
 		if ($indexes === false) {
-			unlink($this->file_acess->getEtuByMode($mode));
+			unlink($this->file_access->getEtuByMode($mode));
 			throw new ImportException("L'application n'a pas réussi à extraire les informations d'un ou plusieurs étudiant(s)");
 		}
 
 		$data->LoadStudentData($etu[0], $indexes['date'], count($etu), $this->getUser()->getUsername());
 
 		$this->updateData($data);
-
-		if (!isset($tampon_img))
-			$pdfTool->truncateFile($this->parser, $gsPDF, $data, $this->file_acess->getTmpByMode($mode), $indexes, $etu);
-
-		return isset($tampon_img) ? [
-			"gsPdf" => $gsPDF,
-			"indexes" => $indexes,
-			"etu" => $etu
-		] : null;
 	}
 
 	/**
@@ -246,39 +252,39 @@ class ImportController extends AbstractController
 
 	/**
 	 * Extrait un index
-	 * @param array $infos
+	 * @param array $indexes
 	 * @param int $num_page
 	 * @return array
 	 */
-	private function extractFirstIndex(array $infos, int $num_page): array
+	private function extractFirstIndex(array $indexes, int $num_page): array
 	{
-		$max = count($infos["indexes"]["indexes"]);
-		$max += array_key_first($infos["indexes"]["indexes"]) - 1;
+		$max = count($indexes['indexes']);
+		$max += array_key_first($indexes['indexes']) - 1;
 
 		if ($num_page > $max)
 			$num_page = $max;
 
 		// Si la numérotation commence apres num_page
-		if ($num_page < array_key_first($infos["indexes"]["indexes"]))
-			$num_page = array_key_first($infos["indexes"]["indexes"]);
+		if ($num_page < array_key_first($indexes['indexes']))
+			$num_page = array_key_first($indexes['indexes']);
 
-		return $solo_index = [
-			"date" => $infos["indexes"]["date"],
+		return [
+			"date" => $indexes['date'],
 			"indexes" => [
-				"$num_page" => $infos["indexes"]["indexes"][$num_page]
+				"$num_page" => $indexes['indexes'][$num_page]
 			]
 		];
 	}
 
 	/**
-	 * Rewrite correctly the uploaded pdf and return the new file's path.
-	 * @param UploadedFile $pdf The uploaded pdf
+	 * Réécris le document PDF avec la librairie GhostScript.
+	 * @param UploadedFile $pdf Le document PDF.
 	 * @param int $mode
-	 * @return string The rewrited pdf path
+	 * @return bool Succès ou Échec.
 	 */
-	private function rewritePdf(UploadedFile $pdf, int $mode): string
+	private function rewritePdf(UploadedFile $pdf, int $mode): bool
 	{
-		$new_path = $this->file_acess->getPdfByMode($mode);
+		$new_path = $this->file_access->getPdfByMode($mode);
 
 		$cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' '" . $pdf->getPathname() . "'";
 		try {
@@ -287,8 +293,23 @@ class ImportController extends AbstractController
 			$proc->setIdleTimeout(null);
 			$proc->run();
 		} catch (\Exception $e) {
-			return "";
+			return false;
 		}
-		return $new_path;
+		return true;
+	}
+
+	/**
+	 * Supprime les fichiers et données mis en cache.
+	 */
+	public static function clearCache(SessionInterface $session, FileAccess $file_access, int $mode)
+	{
+		$session->remove('students');
+		$session->remove('indexes');
+
+		$pdf_file = $file_access->getPdfByMode($mode);
+		if (file_exists($pdf_file)) unlink($pdf_file);
+
+		$etu_file = $file_access->getEtuByMode($mode);
+		if (file_exists($etu_file)) unlink($etu_file);
 	}
 }

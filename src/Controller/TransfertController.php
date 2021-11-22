@@ -10,7 +10,6 @@ use App\Entity\Student;
 use App\Logic\CustomFinder;
 use App\Logic\DocapostFast;
 use App\Logic\FileAccess;
-use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,11 +17,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
 use Twig\Environment;
 
 /**
@@ -119,11 +116,20 @@ class TransfertController extends AbstractController
 		} else {
 			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
 		}
+
+		// Supprime les dossiers temporaires vides
+		if (is_dir($from . $num) && empty($this->finder->getFilesName($from . $num)))
+			$this->finder->deleteDirectory($from . $num);
+
 		$this->addTransfertToSession($to . $num . '/' . $fileFrom);
 		$this->update_transfered_files($mode, $from, $ids ?? []);
 		return true;
 	}
 
+	/**
+	 * Ajoute pathname à la liste (cache) des transferts effectués.
+	 * @param string $pathname
+	 */
 	private function addTransfertToSession(string $pathname)
 	{
 		$transfered = $this->session->get('transfered');
@@ -160,13 +166,12 @@ class TransfertController extends AbstractController
 	/**
 	 * @Route("/mail", name="send_mails")
 	 * @param Request $request
-	 * @param IEtuParser $parser
 	 * @param MailerInterface $mailer
 	 * @param Environment $twig
 	 * @param ImportedDataRepository $repo
 	 * @return JsonResponse
 	 */
-	public function send_mails(Request $request, IEtuParser $parser, MailerInterface $mailer, Environment $twig, ImportedDataRepository $repo): JsonResponse
+	public function send_mails(Request $request, MailerInterface $mailer, Environment $twig, ImportedDataRepository $repo): JsonResponse
 	{
 		$ids = $request->get('ids');
 		$mode = $request->get('mode');
@@ -175,7 +180,7 @@ class TransfertController extends AbstractController
 
 		$bddData = $repo->findLastDataByMode($mode, $this->getUser()->getUsername());
 
-		$students = $parser->parseETU($etu . $this->getUser()->getUsername() . '.etu');
+		$students = $this->session->get('students');
 
 		foreach ($students as $stud) {
 
