@@ -42,7 +42,7 @@ class History
 	private $nb_files;
 
 	/**
-	 * @ORM\ManyToOne(targetEntity="ImportedData", inversedBy="imported_data_id")
+	 * @ORM\ManyToOne(targetEntity="ImportedData", inversedBy="history")
 	 */
 	private $importedData;
 
