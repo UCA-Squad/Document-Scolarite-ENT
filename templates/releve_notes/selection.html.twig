@@ -395,7 +395,7 @@
         function send_mails(sending) {
             if (sending === false) {
                 if ("{{ tampon == false }}" === "1")
-                    window.location = "{{ path('scola') }}";
+                    window.location = "{{ mode == 1 ? path('cancel_attest') : path('cancel_rn') }}";
             } else {
                 console.log("Sending mails - Exception : " + ids);
                 $.ajax({
