@@ -149,11 +149,13 @@ class SelectionController extends AbstractController
 
 		$em = $this->getDoctrine()->getManager();
 
-		if (count($data->getHistory()) <= 1)    // If count histo == 1 => 1rst import
-			$em->remove($data);
-		else                                  // else réimport
-			$em->remove($data->getLastHistory());
-		$em->flush();
+		if ($data->getLastHistory()->getNbFiles() == 0) { // Si on stop avant le transfert
+			if (count($data->getHistory()) <= 1)    // If count histo == 1 => 1rst import
+				$em->remove($data);
+			else                                  // else réimport
+				$em->remove($data->getLastHistory());
+			$em->flush();
+		}
 	}
 
 	/**
