@@ -109,6 +109,9 @@ class SelectionController extends AbstractController
 		$data = $repo->findLastRnData($this->getUser()->getUsername());
 
 		$this->cancel(ImportedData::RN, $data);
+
+		if ($data->getLastHistory()->getNbFiles() > 0)
+			return $this->redirectToRoute('scola');
 		return $this->redirectToRoute('import_rn');
 	}
 
@@ -123,6 +126,8 @@ class SelectionController extends AbstractController
 		$data = $repo->findLastAttestData($this->getUser()->getUsername());
 
 		$this->cancel(ImportedData::ATTEST, $data);
+		if ($data->getLastHistory()->getNbFiles() > 0)
+			return $this->redirectToRoute('scola');
 		return $this->redirectToRoute('import_attests');
 	}
 
