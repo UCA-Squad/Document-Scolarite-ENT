@@ -221,6 +221,7 @@
 				document</a>
 		{% endif %}
 	</div>
+
 {% endblock %}
 
 {% block javascripts %}
@@ -374,6 +375,7 @@
                 },
                 error: function (msg) {
                     console.log(msg);
+                    alert("Une erreur est surevenue lors du transfert. Veuillez recommencer le processus pour les documents non transférés.")
                 }
             });
         }
@@ -510,6 +512,7 @@
                 },
                 error: function (msg) {
                     console.log("rebuild error");
+                    alert("Une erreur est survenue lors de la reconstruction du document.")
                 }
             });
         }
