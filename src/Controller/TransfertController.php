@@ -57,7 +57,7 @@ class TransfertController extends AbstractController
 			$result = $this->transfert(ImportedData::RN, $num, $ids);
 			return new JsonResponse($result);
 		} catch (\Exception $e) {
-			return new JsonResponse($e->getMessage());
+			return new JsonResponse($e->getMessage(), 500);
 		}
 	}
 
@@ -75,7 +75,7 @@ class TransfertController extends AbstractController
 			$result = $this->transfert(ImportedData::ATTEST, $num, $ids);
 			return new JsonResponse($result);
 		} catch (\Exception $e) {
-			return new JsonResponse($e->getMessage());
+			return new JsonResponse($e->getMessage(), 500);
 		}
 	}
 
