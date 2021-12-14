@@ -16,12 +16,12 @@ class StudentNormalizer extends ObjectNormalizer
         $surname = $data[2];
         $birthday = $data[3];
         $mail = empty($data[5]) ? $data[4] : $data[5];
-        $type = isset($data[6]) ? $data[6] : "";
-        $code = isset($data[7]) ? $data[7] : "";
+        $type = $data[6] ?? "";
+        $code = $data[7] ?? "";
 
         if (count($data) <= 12) {    // Releves
-            $libelle_obj = isset($data[8]) ? $data[8] : "";
-            $code_etape = isset($data[9]) ? $data[9] : "";
+            $libelle_obj = $data[8] ?? "";
+            $code_etape = $data[9] ?? "";
             $libelle = isset($data[11]) && $data[11] != "--" ? $data[11] : "";
         } else {                    // Attests
             $libelle_obj = $data[9];

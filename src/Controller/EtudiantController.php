@@ -28,8 +28,8 @@ class EtudiantController extends AbstractController
 		$dir_attest = $this->getParameter("output_dir_attest") . (is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero);
 		$finder = new CustomFinder();
 
-		$rns = $finder->getFilesName($dir_rn);
-		$attests = $finder->getFilesName($dir_attest);
+		$rns = $finder->getFiles($dir_rn);
+		$attests = $finder->getFiles($dir_attest);
 
 		return $this->render('public/etudiant.html.twig', [
 			'rns' => $rns,

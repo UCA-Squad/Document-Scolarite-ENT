@@ -176,7 +176,7 @@ class ImportedData
 
 	public function LoadStudentData(Student $stud, string $year, int $nb_students, string $username)
 	{
-		if (!(isset($stud)) || $stud == null)
+		if (!(isset($stud)))
 			return;
 		$this->year = $year;
 		$this->type = $stud->getType();

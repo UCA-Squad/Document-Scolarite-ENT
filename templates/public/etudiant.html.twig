@@ -12,7 +12,7 @@
 		<h1 style="display: inline-block;margin: 0 auto">Documents de scolarité</h1>
 	</div>
 
-	<div class="container">
+	<div class="container-fluid">
 		<div style="margin-top: 40px" class="row">
 
 			<div class="col-6">
@@ -25,7 +25,14 @@
 					<p>Les <strong>relevés de notes</strong> suivants sont disponibles :</p>
 					<ul>
 						{% for index,file in rns %}
-							<li><a href="{{ path('download_rn',{'numero':numero,'index':index}) }}">{{ file }}</a></li>
+							<li>
+								<a href="{{ path('download_rn',{'numero':numero,'index':index}) }}">
+									{{ file.filename }}
+									{% if is_scola %}
+										({{ file.cTime|date("d/m/Y") }})
+									{% endif %}
+								</a>
+							</li>
 						{% endfor %}
 					</ul>
 				{% endif %}
@@ -41,7 +48,13 @@
 					<p>Les <strong>attestations de réussite</strong> suivantes sont disponibles :</p>
 					<ul>
 						{% for index,file in attests %}
-							<li><a href="{{ path('download_attest',{'numero':numero,'index':index}) }}">{{ file }}</a></li>
+							<li><a href="{{ path('download_attest',{'numero':numero,'index':index}) }}">
+									{{ file.filename }}
+									{% if is_scola %}
+										({{ file.cTime|date("d/m/Y") }})
+									{% endif %}
+								</a>
+							</li>
 						{% endfor %}
 					</ul>
 				{% endif %}

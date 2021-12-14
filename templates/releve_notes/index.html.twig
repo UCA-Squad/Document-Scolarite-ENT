@@ -3,64 +3,48 @@
 {% block title %}Extraction RN{% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/loader.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('css/loader.css') }}">
+	<style>
+        .my_container {
+            width: 70%;
+            margin: auto;
+        }
+	</style>
 {% endblock %}
 
 {% block body %}
 
-    <div style="text-align: center">
-        <a style="float: left" class="btn btn-primary" href="{{ path('scola') }}"><-</a>
-        <h2 style="display: inline-block;margin: 0 auto">Extraction des relevés de notes</h2>
-    </div>
+	<div style="text-align: center">
+		<a style="float: left" class="btn btn-primary" href="{{ path('scola') }}"><-</a>
+		<h2 style="display: inline-block;margin: 0 auto">Extraction
+			des {{ mode == 0 ? "relevés de notes" : "attestations de réussite" }}</h2>
+	</div>
 
-    {% form_theme form 'bootstrap_4_layout.html.twig' %}
-    <div id="form_container" style="margin-top: 40px" class="container">
-        {{ form(form) }}
-    </div>
+	<div class="my_container">
 
-    {% if cancel %}
-        <div class="row justify-content-md-center" style="margin-top: 10px;margin-bottom: 10px">
-            <div class="bs-component">
-                <div class="alert alert-dismissible alert-warning">
-                    <button type="button" class="close" data-dismiss="alert">×</button>
-                    <p style="text-align: center">{{ cancel }}.</p>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+		{% form_theme form 'bootstrap_4_layout.html.twig' %}
+		<div id="form_container" style="margin-top: 40px" class="container">
+			{{ form(form) }}
+		</div>
 
-    <div id="anim" style="visibility: hidden" class="centered">
-        <div class="loader"></div>
-    </div>
+		{% if cancel %}
+			<div class="row justify-content-md-center" style="margin-top: 10px;margin-bottom: 10px">
+				<div class="bs-component">
+					<div class="alert alert-dismissible alert-warning">
+						<button type="button" class="close" data-dismiss="alert">×</button>
+						<p style="text-align: center">{{ cancel }}.</p>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+
+	</div>
 
 {% endblock %}
 
 
 {% block javascripts %}
-    <script>
-
-        var form = document.getElementsByName("import")[0];
-        form.addEventListener("submit", function (e) {
-            document.getElementById("anim").style.visibility = "visible";
-            document.getElementById("form_container").style.opacity = '0.4';
-        });
-
-        setupAnim();
-        window.onresize = () => setupAnim();
-
-        function setupAnim() {
-            var windowHeight = $(window).height();
-            var windowWidth = $(window).width();
-            var main = $("#anim");
-            $("#anim").css({
-                top: ((windowHeight / 2) - (main.height() / 2)) + "px",
-                left: ((windowWidth / 2) - (main.width() / 2)) + "px"
-            });
-        }
-
-    </script>
-
-    <script type="text/javascript">
+	<script type="text/javascript">
         $("#import_num_page").attr("disabled", "disabled");
         $('.custom-file input').change(function (e) {
             if (e.target.files.length) {
@@ -73,5 +57,5 @@
                     $("#import_num_page").attr("disabled", "disabled");
             }
         });
-    </script>
+	</script>
 {% endblock %}

@@ -4,6 +4,7 @@ namespace App\Logic;
 
 
 use App\Entity\ImportedData;
+use App\Parser\EtuParser;
 use App\Parser\IEtuParser;
 use Exception;
 use setasign\Fpdi\Fpdi;
@@ -14,26 +15,30 @@ use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use setasign\Fpdi\PdfReader\PdfReaderException;
 use Smalot\PdfParser\Parser;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * Classe permettant d'effectuer des actions sur des documents PDF.
+ */
 class PDF
 {
 	protected $dateRegex = '/(A?a?nné?e+.*)?([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
 	protected $dateRegex1 = '/([Aa]\s?n\s?n\s?é?\s?e+\s?.*)([0-9 ]{8,})[ \/-]+[0-9 ]{3,}([0-9 ]{3,})/';
 
 	protected $getFilename = ImportedData::RN;
-
 	protected $env;
 
 	private $image_position = null;
-
 	private $image = null;
 
 	private $file_access;
+	private $parser;
 
-	public function __construct(ParameterBagInterface $params, FileAccess $file_access)
+	public function __construct(ParameterBagInterface $params, FileAccess $file_access, EtuParser $parser)
 	{
 		$this->env = $params->get('kernel.environment');
 		$this->file_access = $file_access;
+		$this->parser = $parser;
 	}
 
 	/**
@@ -69,13 +74,12 @@ class PDF
 
 	/**
 	 * Return an array mapping each pdf page to a student
-	 * @param IEtuParser $etu_parser
 	 * @param string $filename
 	 * @param array $students
 	 * @return array|bool
 	 * @throws Exception
 	 */
-	public function indexPages(IEtuParser $etu_parser, string $filename, array $students)
+	public function indexPages(string $filename, array $students)
 	{
 		$parser = new Parser();
 		$pdf = $parser->parseFile($filename);
@@ -88,9 +92,9 @@ class PDF
 		foreach ($pdf->getPages() as $page) {
 			$i++;
 			$content = $page->getText();
-			$index = $etu_parser->findStudentByNum($content, $students);
+			$index = $this->parser->findStudentByNum($content, $students);
 			if ($index === false)
-				$index = $etu_parser->findStudentByName($content, $students);
+				$index = $this->parser->findStudentByName($content, $students);
 
 			// Date modif here - A verifier
 			if ($pageStudent['date'] == "" && preg_match($this->dateRegex, $content, $ymatches)) {
@@ -113,7 +117,7 @@ class PDF
 		if (!isset($pageStudent['date']) || $pageStudent['date'] == "")
 			throw new Exception("Impossible d'extraire l'année universitaire");
 
-		if (count($students) + $etu_parser->getNbDoublons() === count($pageStudent['indexes']) ||
+		if (count($students) + $this->parser->getNbDoublons() === count($pageStudent['indexes']) ||
 			count($students) + $this->getNbDoublonPagination($pageStudent) === count($pageStudent['indexes']))
 			return $pageStudent;
 
@@ -141,12 +145,82 @@ class PDF
 		return $nb;
 	}
 
+	public function getPageCount(string $filename): int
+	{
+		$pdf = new Fpdi();
+		$pageCount = $pdf->setSourceFile($filename);
+		$pdf->Close();
+		return $pageCount;
+	}
+
 	/**
-	 * @param IEtuParser $parser
-	 * @param string $filename
+	 * Sépare les différentes pages d'un document PDF en se basant sur un tableau d'index.
+	 * @param string $filename Le document PDF a éclater
 	 * @param ImportedData $data
 	 * @param string $directory
-	 * @param array $index
+	 * @param array $index Le tableau d'index permettant la séparation des pages
+	 * @param array $etu
+	 * @param int $i
+	 * @param bool $setup
+	 * @return int
+	 * @throws CrossReferenceException
+	 * @throws FilterException
+	 * @throws PdfParserException
+	 * @throws PdfReaderException
+	 * @throws PdfTypeException
+	 */
+	public function truncateFileByPage(string $filename, ImportedData $data, string $directory, array $index, array $etu, int $i, bool $setup = false): int
+	{
+		// Operations on big pdf file take more than 120s then disable 'max_execution_time'
+		// ini_set("max_execution_time", 0);
+
+		if (!is_dir($directory) && !$setup) {
+			mkdir($directory, 0777, true);
+		}
+
+		$pdf = new Fpdi();
+		$pageCount = $pdf->setSourceFile($filename);
+
+		if ($i > $pageCount)
+			return 0;
+
+		if (isset($index['indexes'][$i]['num'])) {
+			$ret = $index['indexes'][$i]['num'];
+			$stud = $etu[$ret];
+			$newPdf = new Fpdi();
+
+			if (!$setup) $outputDir = $directory . $stud->getNumero();
+			else $outputDir = $this->file_access->getPdfTamponByMode($this->getFilename, 'd');
+
+			if (!is_dir($outputDir)) {
+				mkdir($outputDir);
+			}
+			$newPdf->setSourceFile($filename);
+			// While the page owner is the same, stack the page on the same pdf document
+			while (isset($index['indexes'][$i]['num']) && $index['indexes'][$i]['num'] === $ret) {
+				$newPdf->addPage();
+				$newPdf->useTemplate($newPdf->importPage($i));
+				$i++;
+			}
+			if ($this->image_position != null && $this->image != null)
+				$newPdf->Image($this->image, $this->image_position['x'], $this->image_position['y'], 0, 0);
+			if ($this->getFilename == ImportedData::RN)
+				$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($index['date'], $stud, $data));
+			else
+				$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($index['date'], $stud, $data));
+			$newPdf->output($str, 'F');
+			$newPdf->Close();
+			return $i;
+		}
+		return 0;
+	}
+
+	/**
+	 * Sépare les différentes pages d'un document PDF en se basant sur un tableau d'index.
+	 * @param string $filename Le document PDF à éclater
+	 * @param ImportedData $data
+	 * @param string $directory
+	 * @param array $index Le tableau d'index permettant la séparation des pages
 	 * @param array $etu
 	 * @param bool $setup
 	 * @return int
@@ -156,7 +230,7 @@ class PDF
 	 * @throws PdfReaderException
 	 * @throws PdfTypeException
 	 */
-	public function truncateFile(IEtuParser $parser, string $filename, ImportedData $data, string $directory, array $index, array $etu, bool $setup = false): int
+	public function truncateFile(string $filename, ImportedData $data, string $directory, array $index, array $etu, bool $setup = false): int
 	{
 		// Operations on big pdf file take more than 120s then disable 'max_execution_time'
 		// ini_set("max_execution_time", 0);
@@ -191,9 +265,9 @@ class PDF
 				if ($this->image_position != null && $this->image != null)
 					$newPdf->Image($this->image, $this->image_position['x'], $this->image_position['y'], 0, 0);
 				if ($this->getFilename == ImportedData::RN)
-					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $parser->getReleveFileName($index['date'], $stud, $data));
+					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($index['date'], $stud, $data));
 				else
-					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $parser->getAttestFileName($index['date'], $stud, $data));
+					$str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($index['date'], $stud, $data));
 				$newPdf->output($str, 'F');
 				$newPdf->Close();
 				$pdfCount++;

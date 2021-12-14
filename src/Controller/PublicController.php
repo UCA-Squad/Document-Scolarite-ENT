@@ -11,6 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class PublicController extends AbstractController
 {
 	/**
+	 * Route principale.
+	 * Redirige les étudiants vers leurs documents.
+	 * Redirige les autres utilisateurs (gestionnaires / admin) sur l'écran de recherche.
 	 * @Route("/", name="home")
 	 */
 	public function index(): RedirectResponse
@@ -22,6 +25,7 @@ class PublicController extends AbstractController
 	}
 
 	/**
+	 * Redirige sur les actions possibles pour les gestionnaires.
 	 * @Route("/scola", name="scola")
 	 * @IsGranted("ROLE_SCOLA")
 	 */
