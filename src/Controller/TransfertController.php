@@ -107,6 +107,10 @@ class TransfertController extends AbstractController
 			rename($from . $num . '/' . $fileFrom, $from . $num . '/' . $randName);
 			// Envoi sur docapost
 			$id = $this->docapost->uploadDocument($from . $num . '/' . $randName, 'test');
+
+			$histo = $this->docapost->history($id);
+			dump($histo);
+
 			// Récupère le binaire pdf signé
 			$docaDoc = $this->docapost->downloadDocument($id);
 			// Écris le pdf reçu dans le dossier de destination

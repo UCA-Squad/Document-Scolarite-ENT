@@ -88,6 +88,24 @@ class DocapostFast
 		return $response->getContent();
 	}
 
+	public function history($id): string
+	{
+		$response = $this->sendQuery("GET", "$id/history");
+		return $response->getContent();
+	}
+
+	/**
+	 * @throws TransportExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ClientExceptionInterface
+	 */
+	public function historyDocument($id): string
+	{
+		$response = $this->sendQuery("GET", "$id/history");
+		return $response->getContent();
+	}
+
 	/**
 	 * @param string $method
 	 * @param string $uri
