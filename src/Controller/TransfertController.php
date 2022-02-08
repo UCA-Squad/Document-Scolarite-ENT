@@ -102,14 +102,19 @@ class TransfertController extends AbstractController
 
 		if ($this->docapost->isEnable()) {
 			// Génére nom random
-			$randName = bin2hex(random_bytes(5)) . '.pdf';
+			$randName = $this->docapost->getSiren() . bin2hex(random_bytes(5)) . '.pdf';
 			// Met à jour le nom du fichier
 			rename($from . $num . '/' . $fileFrom, $from . $num . '/' . $randName);
 			// Envoi sur docapost
 			$id = $this->docapost->uploadDocument($from . $num . '/' . $randName, 'test');
 
-			$histo = $this->docapost->history($id);
-			dump($histo);
+			$nbTry = 2;
+			while (!($isSigned = $this->docapost->isSigned($id)) && $nbTry != 0) {
+				sleep(1);
+				$nbTry--;
+			}
+			if (!$isSigned)
+				throw new \Exception("Tentative maximum atteinte pour history (docapost)");
 
 			// Récupère le binaire pdf signé
 			$docaDoc = $this->docapost->downloadDocument($id);

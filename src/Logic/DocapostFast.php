@@ -39,6 +39,14 @@ class DocapostFast
 	/**
 	 * @return mixed
 	 */
+	public function getSiren()
+	{
+		return $this->siren;
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function isEnable(): bool
 	{
 		return $this->enable;
@@ -88,10 +96,28 @@ class DocapostFast
 		return $response->getContent();
 	}
 
-	public function history($id): string
+	/**
+	 * @param $id
+	 * @return array
+	 * @throws ClientExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws TransportExceptionInterface
+	 */
+	public function history($id): array
 	{
-		$response = $this->sendQuery("GET", "$id/history");
-		return $response->getContent();
+		$response = $this->sendQuery("GET", "$id/history")->getContent();
+		return json_decode($response);
+	}
+
+	public function isSigned($id): bool
+	{
+		$states = $this->history($id);
+
+		dump($states);
+
+		$last = $states[count($states) - 1];
+		return $last->stateName == "Signé";
 	}
 
 	/**
