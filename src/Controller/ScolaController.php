@@ -80,7 +80,7 @@ class ScolaController extends AbstractController
 				$nb_rn = count($this->finder->getFilesName($this->file_access->getRn() . $num . '/'));
 				$nb_attest = count($this->finder->getFilesName($this->file_access->getAttest() . $num . '/'));
 				$user->setAttribute('nb_docs', [$nb_rn + $nb_attest]);
-				array_push($filtered_users, $user);
+				$filtered_users[] = $user;
 			}
 		}
 		return $filtered_users;

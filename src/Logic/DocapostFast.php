@@ -66,7 +66,10 @@ class DocapostFast
 	public function uploadDocument(string $document, string $label, string $comment = "", string $emailDestinataire = ""): string
 	{
 		if (mime_content_type($document) != "application/pdf")
-			throw new \Exception("Wrong file format");
+			throw new \Exception("Wrong file format ");
+
+		if (filesize($document) > 2097152000) // 200MO
+			throw new \Exception("Le document ne doit pas dépasser les 200MO");
 
 		$formFields = [
 			'label' => base64_encode($label),
@@ -113,8 +116,6 @@ class DocapostFast
 	public function isSigned($id): bool
 	{
 		$states = $this->history($id);
-
-		dump($states);
 
 		$last = $states[count($states) - 1];
 		return $last->stateName == "Signé";
