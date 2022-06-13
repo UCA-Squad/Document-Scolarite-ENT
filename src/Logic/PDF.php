@@ -124,9 +124,9 @@ class PDF
 				$month = date_parse($this->months[$ymatches[1]]);
 				$year = $ymatches[2];
 				if ($month['month'] <= 11)
-					$pageStudent['date'] = ($year - 1) . '-' . $year;
+					$pageStudent['date'] = ($year - 1) . '-' . substr($year, 2);
 				else
-					$pageStudent['date'] = $year . '-' . ($year + 1);
+					$pageStudent['date'] = $year . '-' . (substr($year, 2) + 1);
 			}
 
 			if ($index !== false)

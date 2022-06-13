@@ -95,7 +95,6 @@ class MonitoringController extends AbstractController
 	private function delete_import(Request $request, IEtuParser $parser, FormInterface $form, string $dir, int $mode): Response
 	{
 		$form->handleRequest($request);
-
 		if ($form->isSubmitted() && $form->isValid()) {
 			$data = $form->getData();
 			$etu = $parser->parseETU($data->getEtu());
