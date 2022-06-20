@@ -102,17 +102,30 @@ class TransfertController extends AbstractController
 
 		if ($this->docapost->isEnable()) {
 			// Génére nom random
-			$randName = bin2hex(random_bytes(5)) . '.pdf';
+			$randName = $this->docapost->getSiren() . bin2hex(random_bytes(5)) . '.pdf';
 			// Met à jour le nom du fichier
 			rename($from . $num . '/' . $fileFrom, $from . $num . '/' . $randName);
-			// Envoi sur docapost
-			$id = $this->docapost->uploadDocument($from . $num . '/' . $randName, 'test');
-			// Récupère le binaire pdf signé
-			$docaDoc = $this->docapost->downloadDocument($id);
-			// Écris le pdf reçu dans le dossier de destination
-			file_put_contents($to . $num . '/' . $fileFrom, $docaDoc);
-			// Supprime le fichier temporaire
-			unlink($from . $num . '/' . $randName);
+
+			try {
+				// Envoi sur docapost
+				$id = $this->docapost->uploadDocument($from . $num . '/' . $randName, 'test');
+
+				$isSigned = $this->docapost->isSigned($id);
+				if (!$isSigned) {
+					rename($from . $num . '/' . $randName, $from . $num . '/' . $fileFrom);
+					throw new \Exception("Document non signé par le serveur docapost");
+				}
+
+				// Récupère le binaire pdf signé
+				$docaDoc = $this->docapost->downloadDocument($id);
+				// Écris le pdf reçu dans le dossier de destination
+				file_put_contents($to . $num . '/' . $fileFrom, $docaDoc);
+				// Supprime le fichier temporaire
+				unlink($from . $num . '/' . $randName);
+			} catch (\Exception $e) {
+				rename($from . $num . '/' . $randName, $from . $num . '/' . $fileFrom);
+				throw $e;
+			}
 		} else {
 			rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
 		}

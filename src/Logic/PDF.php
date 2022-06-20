@@ -25,6 +25,8 @@ class PDF
 	protected $dateRegex = '/(A?a?nné?e+.*)?([0-9]{4})[\/-][0-9]{2}([0-9]{2})/';
 	protected $dateRegex1 = '/([Aa]\s?n\s?n\s?é?\s?e+\s?.*)([0-9 ]{8,})[ \/-]+[0-9 ]{3,}([0-9 ]{3,})/';
 
+	protected $dateRegex2 = '/à compter du [0-9]+ (.*) ([0-9]{4})/';
+
 	protected $getFilename = ImportedData::RN;
 	protected $env;
 
@@ -72,6 +74,21 @@ class PDF
 		$this->getFilename = ImportedData::ATTEST;
 	}
 
+	private $months = array(
+		'janvier' => 'january',
+		'février' => 'february',
+		'mars' => 'march',
+		'avril' => 'april',
+		'mai' => 'may',
+		'juin' => 'june',
+		'juillet' => 'july',
+		'août' => 'august',
+		'septembre' => 'september',
+		'octobre' => 'october',
+		'novembre' => 'november',
+		'décembre' => 'december',
+	);
+
 	/**
 	 * Return an array mapping each pdf page to a student
 	 * @param string $filename
@@ -103,6 +120,13 @@ class PDF
 				$pageStudent['date'] = $ymatches[$index1] . '-' . $ymatches[$index2];
 			} else if ($pageStudent['date'] == "" && preg_match($this->dateRegex1, $content, $ymatches)) {
 				$pageStudent['date'] = str_replace(' ', '', $ymatches[2]) . '-' . str_replace(' ', '', $ymatches[3]);
+			} else if ($pageStudent['date'] == "" && preg_match($this->dateRegex2, $content, $ymatches)) {
+				$month = date_parse($this->months[$ymatches[1]]);
+				$year = $ymatches[2];
+				if ($month['month'] <= 11)
+					$pageStudent['date'] = ($year - 1) . '-' . substr($year, 2);
+				else
+					$pageStudent['date'] = $year . '-' . (substr($year, 2) + 1);
 			}
 
 			if ($index !== false)

@@ -32,7 +32,9 @@ class ImportType extends AbstractType
 			if ($type == self::RELEVE) {
 				$builder->add('pdf', FileType::class, ['label' => "Relevé de notes", 'help' => '', 'attr' => ['accept' => '.pdf']])
 					->add('etu', FileType::class, ['label' => "Fichier ETU", 'attr' => ['accept' => '.etu']])
-					->add('semestre', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'A' => 'A']])
+					->add('semestre', ChoiceType::class, ['choices' =>
+						['1' => 1, '2' => 2, 'A' => 'A', '1p1' => '1p1', '1p2' => '1p2', '2p1' => '2p1', '2p2' => '2p2', 'Ap1' => 'Ap1', 'Ap2' => 'Ap2']
+					])
 					->add('session', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'U' => 'U']])
 					->add('libelle_form', TextType::class, ['label' => 'Libellé', 'attr' => ['maxlength' => 25]])
 					->add('tampon', FileType::class, ['label' => 'Tampon', 'required' => false, 'mapped' => false, 'attr' => ['accept' => '.png']])
@@ -50,7 +52,9 @@ class ImportType extends AbstractType
 			$year = $year->format('Y');
 			if ($type == self::RELEVE) {
 				$builder->add('etu', FileType::class, ['label' => 'Fichier ETU', 'attr' => ['accept' => '.etu']])
-					->add('semestre', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'A' => 'A']])
+					->add('semestre', ChoiceType::class, ['choices' =>
+						['1' => 1, '2' => 2, 'A' => 'A', '1p1' => '1p1', '1p2' => '1p2', '2p1' => '2p1', '2p2' => '2p2', 'Ap1' => 'Ap1', 'Ap2' => 'Ap2']
+					])
 					->add('session', ChoiceType::class, ['choices' => ['1' => 1, '2' => 2, 'U' => 'U']])
 					->add('year', IntegerType::class, ['label' => 'Année universitaire (yyyy)', 'data' => $year, 'constraints' => [new Length(['min' => 4, 'max' => 4])]])
 					->add('submit', SubmitType::class, ['label' => 'Charger']);

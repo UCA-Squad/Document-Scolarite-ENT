@@ -39,6 +39,14 @@ class DocapostFast
 	/**
 	 * @return mixed
 	 */
+	public function getSiren()
+	{
+		return $this->siren;
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function isEnable(): bool
 	{
 		return $this->enable;
@@ -58,7 +66,10 @@ class DocapostFast
 	public function uploadDocument(string $document, string $label, string $comment = "", string $emailDestinataire = ""): string
 	{
 		if (mime_content_type($document) != "application/pdf")
-			throw new \Exception("Wrong file format");
+			throw new \Exception("Wrong file format ");
+
+		if (filesize($document) > 2097152000) // 200MO
+			throw new \Exception("Le document ne doit pas dépasser les 200MO");
 
 		$formFields = [
 			'label' => base64_encode($label),
@@ -85,6 +96,40 @@ class DocapostFast
 	public function downloadDocument($id): string
 	{
 		$response = $this->sendQuery("GET", "$id/download");
+		return $response->getContent();
+	}
+
+	/**
+	 * @param $id
+	 * @return array
+	 * @throws ClientExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws TransportExceptionInterface
+	 */
+	public function history($id): array
+	{
+		$response = $this->sendQuery("GET", "$id/history")->getContent();
+		return json_decode($response);
+	}
+
+	public function isSigned($id): bool
+	{
+		$states = $this->history($id);
+
+		$last = $states[count($states) - 1];
+		return $last->stateName == "Signé";
+	}
+
+	/**
+	 * @throws TransportExceptionInterface
+	 * @throws ServerExceptionInterface
+	 * @throws RedirectionExceptionInterface
+	 * @throws ClientExceptionInterface
+	 */
+	public function historyDocument($id): string
+	{
+		$response = $this->sendQuery("GET", "$id/history");
 		return $response->getContent();
 	}
 

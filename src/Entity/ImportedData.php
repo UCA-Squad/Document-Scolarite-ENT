@@ -21,7 +21,7 @@ class ImportedData
 	private $pdf;
 	private $etu;
 	/**
-	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @ORM\Column(type="string", length=3, nullable=true)
 	 */
 	private $semestre;
 	/**

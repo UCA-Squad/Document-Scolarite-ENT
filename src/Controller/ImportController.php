@@ -188,7 +188,7 @@ class ImportController extends AbstractController
 				return $this->redirectToRoute('setup_images', ['mode' => $mode]);
 			}
 
-		} catch (ImportException | PdfParserException | PdfReaderException $e) {
+		} catch (ImportException|PdfParserException|PdfReaderException $e) {
 			return null;
 		}
 		return null;
