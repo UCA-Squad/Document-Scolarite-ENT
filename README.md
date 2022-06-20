@@ -189,7 +189,11 @@ L'application possède deux routes principales :
         - Ajout de paramètres supplémentaires permettant de récupérer des informations via le LDAP configuré (voir section LDAP)
         - En fonction de l'environnement (dev ou prod) les mails sont envoyés respectivement à l'utilisateur ou aux étudiants 
         - Les administrateurs ont maintenant accès à l'historique d'actions de tous les gestionnaires
-  * 14/12/21
-      - Ajout d'une progress bar lors du découpage du document PDF pour informer l'utilisateur de l'avancement de ce processus qui peut être assez long en fonction du nombre de pages
-      - Possibilité de reconstruire un PDF avec tous les documents transférés si l'utilisateur a utilisé un tampon
-      - Affichage de la date de dépôt des documents sur la vue étudiant
+    * 14/12/21
+        - Ajout d'une progress bar lors du découpage du document PDF pour informer l'utilisateur de l'avancement de ce processus qui peut être assez long en fonction du nombre de pages
+        - Possibilité de reconstruire un PDF avec tous les documents transférés si l'utilisateur a utilisé un tampon
+        - Affichage de la date de dépôt des documents sur la vue étudiant
+  * 20/06/22
+      - Ajout de choix supplémentaires pour la liste des semestres
+      - Intégration de l'API de Docapost pour signer numériquement les documents. Activation et configuration dans le fichier .env
+    
