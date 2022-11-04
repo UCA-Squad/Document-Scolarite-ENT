@@ -143,10 +143,12 @@ class ImportController extends AbstractController
 		if (isset($redirect)) return $redirect;
 
 		$form = $this->createForm(ImportType::class, null, ["act" => ImportType::IMPORT, "type" => $mode == ImportedData::RN ? ImportType::RELEVE : ImportType::ATTEST]);
+
 		$form->handleRequest($request);
 
 		if ($form->isSubmitted() && $form->isValid()) {
 			$data = $form->getData();
+
 			$mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
 			$res = $this->import($mode, $pdfTool, $data, $form);
 			if (isset($res))
