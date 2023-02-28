@@ -71,18 +71,18 @@
 {% if mode == 1 %}
 
 	{% if bddData.type == "VDI" %}
-		<p>Votre attestation de réussite au <br>diplôme de <strong>{{ stud.LibelleObj }}</strong><br> a été déposée dans
-			votre ENT, rubrique Scolarité/Documents.</p>
+		<p>Votre attestation de réussite {{ stud.libelle }} au <br>diplôme de <strong>{{ stud.libelleObj }}</strong><br>
+			a été déposée dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
 	{% if bddData.type == "VET" %}
-		<p>Votre attestation de réussite au <br>niveau <strong>{{ stud.LibelleObj }}</strong><br> a été déposée dans
-			votre ENT, rubrique Scolarité/Documents.</p>
+		<p>Votre attestation de réussite {{ stud.libelle }} au <br>niveau <strong>{{ stud.libelleObj }}</strong><br> a
+			été déposée dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
 	{% if bddData.type == "ELP" %}
-		<p>Votre attestation de réussite au <br>module <strong>{{ stud.LibelleObj }}</strong> de
-			<strong>{{ stud.Libelle }}</strong><br> a été déposée dans votre ENT, rubrique Scolarité/Documents.</p>
+		<p>Votre attestation de réussite au <br>module <strong>{{ stud.libelleObj }}</strong> de
+			<strong>{{ stud.libelle }}</strong><br> a été déposée dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
 {% endif %}

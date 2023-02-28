@@ -10,6 +10,7 @@ use App\Entity\Student;
 use App\Logic\CustomFinder;
 use App\Logic\DocapostFast;
 use App\Logic\FileAccess;
+use App\Logic\LDAP;
 use App\Repository\ImportedDataRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -184,7 +185,7 @@ class TransfertController extends AbstractController
 	 * @param ImportedDataRepository $repo
 	 * @return JsonResponse
 	 */
-	public function send_mails(Request $request, MailerInterface $mailer, Environment $twig, ImportedDataRepository $repo): JsonResponse
+	public function send_mails(Request $request, MailerInterface $mailer, Environment $twig, ImportedDataRepository $repo, LDAP $ldap): JsonResponse
 	{
 		$ids = $request->get('ids');
 		$mode = $request->get('mode');
@@ -198,6 +199,13 @@ class TransfertController extends AbstractController
 		foreach ($students as $stud) {
 
 			if (isset($ids) && $ids != null && in_array($stud->getNumero(), $ids))
+				continue;
+
+			$num = $stud->getNumero();
+			$user = current($ldap->search("(CLFDcodeEtu=$num)", "ou=people,", ["CLFDcodeEtu", "CLFDstatus"]));
+
+			// Vérifie que l'étudiant est actif pour envoyer mail
+			if (!isset($user) || $user->getAttribute("CLFDstatus")[0] != 0)
 				continue;
 
 			$this->send_mail($stud, $mode, $bddData, $twig, $mailer);
