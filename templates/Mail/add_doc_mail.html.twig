@@ -31,7 +31,7 @@
 		{% set semestre = "semestre <strong>impair</strong>" %}
 	{% endif %}
 	{% if bddData.semestre|first == "2" %}
-		{% set semestre = "semstre <strong>pair</strong>" %}
+		{% set semestre = "semestre <strong>pair</strong>" %}
 	{% endif %}
 	{% if bddData.semestre|first == "A" %}
 		{% set semestre = "semestre <strong>annuel</strong>" %}
@@ -55,7 +55,7 @@
 
 	{% if (bddData.session == "U") and (bddData.semestre|first == "1" or bddData.semestre|first == "2") %}
 		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
-			{{ semestre|raw }}<br>
+			{{ session|raw }}, {{ semestre|raw }}<br>
 			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
