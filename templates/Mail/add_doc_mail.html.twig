@@ -49,7 +49,7 @@
 
 	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre|first == "A") %}
 		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
-			{{ session|raw }}<br>
+			{{ session|raw }}, {{ semestre|raw }}<br>
 			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
@@ -60,10 +60,9 @@
 	{% endif %}
 
 	{% if (bddData.session == "U") and (bddData.semestre|first == "A") %}
-		<p>Votre relevé de notes de
-			<br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong><br> a été déposé dans
-			votre ENT, rubrique
-			Scolarité/Documents.</p>
+		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
+			{{ session|raw }}, {{ semestre|raw }}<br>
+			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
 {% endif %}
