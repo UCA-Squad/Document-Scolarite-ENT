@@ -41,28 +41,29 @@
 		{% set semestre = semestre ~ ",  page <strong>"~ bddData.semestre|last ~"</strong>" %}
 	{% endif %}
 
-	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre|first == "1" or bddData.semestre|first == "2") %}
+	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre|first == "1" or
+		bddData.semestre|first == "2" or bddData.semestre|first == "A") %}
 		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
 			{{ session|raw }}, {{ semestre|raw }}<br>
 			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
-	{% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre|first == "A") %}
-		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
-			{{ session|raw }}<br>
-			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
-	{% endif %}
-
-	{% if (bddData.session == "U") and (bddData.semestre|first == "1" or bddData.semestre|first == "2") %}
+	{#    {% if (bddData.session == "1" or bddData.session == "2") and (bddData.semestre|first == "A") %} #}
+	{#        <p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>, #}
+	{#            {{ session|raw }}<br> #}
+	{#            a été déposé dans votre ENT, rubrique Scolarité/Documents.</p> #}
+	{#    {% endif %} #}
+	{% if (bddData.session == "U") and (bddData.semestre|first == "1" or bddData.semestre|first == "2" or
+		bddData.semestre|first == "A") %}
 		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
 			{{ semestre|raw }}<br>
 			a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
 	{% endif %}
 
-	{% if (bddData.session == "U") and (bddData.semestre|first == "A") %}
-		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,
-			<br> a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>
-	{% endif %}
+{#	{% if (bddData.session == "U") and (bddData.semestre|first == "A") %}#}
+{#		<p>Votre relevé de notes de <br><strong>{{ stud.Libelle == "" ? bddData.libelleForm : stud.libelle }}</strong>,#}
+{#			<br> a été déposé dans votre ENT, rubrique Scolarité/Documents.</p>#}
+{#	{% endif %}#}
 
 {% endif %}
 
