@@ -33,10 +33,10 @@
 	{% if bddData.semestre|first == "2" %}
 		{% set semestre = "semestre <strong>pair</strong>" %}
 	{% endif %}
-	{% if bddData.semestre|first == "A" and bddData.semestre|length > 1 %}
+	{# {% if bddData.semestre|first == "A" and bddData.semestre|length > 1 %}
 		{% set semestre = "semestre <strong>annuel</strong>" %}
-	{% endif %}
-	{% if bddData.semestre|first == "A" and bddData.semestre|length == 1 %}
+	{% endif %} #}
+	{% if bddData.semestre|first == "A" %} {#  and bddData.semestre|length == 1 %}#}
 		{% set semestre = "<strong>annuel</strong>" %}
 	{% endif %}
 
