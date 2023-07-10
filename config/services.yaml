@@ -10,6 +10,7 @@ parameters:
     bind_password: '%env(LDAP_BIND_PASSWORD)%'
     base_dn: '%env(LDAP_BASE_DN)%'
     admin_group: '%env(LDAP_ADMIN_GROUP_DN)%'
+    bl_group: '%env(LDAP_BL_GROUP_DN)%'
 
   docapost:
     enable: "%env(bool:DOCAPOST_ENABLE)%"
