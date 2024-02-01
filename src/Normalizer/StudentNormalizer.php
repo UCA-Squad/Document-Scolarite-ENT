@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class StudentNormalizer extends ObjectNormalizer
 {
-    public function denormalize($data, string $type, string $format = null, array $context = [])
+    public function denormalize($data, string $type, string $format = null, array $context = []): Student
     {
         $numero = $data[0];
         $name = $data[1];
@@ -32,9 +32,9 @@ class StudentNormalizer extends ObjectNormalizer
         return new Student($numero, $name, $surname, $birthday, $mail, $libelle, $code, $code_etape, $type, $libelle_obj);
     }
 
-    public function supportsDenormalization($data, string $type, string $format = null)
+    public function supportsDenormalization($data, string $type, string $format = null): bool
     {
-        return Student::class;
+        return Student::class == $type;
     }
 
 }

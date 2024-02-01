@@ -44,6 +44,9 @@ parameters:
   output_tmp_pdf: '%env(OUTPUT_TMP_PDF)%'
   output_tmp_tampon: '%env(OUTPUT_TMP_TAMPON)%'
 
+  menu_ent_hashkey: '%env(MENU_ENT_HASHKEY)%'
+  menu_ent_init_vector: '%env(MENU_ENT_INIT_VECTOR)%'
+
 services:
   # default configuration for services in *this* file
   _defaults:
@@ -73,27 +76,24 @@ services:
   App\Logic\DocapostFast:
     arguments: [ "@http_client", "%docapost%" ]
 
-  App\Security\AccessDeniedHandler:
-    arguments: [ "@service_container" ]
-
   App\Listener\MaintenanceListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request }
 
-  App\Listener\StudentFileUpdateListener:
-    arguments: [ '@mailer', '@twig', '@parser.etu' ]
+#  App\Listener\StudentFileUpdateListener:
+#    arguments: [ '@mailer', '@twig', '@parser.etu' ]
 
-  App\Parser\IEtuParser: '@parser.etu'
+  #App\Parser\IEtuParser: '@parser.etu'
 
   ############################### CONFIGURATION SECTION ###############################################
 
   # Parser use to extract info from files
-  parser.etu:
-    class: App\Parser\EtuParser # Has to implement IEtuParser
-    arguments: [ "@service_container" ]
-
-  # Normalizer use to transform one line of etu file into Student
-  normalizer:
-    class: App\Normalizer\StudentNormalizer
-    tags: [ 'serializer.normalizer' ]
+#  parser.etu:
+#    class: App\Parser\EtuParser # Has to implement IEtuParser
+#    arguments: [ "@service_container" ]
+##
+#  # Normalizer use to transform one line of etu file into Student
+#  normalizer:
+#    class: App\Normalizer\StudentNormalizer
+#    tags: [ 'serializer.normalizer' ]
 #####################################################################################################

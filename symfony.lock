@@ -84,15 +84,6 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.5"
     },
-    "guzzlehttp/guzzle": {
-        "version": "6.5.2"
-    },
-    "guzzlehttp/promises": {
-        "version": "v1.3.1"
-    },
-    "guzzlehttp/psr7": {
-        "version": "1.6.1"
-    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },
@@ -164,9 +155,6 @@
             "tests/bootstrap.php"
         ]
     },
-    "prayno/casauth-bundle": {
-        "version": "1.4"
-    },
     "psr/cache": {
         "version": "1.0.1"
     },
@@ -176,17 +164,11 @@
     "psr/event-dispatcher": {
         "version": "1.0.0"
     },
-    "psr/http-message": {
-        "version": "1.0.1"
-    },
     "psr/link": {
         "version": "1.0.0"
     },
     "psr/log": {
         "version": "1.1.3"
-    },
-    "ralouphie/getallheaders": {
-        "version": "3.0.3"
     },
     "sebastian/cli-parser": {
         "version": "1.0.1"
@@ -639,6 +621,25 @@
             "config/routes/dev/web_profiler.yaml"
         ]
     },
+    "symfony/webpack-encore-bundle": {
+        "version": "1.17",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.10",
+            "ref": "eff2e505d4557c967b6710fe06bd947ba555cae5"
+        },
+        "files": [
+            "assets/app.js",
+            "assets/bootstrap.js",
+            "assets/controllers.json",
+            "assets/controllers/hello_controller.js",
+            "assets/styles/app.css",
+            "config/packages/webpack_encore.yaml",
+            "package.json",
+            "webpack.config.js"
+        ]
+    },
     "symfony/yaml": {
         "version": "v5.0.7"
     },
@@ -656,6 +657,9 @@
     },
     "webmozart/assert": {
         "version": "1.7.0"
+    },
+    "yraiso/casauth-bundle": {
+        "version": "v1.0.4"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"

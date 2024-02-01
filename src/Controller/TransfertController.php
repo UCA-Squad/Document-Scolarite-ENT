@@ -12,11 +12,14 @@ use App\Logic\DocapostFast;
 use App\Logic\FileAccess;
 use App\Logic\LDAP;
 use App\Repository\ImportedDataRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -34,14 +37,44 @@ class TransfertController extends AbstractController
     private $params;
     private $docapost;
     private $session;
+    private $em;
+    private $repo;
 
-    public function __construct(FileAccess $file_access, CustomFinder $finder, ParameterBagInterface $params, DocapostFast $docapost, SessionInterface $session)
+    public function __construct(FileAccess   $file_access, CustomFinder $finder, ParameterBagInterface $params,
+                                DocapostFast $docapost, RequestStack $session, EntityManagerInterface $em, ImportedDataRepository $repo)
     {
         $this->file_access = $file_access;
         $this->finder = $finder;
         $this->params = $params;
         $this->docapost = $docapost;
-        $this->session = $session;
+        $this->session = $session->getSession();
+        $this->em = $em;
+        $this->repo = $repo;
+    }
+
+    /**
+     * @Route("/mail/template", name="api_mail_template")
+     * @return Response
+     */
+    public function api_get_mail_template(): Response
+    {
+        $mode = 0;
+
+        $stud = $this->session->get('students')[0];
+        $bddData = $this->session->get('data');
+
+//        $this->session->clear();
+
+        $this->finder->deleteDirectory($this->file_access->getTamponFolder());
+        $this->finder->deleteDirectory($this->file_access->getTmpByMode($mode));
+        $this->finder->deleteDirectory($this->file_access->getPdfByMode($mode));
+        $this->finder->deleteDirectory($this->file_access->getEtuByMode($mode));
+
+        return $this->render('Mail/add_doc_mail.html.twig', [
+            'stud' => $stud,
+            'mode' => $mode,
+            'bddData' => $bddData
+        ]);
     }
 
     /**
@@ -51,15 +84,50 @@ class TransfertController extends AbstractController
      */
     public function transfert_rn(Request $request): JsonResponse
     {
-        $ids = $request->get("ids");
-        $num = $request->get('num');
+        $data = json_decode($request->getContent(), true);
 
-        try {
-            $result = $this->transfert(ImportedData::RN, $num, $ids);
-            return new JsonResponse($result);
-        } catch (\Exception $e) {
-            return new JsonResponse($e->getMessage(), 500);
+        // Post params: int[]
+        $nums = $data['nums'];
+        $mode = $data['mode'];
+
+        // How many files to transfert at once
+        $batchCount = 10;
+
+        $data = $this->session->get('data');
+
+
+//        try {
+
+        for ($i = 0; $i < $batchCount && $i < count($nums); $i++) {
+            $this->transfert($mode === ImportedData::RN ? ImportedData::RN : ImportedData::ATTEST, $nums[$i], $data);
         }
+
+        $this->session->set('data', $data);
+
+
+        $numsTodo = array_slice($nums, $i);
+        unset($nums);
+
+        // Last batch
+        if (empty($numsTodo)) {
+            $import = $this->session->get('data');
+
+            if ($import->getId() !== null) {
+                $existingImport = $this->repo->find($import->getId());
+                $existingImport->addHistory($import->getLastHistory());
+            } else {
+                $this->em->persist($import);
+            }
+            $this->em->flush();
+        }
+        return new JsonResponse($numsTodo);
+//        } catch (\Exception $e) {
+//            // On error, save the already processed data
+//            $import = $this->session->get('data');
+//            $this->em->persist($import);
+//            $this->em->flush();
+//            return new JsonResponse($e->getMessage(), 500);
+//        }
     }
 
     /**
@@ -73,32 +141,30 @@ class TransfertController extends AbstractController
         $num = $request->get('num');
 
         try {
-            $result = $this->transfert(ImportedData::ATTEST, $num, $ids);
-            return new JsonResponse($result);
+            $this->transfert(ImportedData::ATTEST, $num, $ids);
+            return new JsonResponse(true);
         } catch (\Exception $e) {
             return new JsonResponse($e->getMessage(), 500);
         }
     }
 
-    private function transfert(int $mode, int $num, array $ids = null): bool
+    private function transfert(int $mode, int $num, ImportedData $data): void
     {
         $from = $this->file_access->getTmpByMode($mode);
         $to = $this->file_access->getDirByMode($mode);
 
-        if (!is_dir($to))
-            mkdir($to);
-
-        if (isset($ids) && in_array($num, $ids)) {
-            return false;
-        }
-
-        if (!is_dir($to . $num))
-            mkdir($to . $num);
+        if (!is_dir($to)) mkdir($to);
+        if (!is_dir($to . $num)) mkdir($to . $num);
 
         $fileFrom = $this->finder->getFirstFile($from . $num);
         $index = $this->finder->getFileIndex($to . $num, $fileFrom);
+
+        $newDoc = true;
+
         if ($index != -1) {
+            // Document existant
             unlink($to . $num . '/' . $this->finder->getFileByIndex($to . $num, $index));
+            $newDoc = false;
         }
 
         if ($this->docapost->isEnable()) {
@@ -129,22 +195,35 @@ class TransfertController extends AbstractController
             }
         } else {
             rename($from . $num . '/' . $fileFrom, $to . $num . '/' . $fileFrom);
+
+//            $data = $this->session->get('data');
+            $hist = $data->getHistory()->last();
+
+            if ($data->getHistory()->count() > 1)
+                $hist->setState(History::Transfered);
+
+            if ($newDoc)
+                $hist->setNbFiles($hist->getNbFiles() + 1);
+
+            $hist->setDate();
+
+//            $this->session->set('data', $data);
         }
 
         // Supprime les dossiers temporaires vides
         if (is_dir($from . $num) && empty($this->finder->getFilesName($from . $num)))
             $this->finder->deleteDirectory($from . $num);
 
-        $this->addTransfertToSession($to . $num . '/' . $fileFrom);
-        $this->update_transfered_files($mode, $from, $ids ?? []);
-        return true;
+        //$this->addTransfertToSession($to . $num . '/' . $fileFrom);
+//        $this->update_transfered_files($mode, $from, $ids ?? []);
     }
 
     /**
      * Ajoute pathname à la liste (cache) des transferts effectués.
      * @param string $pathname
      */
-    private function addTransfertToSession(string $pathname)
+    private
+    function addTransfertToSession(string $pathname)
     {
         $transfered = $this->session->get('transfered');
         if (!isset($transfered))
@@ -159,17 +238,36 @@ class TransfertController extends AbstractController
      * @param array $ids
      * @param string $from
      */
-    private function update_transfered_files(int $mode, string $from, array $ids = [])
+    private
+    function update_transfered_files(int $mode, string $from, array $ids = [])
     {
-        $data = $this->getDoctrine()->getRepository(ImportedData::class)->findLastDataByMode($mode, $this->getUser()->getUsername());
+//        $data = $this->repo->findLastDataByMode($mode, $this->getUser()->getUsername());
+//
+//        $data->getLastHistory()->setNbFiles($data->getLastHistory()->getNbFiles() + 1);
+//        $data->getLastHistory()->setState(History::Transfered);
+//        $data->getLastHistory()->setDate();
+//
+//        $this->em->persist($data);
+//        $this->em->flush();
 
-        $data->getLastHistory()->setNbFiles($data->getLastHistory()->getNbFiles() + 1);
-        $data->getLastHistory()->setState(History::Transfered);
-        $data->getLastHistory()->setDate();
 
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($data);
-        $em->flush();
+        $data = $this->session->get('data');
+
+        $hist = $data->getHistory()->last();
+
+        if ($data->getHistory()->count() > 1) {
+            $hist->setState(History::Transfered);
+            $hist->setNbFiles($hist->getNbFiles() + 1);
+        } else {
+            $hist->setNbFiles($hist->getNbFiles() + 1);
+        }
+
+        $hist->setDate();
+
+//        $data->getLastHistory()->setNbFiles($data->getLastHistory()->getNbFiles() + 1);
+//        $data->getLastHistory()->setState(History::Transfered);
+//        $data->getLastHistory()->setDate();
+        $this->session->set('data', $data);
 
         // Si on a transféré tous les documents séléctionnés
 //		if ($data->getLastHistory()->getNbFiles() == $data->getNbStudents() - count($ids)) {
@@ -183,16 +281,19 @@ class TransfertController extends AbstractController
      * @param MailerInterface $mailer
      * @param Environment $twig
      * @param ImportedDataRepository $repo
+     * @param LDAP $ldap
      * @return JsonResponse
      */
-    public function send_mails(Request $request, MailerInterface $mailer, Environment $twig, ImportedDataRepository $repo, LDAP $ldap): JsonResponse
+    public function send_mails(Request                $request, MailerInterface $mailer, Environment $twig,
+                               ImportedDataRepository $repo, LDAP $ldap): JsonResponse
     {
+        $params = json_decode($request->getContent(), true);
         $ids = $request->get('ids');
-        $mode = $request->get('mode');
+        $mode = $params['mode'];
 
         $etu = $mode == ImportedData::RN ? $this->getParameter("output_etu_rn") : $this->getParameter("output_etu_attest");
 
-        $bddData = $repo->findLastDataByMode($mode, $this->getUser()->getUsername());
+        $bddData = $repo->findOneBy(['username' => $this->getUser()->getUserIdentifier()], ['id' => 'DESC']); // findLastDataByMode($mode, $this->getUser()->getUsername());
 
         $students = $this->session->get('students');
 
@@ -211,6 +312,7 @@ class TransfertController extends AbstractController
 
             $this->send_mail($stud, $mode, $bddData, $twig, $mailer);
         }
+        $this->session->clear();
         $this->finder->deleteDirectory($etu . $this->getUser()->getUsername() . '.etu');
         return new JsonResponse();
     }

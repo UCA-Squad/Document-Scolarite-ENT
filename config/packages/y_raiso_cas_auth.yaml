@@ -1,4 +1,4 @@
-p_rayno_cas_auth:
+y_raiso_cas_auth:
     server_login_url: '%cas_login_url%'
     server_validation_url: '%cas_validation_url%'
     server_logout_url: '%cas_logout_url%'

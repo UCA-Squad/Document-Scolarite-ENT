@@ -120,22 +120,24 @@ class FileAccess
 		return $mode == ImportedData::RN ? $this->getTmpRn() : $this->getTmpAttest();
 	}
 
-	/**
-	 * Retourne le chemin du fichier pdf complet de relevés.
-	 * @return string
-	 */
-	public function getPdfRn(): string
+    /**
+     * Retourne le chemin du fichier pdf complet de relevés.
+     * @param string $filter
+     * @return string
+     */
+	public function getPdfRn(string $filter = ''): string
 	{
-		return $this->params->get('output_tmp_pdf') . 'rn_' . $this->security->getUser()->getUsername() . '.pdf';
+        return $this->filter($this->params->get('output_tmp_pdf'), 'rn_' . $this->security->getUser()->getUsername() . '.pdf', $filter);
+//		return $this->params->get('output_tmp_pdf') . 'rn_' . $this->security->getUser()->getUsername() . '.pdf';
 	}
 
 	/**
 	 * Retourne le chemin du fichier pdf complet d'attestations.
 	 * @return string
 	 */
-	public function getPdfAttest(): string
+	public function getPdfAttest(string $filter = ''): string
 	{
-		return $this->params->get('output_tmp_pdf') . 'attest_' . $this->security->getUser()->getUsername() . '.pdf';
+		return $this->filter($this->params->get('output_tmp_pdf'), 'attest_' . $this->security->getUser()->getUsername() . '.pdf', $filter);
 	}
 
 	/**
@@ -143,9 +145,9 @@ class FileAccess
 	 * @param int $mode 0 = RN / 1 = ATTEST
 	 * @return string
 	 */
-	public function getPdfByMode(int $mode): string
+	public function getPdfByMode(int $mode, string $filter = ''): string
 	{
-		return $mode == ImportedData::RN ? $this->getPdfRn() : $this->getPdfAttest();
+		return $mode == ImportedData::RN ? $this->getPdfRn($filter) : $this->getPdfAttest($filter);
 	}
 
 	public function getTamponFolder(): string

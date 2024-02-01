@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>{% block title %}Documents de scolarite{% endblock %}</title>
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <title>{% block title %}Documents de scolarite{% endblock %}</title>
 
-	<link rel="stylesheet" type="text/css" href="https://cdn.uca.fr/css/bootstrap_uca.min.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-	{% block stylesheets %}{% endblock %}
-	<script async type="text/javascript" src="https://ent.uca.fr/core/menu.js"></script>
+    <link rel="stylesheet" href="https://cdn.uca.fr/v2/css/uca.min.css">
+    <script src="https://cdn.uca.fr/v2/js/uca.min.js"></script>
+
+    <link href="https://cdn.uca.fr/menu/css/app.css" rel="stylesheet">
+
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
 </head>
 <body>
 
-<div style="margin-right: 50px;text-align: center" class="alert alert-dismissible alert-warning">
-	<h5>
-		Environnement de Préproduction
-	</h5>
-</div>
 
-{% block body %}{% endblock %}
+<div id="app" data-info="{{ b64Info }}"></div>
 
-{% block javascripts %}{% endblock %}
+<script defer src="https://cdn.uca.fr/menu/js/app.js"></script>
+<script defer src="https://cdn.uca.fr/menu/js/chunk-vendors.js"></script>
+{% block body %}
+
+{% endblock %}
 
 </body>
 </html>

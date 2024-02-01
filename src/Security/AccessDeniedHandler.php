@@ -4,26 +4,26 @@
 namespace App\Security;
 
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
+use Twig\Environment;
 
 class AccessDeniedHandler implements AccessDeniedHandlerInterface
 {
-	private $container;
+    private $twig;
 
-	public function __construct(ContainerInterface $container)
-	{
-		$this->container = $container;
-	}
+    public function __construct(Environment $twig)
+    {
+        $this->twig = $twig;
+    }
 
-	/**
-	 * @inheritDoc
-	 */
-	public function handle(Request $request, AccessDeniedException $accessDeniedException)
-	{
-		return new Response($this->container->get('twig')->render('public/access_denied.html.twig'));
-	}
+    /**
+     * @inheritDoc
+     */
+    public function handle(Request $request, AccessDeniedException $accessDeniedException): Response
+    {
+        return new Response($this->twig->render('public/access_denied.html.twig'));
+    }
 }
