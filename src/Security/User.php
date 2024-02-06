@@ -4,9 +4,6 @@ namespace App\Security;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/**
- * @method string getUserIdentifier()
- */
 class User implements UserInterface
 {
     private $username;
@@ -45,6 +42,11 @@ class User implements UserInterface
     }
 
     public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getUserIdentifier(): string
     {
         return $this->username;
     }

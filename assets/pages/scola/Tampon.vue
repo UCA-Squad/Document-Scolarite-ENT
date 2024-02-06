@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import WebService from "../../../WebService";
+import WebService from "../../WebService";
 
 export default {
   name: "Tampon",

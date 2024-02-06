@@ -27,4 +27,7 @@ export const user = reactive({
     isEtudiant() {
         return this.asRole("ROLE_ETUDIANT");
     },
+    isScola(){
+        return this.asRole("ROLE_SCOLA");
+    }
 })

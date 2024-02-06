@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
 /**
- * @Route("/transfert")
+ * @Route("/api/transfert")
  * @IsGranted("ROLE_SCOLA")
  */
 class TransfertController extends AbstractController

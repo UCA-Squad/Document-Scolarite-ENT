@@ -11,23 +11,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PublicController extends AbstractController
 {
-//    /**
-//     * Route principale.
-//     * Redirige les étudiants vers leurs documents.
-//     * Redirige les autres utilisateurs (gestionnaires / admin) sur l'écran de recherche.
-//     * @Route("/", name="home")
-//     */
-//    public function index(): RedirectResponse
-//    {
-//        if (in_array("ROLE_ETUDIANT", $this->getUser()->getRoles()))
-//            return $this->redirectToRoute("etudiant_home");
-//        else
-//            return $this->redirectToRoute("student_search");
-//    }
-
     /**
-     * Redirige sur les actions possibles pour les gestionnaires.
-     * @Route("/{route}", name="scola", requirements={"route"="^(?!api|selection|transfert|_(profiler|wdt)).*"})
+     * @Route("/{route}", name="scola", requirements={"route"="^(?!api|_(profiler|wdt)).*"})
      * @IsGranted("ROLE_ETUDIANT")
      */
     public function scolaIndex(AesCipher $aes): Response

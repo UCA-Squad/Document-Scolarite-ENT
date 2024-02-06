@@ -82,7 +82,7 @@
 
 <script>
 import {AgGridVue} from "ag-grid-vue3";
-import WebService from "../../../WebService";
+import WebService from "../../WebService";
 import "ag-grid-community/styles/ag-grid.css"; // Core CSS
 import "ag-grid-community/styles/ag-theme-alpine.css"; // Theme
 
@@ -97,7 +97,7 @@ const BtnComponent = {
 };
 
 export default {
-  name: "MonitoringRN",
+  name: "MonitoringDoc",
   props: {
     mode: Number
   },

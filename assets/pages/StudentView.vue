@@ -25,7 +25,7 @@
                 <h6><strong>Relevés de notes</strong></h6>
                 <ul>
                   <li v-for="rn in docs.rns[year]"><a
-                      :href="'/etudiant/download/releve/' + this.$route.params.num + '/'+ rn.index"
+                      :href="'/api/etudiant/download/releve/' + this.$route.params.num + '/'+ rn.index"
                       target="_blank">{{ rn.name }}</a></li>
                 </ul>
               </div>

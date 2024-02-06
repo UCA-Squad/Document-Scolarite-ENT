@@ -39,9 +39,9 @@
 </template>
 
 <script>
-import WebService from "../WebService";
+import WebService from "../../WebService";
 import {AgGridVue} from "ag-grid-vue3";
-import agNavLink from "../agComponent/agNavLink.vue";
+import agNavLink from "../../agComponent/agNavLink.vue";
 
 export default {
   name: "SearchStudent",

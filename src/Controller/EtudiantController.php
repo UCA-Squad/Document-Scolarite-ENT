@@ -12,42 +12,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/etudiant")
+ * @Route("/api/etudiant")
  */
 class EtudiantController extends AbstractController
 {
-//    /**
-//     * @Route("/{numero}", name="etudiant_home", requirements={"numero"="\d+"})
-//     * @param int|null $numero
-//     * @return Response
-//     */
-//    public function etudiant(int $numero = null): Response
-//    {
-//        if (!is_null($numero) && !$this->isGranted("ROLE_SCOLA"))
-//            return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
-//
-//        $dir_rn = $this->getParameter("output_dir_rn") . (is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero);
-//        $dir_attest = $this->getParameter("output_dir_attest") . (is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero);
-//        $finder = new CustomFinder();
-//
-//        $rns = $finder->getFiles($dir_rn);
-//        $attests = $finder->getFiles($dir_attest);
-//
-//        return $this->render('public/etudiant.html.twig', [
-//            'rns' => $rns,
-//            'attests' => $attests,
-//            'numero' => is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero,
-//            'is_scola' => in_array('ROLE_SCOLA', $this->getUser()->getRoles()) || in_array('ROLE_ADMIN', $this->getUser()->getRoles())
-//        ]);
-//    }
-
     /**
-     * @Route("/api/{numero}", name="api_student", requirements={"numero"="\d+"})
+     * @Route("/{numero}", name="api_student")
      */
     public function api_etudiant(int $numero, ParameterBagInterface $params): JsonResponse
     {
-        $dir_rn = $params->get("output_dir_rn") . (is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero);
-        $dir_attest = $params->get("output_dir_attest") . (is_null($numero) ? $this->getUser()->getExtraFields()["numero"] : $numero);
+        if (!$this->isGranted("ROLE_SCOLA") && $numero != $this->getUser()->getNumero()) {
+            return new JsonResponse("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
+        }
+
+        $dir_rn = $params->get("output_dir_rn") . $numero;
+        $dir_attest = $params->get("output_dir_attest") . $numero;
         $finder = new CustomFinder();
 
         $rns = $finder->getFiles($dir_rn);
@@ -84,14 +63,14 @@ class EtudiantController extends AbstractController
 
     /**
      * @Route("/download/releve/{numero}/{index}", name="download_rn")
-     * @param $numero
-     * @param $index
+     * @param int $numero
+     * @param int $index
      * @return BinaryFileResponse|Response
      */
-    public function download_rn(int $numero, $index)
+    public function download_rn(int $numero, int $index)
     {
         if (!$this->isGranted("ROLE_SCOLA")) {
-            if ($numero != $this->getUser()->getExtraFields()["numero"])
+            if ($numero != $this->getUser()->getNumero())
                 return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
         }
 
@@ -102,13 +81,13 @@ class EtudiantController extends AbstractController
     /**
      * @Route("/download/attest/{numero}/{index}", name="download_attest")
      * @param int $numero
-     * @param $index
+     * @param int $index
      * @return BinaryFileResponse|Response
      */
-    public function download_attest(int $numero, $index)
+    public function download_attest(int $numero, int $index)
     {
         if (!$this->isGranted("ROLE_SCOLA")) {
-            if ($numero != $this->getUser()->getExtraFields()["numero"])
+            if ($numero != $this->getUser()->getNumero())
                 return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
         }
 

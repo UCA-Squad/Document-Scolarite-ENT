@@ -23,23 +23,22 @@ interface IEtuParser
 	 */
 	public function getNbDoublons(): int;
 
-	/**
-	 * Return the name for a releve.
-	 * @param string $date
-	 * @param Student $stud
-	 * @param ImportedData|null $data
-	 * @return string
-	 */
-	public function getReleveFileName(string $date, Student $stud, ImportedData $data = null): string;
+    /**
+     * Return the name for a releve.
+     * @param ImportedData $data
+     * @param string $num
+     * @return string
+     */
+	public function getReleveFileName(ImportedData $data, string $num): string;
 
-	/**
-	 * Return the name for an attestation.
-	 * @param string $date
-	 * @param Student $stud
-	 * @param ImportedData|null $data
-	 * @return string
-	 */
-	public function getAttestFileName(string $date, Student $stud, ImportedData $data = null): string;
+    /**
+     * Return the name for an attestation.
+     * @param ImportedData $data
+     * @param string $num
+     * @return string
+     */
+    public function getAttestFileName(ImportedData $data, string $num): string;
+
 
 	/**
 	 * Retrieve a student from the pdf content by applying numero regexes.

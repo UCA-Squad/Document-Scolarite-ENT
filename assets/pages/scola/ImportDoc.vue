@@ -26,7 +26,8 @@
 
     <Import :mode="mode" v-if="step === 0" v-on:imported="onDataImported"/>
     <Tampon :mode="mode" v-if="step === 1" v-on:tamponned="onTamponned"/>
-    <Truncate :mode="mode" v-if="step === 2" :page-count="this.importData.pageCount" :page-index="this.importData.pageFirst"
+    <Truncate :mode="mode" v-if="step === 2" :page-count="this.importData.pageCount"
+              :page-index="this.importData.pageFirst"
               v-on:truncated="onDataTruncated"/>
     <Selection :mode="mode" v-if="step === 3" v-on:selected="onSelected"/>
     <Transfert :mode="mode" v-if="step === 4" :students="this.students" :selectedRows="this.selectedRows"
@@ -43,7 +44,7 @@ import Transfert from "./Transfert.vue";
 import Tampon from "./Tampon.vue";
 
 export default {
-  name: "ImportRN",
+  name: "ImportDoc",
   components: {Tampon, Transfert, Selection, Truncate, Import},
   props: {
     mode: Number
@@ -85,7 +86,10 @@ export default {
     },
     onTransfertFinished() {
       this.step = 5;
-      this.$router.push({path: '/scola/monitoring/rn'});
+      if (this.mode === 0)
+        this.$router.push({path: '/scola/monitoring/rn'});
+      else if (this.mode === 1)
+        this.$router.push({path: '/scola/monitoring/attest'});
     }
   },
   beforeRouteLeave(to, from, next) {

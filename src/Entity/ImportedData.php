@@ -145,6 +145,11 @@ class ImportedData implements \JsonSerializable
         return (string)$this->libelle_form;
     }
 
+    public function isRn(): bool
+    {
+        return !empty($this->semestre) && !empty($this->session) && !empty($this->libelle_form);
+    }
+
     /**
      * Call by the form
      * @param string $libelle
@@ -158,15 +163,11 @@ class ImportedData implements \JsonSerializable
 
     public function LoadStudentData(Student $stud, string $year, int $nb_students, string $username)
     {
-        if (!(isset($stud)))
-            return;
         $this->year = $year;
         $this->type = $stud->getType();
         $this->code = $stud->getCodeEtape();
         $this->code_obj = $stud->getCode();
         $this->nb_students = $nb_students;
-        //$this->pdf_filename = $this->pdf->getClientOriginalName();
-        //$this->etu_filename = $this->etu->getClientOriginalName();
         $this->username = $username;
         $this->libelle_obj = $stud->getLibelleObj();
         $this->libelle = $stud->getLibelle();

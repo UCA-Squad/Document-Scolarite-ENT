@@ -233,9 +233,9 @@ class PDF
                 $newPdf->Image($this->image, $this->image_position['x'], $this->image_position['y'], 0, 0);
 
             if ($this->getFilename == ImportedData::RN)
-                $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($data->getYear(), $stud, $data));
+                $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($data, $stud->getNumero()));
             else
-                $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($data->getYear(), $stud, $data));
+                $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($data, $stud->getNumero()));
             $newPdf->output($str, 'F');
             $newPdf->Close();
             return $i;
@@ -293,9 +293,9 @@ class PDF
                 if ($this->image_position != null && $this->image != null)
                     $newPdf->Image($this->image, $this->image_position['x'], $this->image_position['y'], 0, 0);
                 if ($this->getFilename == ImportedData::RN)
-                    $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($data->getYear(), $stud, $data));
+                    $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getReleveFileName($data, $stud->getNumero()));
                 else
-                    $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($data->getYear(), $stud, $data));
+                    $str = $outputDir . '/' . ($setup ? $this->file_access->getPdfTamponByMode($this->getFilename, 'f') : $this->parser->getAttestFileName($data, $stud->getNumero()));
                 $newPdf->output($str, 'F');
                 $newPdf->Close();
                 $pdfCount++;

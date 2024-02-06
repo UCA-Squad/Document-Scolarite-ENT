@@ -2,26 +2,18 @@ import axios from "axios";
 
 class WebService {
 
-    getMonitoring(mode){
+    getMonitoring(mode) {
         if (mode === 0)
-            return axios.get("/monitoring/api/rn");
-        return axios.get("/monitoring/api/attest");
-    }
-
-    getRnMonitoring() {
-        return axios.get("/monitoring/api/rn")
-    }
-
-    getAttestMonitoring() {
-        return axios.get("/monitoring/api/attest")
+            return axios.get("/api/monitoring/rn");
+        return axios.get("/api/monitoring/attest");
     }
 
     searchStudent(searchFiled) {
-        return axios.post("/api/search", searchFiled);
+        return axios.post("/api/scola/search", searchFiled);
     }
 
     getStudentDocs(num) {
-        return axios.get("/etudiant/api/" + num);
+        return axios.get("/api/etudiant/" + num);
     }
 
     importRn(mode, rn) {
@@ -35,41 +27,35 @@ class WebService {
         formData.append("tampon", rn.tampon);
         formData.append("numTampon", rn.numTampon);
 
-        console.log("Mode : " + mode);
-
         if (mode === 0)
-            return axios.post("/import/api/rn", formData, {headers: {"Content-Type": "multipart/form-data"}});
+            return axios.post("/api/import/rn", formData, {headers: {"Content-Type": "multipart/form-data"}});
 
-        return axios.post("/import/api/attests", formData, {headers: {"Content-Type": "multipart/form-data"}});
+        return axios.post("/api/import/attests", formData, {headers: {"Content-Type": "multipart/form-data"}});
     }
 
     truncate(pageIndex, mode) {
-        return axios.post("/import/truncate_unit", {
+        return axios.post("/api/import/truncate_unit", {
             'page': pageIndex,
             'mode': mode
         });
     }
 
-    getSelectionRn() {
-        return axios.get("/selection/api/rn");
-    }
-
     getSelection(mode) {
         if (mode === 0)
-            return axios.get("/selection/api/rn");
-        return axios.get("/selection/api/attest");
+            return axios.get("/api/selection/rn");
+        return axios.get("/api/selection/attest");
     }
 
     transfertRn(studentNums, mode) {
-        return axios.post("/transfert/releves", {'nums': studentNums, 'mode': mode});
+        return axios.post("/api/transfert/releves", {'nums': studentNums, 'mode': mode});
     }
 
     fetchMailTemplate() {
-        return axios.get("/transfert/mail/template");
+        return axios.get("/api/transfert/mail/template");
     }
 
     sendMail(studentsNum, mode) {
-        return axios.post("/transfert/mail", {'ids': studentsNum, 'mode': mode});
+        return axios.post("/api/transfert/mail", {'ids': studentsNum, 'mode': mode});
     }
 
     getTamponExample(mode) {
@@ -84,18 +70,18 @@ class WebService {
     }
 
     fetchRnFiles(importId) {
-        return axios.get("/import/imported/" + importId);
+        return axios.get("/api/import/imported/" + importId);
     }
 
     removeFiles(id, nums) {
-        return axios.post("/import/delete", {
+        return axios.post("/api/monitoring/delete", {
             'dataId': id,
             'numsEtu': nums
         });
     }
 
     sendMails(nums) {
-        return axios.post("/transfert/mail", {
+        return axios.post("/api/transfert/mail", {
             'numsEtu': nums,
             'mode': 0
         });

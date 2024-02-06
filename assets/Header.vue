@@ -30,7 +30,7 @@ export default {
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li v-if="user.isAdmin()" class="nav-item dropdown">
+          <li v-if="user.isScola()" class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Relevés
             </a>
@@ -43,7 +43,7 @@ export default {
               </li>
             </ul>
           </li>
-          <li v-if="user.isAdmin()" class="nav-item dropdown">
+          <li v-if="user.isScola()" class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Attestations
             </a>
@@ -52,7 +52,7 @@ export default {
               <li><router-link class="dropdown-item" to="/scola/monitoring/attest">Suivi</router-link></li>
             </ul>
           </li>
-          <li v-if="user.isAdmin()" class="nav-item">
+          <li v-if="user.isScola()" class="nav-item">
             <router-link active-class="active" class="nav-link" aria-current="page" to="/scola/search">Recherche
               étudiant
             </router-link>

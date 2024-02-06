@@ -26,10 +26,6 @@ export default {
               <router-link class="btn btn-secondary" to="/scola/monitoring/rn">Suivi du dépôt des relevés de notes
               </router-link>
             </h2>
-            <!--            <h2 style="text-align: center">-->
-            <!--              <a class="btn btn-secondary" href="{{ path('delete_import_rn') }}">Suppression de relevés de-->
-            <!--                notes</a>-->
-            <!--            </h2>-->
           </div>
         </div>
       </div>
@@ -42,14 +38,11 @@ export default {
               <router-link class="btn btn-secondary" to="/scola/import/attest">Importer des attestations de réussite
               </router-link>
             </h2>
-            <h2 style="text-align: center"><a class="btn btn-secondary"
-                                              href="{{ path('monitoring_attest') }}">Suivi du dépôt des
-              attestations de réussite</a>
+            <h2 style="text-align: center">
+              <router-link class="btn btn-secondary" to="/scola/monitoring/attest">Suivi du dépôt des
+                attestations de réussite
+              </router-link>
             </h2>
-            <!--            <h2 style="text-align: center">-->
-            <!--              <a class="btn btn-secondary" href="{{ path('delete_import_attest') }}">Suppression-->
-            <!--                d’attestations de réussite</a>-->
-            <!--            </h2>-->
           </div>
         </div>
       </div>

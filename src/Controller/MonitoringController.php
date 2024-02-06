@@ -5,62 +5,33 @@ namespace App\Controller;
 
 
 use App\Entity\History;
-use App\Entity\ImportedData;
-use App\Form\ImportType;
-use App\Logic\CustomFinder;
-use App\Parser\IEtuParser;
+use App\Logic\FileAccess;
+use App\Parser\EtuParser;
 use App\Repository\HistoryRepository;
 use App\Repository\ImportedDataRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/monitoring")
+ * @Route("/api/monitoring")
  */
 class MonitoringController extends AbstractController
 {
-//    /**
-//     * @Route("/rn", name="monitoring_rn")
-//     * @param HistoryRepository $repo
-//     * @return Response
-//     */
-//    public function monitoring_rn(HistoryRepository $repo): Response
-//    {
-//        $admins = $this->getParameter('admin_users');
-//        $isAdmin = in_array($this->getUser()->getUsername(), $admins);
-//
-//        if ($isAdmin)
-//            $histories = $repo->findRNHistories();
-//        else
-//            $histories = $repo->findRNHistoriesForUser($this->getUser()->getUsername());
-//
-//        return $this->render("monitoring/monitoring.html.twig", [
-//            'histories' => $histories,
-//            'mode' => ImportedData::RN,
-//            'isAdmin' => $isAdmin
-//        ]);
-//    }
-
     /**
-     * @Route("/api/rn", name="get_monitoring_rn")
-     * @param HistoryRepository $repo
+     * @Route("/rn", name="get_monitoring_rn")
      * @param ImportedDataRepository $importedDataRepository
      * @return JsonResponse
      */
-    public function get_monitoring_rn(HistoryRepository $repo, ImportedDataRepository $importedDataRepository): JsonResponse
+    public function get_monitoring_rn(ImportedDataRepository $importedDataRepository): JsonResponse
     {
         if (in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
-            $imports = $importedDataRepository->findBy([
-                'username' => $this->getUser()->getUsername(),
-                'semestre' => !null,
-                'session' => !null,
-            ], ['id' => 'DESC']);
+            $imports = $importedDataRepository->findAllRns();
         else
-            $imports = $repo->findRNHistoriesForUser($this->getUser()->getUsername());
+            $imports = $importedDataRepository->findAllRns($this->getUser()->getUsername());
 
         usort($imports, function ($a, $b) {
             return $a->getLastHistory()->getDate() < $b->getLastHistory()->getDate();
@@ -70,35 +41,16 @@ class MonitoringController extends AbstractController
     }
 
     /**
-     * @Route("/api/attest", name="get_monitoring_attest")
-     * @param HistoryRepository $repo
+     * @Route("/attest", name="get_monitoring_attest")
+     * @param ImportedDataRepository $importedDataRepository
      * @return Response
      */
-    public function monitoring_attest(HistoryRepository $repo, ImportedDataRepository $importedDataRepository): Response
+    public function monitoring_attest(ImportedDataRepository $importedDataRepository): Response
     {
-//        $admins = $this->getParameter('admin_users');
-//        $isAdmin = in_array($this->getUser()->getUsername(), $admins);
-//
-//        if ($isAdmin)
-//            $imports = $repo->findAttestHistories();
-//        else
-//            $imports = $repo->findAttestHistoriesForUser($this->getUser()->getUsername());
-//
-//        return $this->render("monitoring/monitoring.html.twig", [
-//            'histories' => $imports,
-//            'mode' => ImportedData::ATTEST,
-//            'isAdmin' => $isAdmin
-//        ]);
-
-
         if (in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
-            $imports = $importedDataRepository->findBy([
-                'username' => $this->getUser()->getUsername(),
-                'semestre' => "",
-                'session' => "",
-            ], ['id' => 'DESC']);
+            $imports = $importedDataRepository->findAllAttests();
         else
-            $imports = $repo->findAttestHistoriesForUser($this->getUser()->getUsername());
+            $imports = $importedDataRepository->findAllAttests($this->getUser()->getUsername());
 
         usort($imports, function ($a, $b) {
             return $a->getLastHistory()->getDate() < $b->getLastHistory()->getDate();
@@ -108,115 +60,49 @@ class MonitoringController extends AbstractController
     }
 
     /**
-     * @Route("/import/rn", name="delete_import_rn")
+     * @Route("/delete", name="api_delete_file", methods={"POST"})
      * @param Request $request
-     * @param IEtuParser $parser
-     * @return Response
-     */
-    function delete_import_rn(Request $request, IEtuParser $parser): Response
-    {
-        $form = $this->createForm(ImportType::class, null, ["act" => ImportType::DELETE, "type" => ImportType::RELEVE]);
-
-        return $this->delete_import($request, $parser, $form, $this->getParameter("output_dir_rn"), ImportedData::RN);
-    }
-
-    /**
-     * @Route("/import/attest", name="delete_import_attest")
-     * @param Request $request
-     * @param IEtuParser $parser
-     * @return Response
-     */
-    function delete_import_attest(Request $request, IEtuParser $parser): Response
-    {
-        $form = $this->createForm(ImportType::class, null, ["act" => ImportType::DELETE, "type" => ImportType::ATTEST]);
-
-        return $this->delete_import($request, $parser, $form, $this->getParameter("output_dir_attest"), ImportedData::ATTEST);
-    }
-
-//    private function delete_import(Request $request, IEtuParser $parser, FormInterface $form, string $dir, int $mode): Response
-//    {
-//        $form->handleRequest($request);
-//        if ($form->isSubmitted() && $form->isValid()) {
-//            $data = $form->getData();
-//            $etu = $parser->parseETU($data->getEtu());
-//            $finder = new CustomFinder();
-//
-//            $admin = in_array("ROLE_ADMIN", $this->getUser()->getRoles());
-//
-//            $repo = $this->getDoctrine()->getManager()->getRepository(ImportedData::class);
-//            $bddData = $mode == ImportedData::RN ? $repo->findRn($data, $this->getUser()->getUsername(), $admin) : $repo->findAttest($data, $this->getUser()->getUsername(), $admin);
-//
-//            $error = true;
-//            if ($bddData != null) {
-//                foreach ($etu as $stud) {
-//                    $year = $data->getYear() . '-' . (substr($data->getYear(), 2, 2) + 1);
-//                    $filename = $mode == ImportedData::RN ? $parser->getReleveFileName($year, $stud, $bddData) : $parser->getAttestFileName($year, $stud, $bddData);
-//                    if (is_file($dir . $stud->getNumero() . '/' . $filename)) {
-//                        $error = false;
-//                        $stud->setFile($filename);
-//                        $stud->setIndex($finder->getFileIndex($dir . $stud->getNumero(), $stud->getFile()));
-//                    }
-//                }
-//            }
-//            if (!$error)
-//                return $this->render('releve_notes/selection_delete.html.twig', ['students' => $etu, 'parser' => $parser, 'mode' => $mode, 'bddData' => $bddData]);
-//        }
-//
-//        return $this->render("monitoring/delete_import.html.twig", [
-//            'form' => $form->createView(),
-//            'mode' => $mode,
-//            'error' => isset($error) && $error ? 'Aucun document ne correspond aux informations.' : null
-//        ]);
-//    }
-
-    /**
-     * @Route("/delete/rn", name="delete_rn")
-     * @param Request $request
+     * @param ImportedDataRepository $repo
+     * @param FileAccess $fileAccess
+     * @param EntityManagerInterface $em
      * @return JsonResponse
      */
-    function delete_rn(Request $request): JsonResponse
+    public function removeFile(Request $request, ImportedDataRepository $repo, FileAccess $fileAccess, EtuParser $parser, EntityManagerInterface $em): JsonResponse
     {
-        return $this->delete($request, $this->getParameter('output_dir_rn'));
-    }
+        $params = json_decode($request->getContent(), true);
 
-    /**
-     * @Route("/delete/attest", name="delete_attest")
-     * @param Request $request
-     * @return JsonResponse
-     */
-    function delete_attest(Request $request): JsonResponse
-    {
-        return $this->delete($request, $this->getParameter('output_dir_attest'));
-    }
+        $dataId = $params['dataId'];
+        $numsEtu = $params['numsEtu'];
 
-    private function delete(Request $request, string $dir): JsonResponse
-    {
-        $ids = $request->get("ids");
-        $dataId = $request->get("dataId");
+        $data = $repo->find($dataId);
+        if (!isset($data) || empty($numsEtu))
+            return $this->json('Missing params', 403);
 
-        // Ajax call may be fail if ids is to big.
-        // max_input_vars has been up to 3500 in php.ini
-        if ($ids == null || $dataId == null)
-            return new JsonResponse(null, 500);
+        if ($data->isRn())
+            $folder = $fileAccess->getRn();
+        else
+            $folder = $fileAccess->getAttest();
 
-        $em = $this->getDoctrine()->getManager();
 
-        $bddData = $em->getRepository(ImportedData::class)->find($dataId);
+        $data->addHistory(new History($data->getHistory()->last()->getNbFiles(), History::Modified));
 
-        $last_hist = $bddData->getLastHistory();
+        foreach ($numsEtu as $numEtu) {
 
-        $hist = new History($last_hist->getNbFiles() - count($ids), History::Modified);
-        $bddData->addHistory($hist);
+            if ($data->isRn())
+                $filename = $parser->getReleveFileName($data, $numEtu);
+            else
+                $filename = $parser->getAttestFileName($data, $numEtu);
 
-        foreach ($ids as $id) {
-            $file = $dir . $id['id'] . '/' . $id['file'];
-            if (is_file($file))
-                unlink($file);
+            if (!file_exists($folder . $numEtu . "/" . $filename))
+                return $this->json('Impossible de supprimer le document', 500);
+
+            $data->getHistory()->last()->setNbFiles($data->getHistory()->last()->getNbFiles() - 1);
+            unlink($folder . $numEtu . "/" . $filename);
         }
 
-        $em->persist($bddData);
+        $em->persist($data);
         $em->flush();
 
-        return new JsonResponse();
+        return $this->json(null);
     }
 }

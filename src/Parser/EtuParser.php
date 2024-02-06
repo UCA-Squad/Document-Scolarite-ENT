@@ -7,11 +7,9 @@ namespace App\Parser;
 use App\Entity\ImportedData;
 use App\Entity\Student;
 use App\Normalizer\StudentNormalizer;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class EtuParser implements IEtuParser
 {
@@ -71,30 +69,30 @@ class EtuParser implements IEtuParser
         return $studs;
     }
 
-    public function getReleveFileName(string $date, Student $stud, ImportedData $data = null): string
+    public function getReleveFileName(ImportedData $data, string $num): string
     {
-        $code = $stud->getCodeEtape() != "--" && $stud->getCodeEtape() != "" ? $stud->getCodeEtape() : $stud->getCode();
+        $code = $data->getCode() != "--" && $data->getCode() != "" ? $data->getCode() : $data->getCodeObj();
 
-        return $stud->getNumero() . '_' . $date . '_' . $code . '_' . "sess" . $data->getSession() . "_sem" . $data->getSemestre() .
-            "_" . ($stud->getLibelle() == "" ? $data->getLibelleForm() : $stud->getLibelle()) . '.pdf';
+        return $num . '_' . $data->getYear() . '_' . $code . '_' . "sess" . $data->getSession() . "_sem" . $data->getSemestre() .
+            "_" . ($data->getLibelle() == "" ? $data->getLibelleForm() : $data->getLibelle()) . '.pdf';
     }
 
-    public function getAttestFileName(string $date, Student $stud, ImportedData $data = null): string
+    public function getAttestFileName(ImportedData $data, string $num): string
     {
         $separator = "AR";
-        $libelle = $stud->getLibelle();
-        $code = $stud->getCodeEtape();
-        if ($stud->getType() == "ELP") {
+        $libelle = $data->getLibelle();
+        $code = $data->getCode();
+        if ($data->getType() == "ELP") {
             $separator = "ARM";
-            $code = $stud->getCode();
-        } else if ($stud->getType() == "VET")
+            $code = $data->getCodeObj();
+        } else if ($data->getType() == "VET")
             $separator = "ARN";
-        else if ($stud->getType() == "VDI") {
-            $libelle = $stud->getLibelleObj();
+        else if ($data->getType() == "VDI") {
+            $libelle = $data->getLibelleObj();
             $separator = "ARD";
         }
 
-        return $stud->getNumero() . '_' . $date . '_' . $separator . '_' . $code . '_' . $libelle . '.pdf';
+        return "{$num}_{$data->getYear()}_{$separator}_{$code}_{$libelle}.pdf";
     }
 
     /**

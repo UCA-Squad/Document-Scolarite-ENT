@@ -1,7 +1,7 @@
 <template>
 
   <!--  HEADER INFO-->
-  <div v-if="this.data !== null" class="mt-2 row justify-content-md-center opaker">
+  <div v-if="this.data !== null" class="mt-2 row justify-content-md-center">
     <div class="form-group col-sm-2">
       <label class="control-label">Semestre</label>
       <input v-model="this.data.semestre" class="form-control" style="text-align: center" name="session" type="text"
@@ -30,7 +30,10 @@
 
   <!--  BUTTONS-->
   <div id="transfert_div" class="row justify-content-md-center mt-2">
-    <button type="button" class="btn btn-primary" id="btn_go" @click="OnGO">Continuer</button>
+    <button type="button" class="btn btn-primary" id="btn_go" :disabled="selectedRows.length === 0" @click="OnGO">
+      <span v-if="selectedRows.length === 0">Continuer</span>
+      <span v-else>Continuer ({{ this.selectedRows.length }} / {{ this.data.nb_students }})</span>
+    </button>
   </div>
 
   <!--  TABLEAU-->
@@ -52,7 +55,7 @@
 </template>
 
 <script>
-import WebService from "../../../WebService";
+import WebService from "../../WebService";
 import {AgGridVue} from "ag-grid-vue3";
 import "ag-grid-community/styles/ag-grid.css"; // Core CSS
 import "ag-grid-community/styles/ag-theme-alpine.css"; // Theme
@@ -68,7 +71,7 @@ export default {
     return {
       data: null,
       students: null,
-      selectedRows: null,
+      selectedRows: [],
       defaultColDef: {
         sortable: true,
         filter: true,
@@ -92,13 +95,20 @@ export default {
         {field: "mail", headerName: "Mail"},
         {
           headerName: "Relevé", flex: 2, cellRenderer: params => {
-            return `<a target="_blank" href="/preview/tmp/releves/${params.data.numero}">${params.data.file}</a>`;
+            if (this.mode === 0)
+              return `<a target="_blank" href="/preview/tmp/releves/${params.data.numero}">${params.data.file}</a>`;
+            else
+              return `<a target="_blank" href="/preview/tmp/attests/${params.data.numero}">${params.data.file}</a>`;
           }
         },
         {
           headerName: "Relevé déjà existant", cellStyle: {textAlign: 'center'}, cellRenderer: params => {
-            if (params.data.index !== -1)
-              return `<a target="_blank" href="/preview/releves/${params.data.numero}/${params.data.index}">Voir</a>`;
+            if (params.data.index !== -1) {
+              if (this.mode === 0)
+                return `<a target="_blank" href="/preview/releves/${params.data.numero}/${params.data.index}">Voir</a>`;
+              else
+                return `<a target="_blank" href="/preview/attests/${params.data.numero}/${params.data.index}">Voir</a>`;
+            }
           }
         },
       ]
@@ -118,7 +128,9 @@ export default {
       this.selectedRows = event.api.getSelectedRows();
     },
     OnGO() {
-      this.$emit('selected', this.selectedRows.map(r => r.numero), this.students, this.data);
+      if (confirm("En continuant, les documents séléctionnés seront transférés.")) {
+        this.$emit('selected', this.selectedRows.map(r => r.numero), this.students, this.data);
+      }
     },
   },
   mounted() {

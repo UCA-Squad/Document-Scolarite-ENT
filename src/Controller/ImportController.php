@@ -7,13 +7,11 @@ namespace App\Controller;
 use App\Entity\History;
 use App\Entity\ImportedData;
 use App\Exception\ImportException;
-use App\Form\ImportType;
-use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Logic\PDF;
+use App\Parser\EtuParser;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
 use setasign\Fpdi\PdfParser\Filter\FilterException;
@@ -21,19 +19,16 @@ use setasign\Fpdi\PdfParser\PdfParserException;
 use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use setasign\Fpdi\PdfReader\PdfReaderException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/import")
+ * @Route("/api/import")
  * @IsGranted("ROLE_SCOLA")
  */
 class ImportController extends AbstractController
@@ -56,62 +51,21 @@ class ImportController extends AbstractController
         $this->pdfTool = $pdfTool;
     }
 
-//    /**
-//     * Check if files from previous selection exists.
-//     * @param int $mode
-//     * @return RedirectResponse|null
-//     */
-//    private function selection_check(int $mode): ?RedirectResponse
-//    {
-//        $tmp_folder = $this->file_access->getTmpByMode($mode);
-//        $etu_file = $this->file_access->getEtuByMode($mode);
-//        $pdf_file = $this->file_access->getPdfByMode($mode);
-//
-//        $tampon_folder = $this->file_access->getTamponFolder();
-//        $tampon_image = $this->file_access->getTamponByMode($mode);
-//        $tampon_pdf = $this->file_access->getPdfTamponByMode($mode);
-//
-//        $finder = new CustomFinder();
-//
-//        $this->session->remove('tampon');
-//        $this->session->remove('transfered');
-//
-//        // Tamponnage vérif
-//        if (is_dir($tampon_folder) && file_exists($tampon_image) && file_exists($tampon_pdf) && file_exists($pdf_file))
-//            return $this->redirectToRoute('setup_images', ['mode' => $mode]);
-//        else {
-//            if (file_exists($pdf_file)) unlink($pdf_file);
-//            if (file_exists($tampon_image)) unlink($tampon_image);
-//            if (file_exists($tampon_pdf)) unlink($tampon_pdf);
-//        }
-//
-//        // Selection vérif
-//        if (file_exists($etu_file) && !empty($finder->getDirsName($tmp_folder)))
-//            return $mode == ImportedData::RN ? $this->redirectToRoute('selection_rn') : $this->redirectToRoute('selection_attests');
-//        else {
-//            $finder->deleteDirectory($tmp_folder);
-//            if (file_exists($etu_file)) unlink($etu_file);
-//        }
-//
-//        return null;
-//    }
-
     /**
      * @param ImportedData $import
      * @param FileAccess $fileAccess
+     * @param EtuParser $parser
      * @return JsonResponse
      * @Route("/imported/{id}")
      */
-    public function getImportedFiles(ImportedData $import, FileAccess $fileAccess): JsonResponse
+    public function getImportedFiles(ImportedData $import, FileAccess $fileAccess, EtuParser $parser): JsonResponse
     {
-        // Récupère les relevés dont le nom correspond aux données de l'import
         if (empty($import->getSemestre()) && empty($import->getSession())) {
             $folder = $fileAccess->getAttest();
-            $pattern = "*/*_{$import->getYear()}_{$import->getCode()}_{$import->getLibelle()}*.pdf";
+            $pattern = "*/" . $parser->getAttestFileName($import, '*');
         } else {
             $folder = $fileAccess->getRn();
-            $lib = empty($import->getLibelle()) ? $import->getLibelleForm() : $import->getLibelle();
-            $pattern = "*/*_{$import->getYear()}_{$import->getCode()}_sess{$import->getSession()}_sem{$import->getSemestre()}_$lib*.pdf";
+            $pattern = "*/" . $parser->getReleveFileName($import, '*');
         }
 
         $files = glob($folder . $pattern);
@@ -120,59 +74,7 @@ class ImportController extends AbstractController
     }
 
     /**
-     * @Route("/delete", name="api_delete_file", methods={"POST"})
-     * @param Request $request
-     * @param ImportedDataRepository $repo
-     * @param FileAccess $fileAccess
-     * @param EntityManagerInterface $em
-     * @return JsonResponse
-     */
-    public function removeFile(Request $request, ImportedDataRepository $repo, FileAccess $fileAccess, EntityManagerInterface $em): JsonResponse
-    {
-        $params = json_decode($request->getContent(), true);
-
-        $dataId = $params['dataId'];
-        $numsEtu = $params['numsEtu'];
-
-        $data = $repo->find($dataId);
-        if (!isset($data) || empty($numsEtu))
-            return $this->json('Missing params', 403);
-
-        $folder = $fileAccess->getRn();
-
-        $data->addHistory(new History($data->getHistory()->last()->getNbFiles(), History::Modified));
-
-        foreach ($numsEtu as $numEtu) {
-
-            $lib = empty($data->getLibelle()) ? $data->getLibelleForm() : $data->getLibelle();
-            $filename = "{$numEtu}_{$data->getYear()}_{$data->getCode()}_sess{$data->getSession()}_sem{$data->getSemestre()}_$lib.pdf";
-
-            if (!file_exists($folder . $numEtu . "/" . $filename))
-                return $this->json('Impossible de supprimer le document', 500);
-
-            $data->getHistory()->last()->setNbFiles($data->getHistory()->last()->getNbFiles() - 1);
-            unlink($folder . $numEtu . "/" . $filename);
-        }
-
-        $em->persist($data);
-        $em->flush();
-
-        return $this->json(null);
-    }
-
-
-//    /**
-//     * @Route("/releves", name="import_rn")
-//     * @param Request $request
-//     * @return JsonResponse
-//     */
-//    public function import_rn(Request $request): JsonResponse
-//    {
-//        return $this->import_generique($request, ImportedData::RN);
-//    }
-
-    /**
-     * @Route("/api/rn", name="api_import_rn", methods={"POST"})
+     * @Route("/rn", name="api_import_rn", methods={"POST"})
      * @param Request $request
      * @return Response
      */
@@ -182,7 +84,7 @@ class ImportController extends AbstractController
     }
 
     /**
-     * @Route("/api/attests", name="api_import_attests", methods={"POST"})
+     * @Route("/attests", name="api_import_attests", methods={"POST"})
      * @param Request $request
      * @return Response
      */
@@ -245,8 +147,6 @@ class ImportController extends AbstractController
         $numTampon = $request->get('numTampon');
 
         $import = (new ImportedData())
-            // ->setPdf($request->files->get('pdf'))
-            // ->setEtu($request->files->get('etu'))
             ->setPdfFilename($pdfFile->getClientOriginalName())
             ->setEtuFilename($etuFile->getClientOriginalName())
             ->setSession($request->get('sess'))
@@ -263,6 +163,8 @@ class ImportController extends AbstractController
         $sameParams = isset($existingImport) &&
             $existingImport->getSemestre() == $import->getSemestre() &&
             $existingImport->getSession() == $import->getSession();
+
+//        dd($existingImport, $import);
 
         if (isset($existingImport)) {
             $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
@@ -295,22 +197,6 @@ class ImportController extends AbstractController
             'sameParams' => $sameParams,
         ]);
     }
-
-//    /**
-//     * @Route("/truncate/{mode}", name="truncate")
-//     */
-//    public function truncate(int $mode, PDF $pdfTool): Response
-//    {
-//        $pageCount = $pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
-//        $pageFirst = $this->session->get('indexes') !== null ? array_key_first($this->session->get('indexes')['indexes']) : null;
-//
-//        return $this->render('truncate.html.twig', [
-//            'mode' => $mode,
-//            'pageCount' => $pageCount,
-//            'pageFirst' => $pageFirst
-//        ]);
-//    }
-
 
     /**
      * @param int $mode
@@ -381,12 +267,7 @@ class ImportController extends AbstractController
 
         $data->LoadStudentData($etu[0], $date, count($etu), $this->getUser()->getUsername());
 
-        //$this->updateData($data);
-        //$data->addHistory(new History(0));
         $this->session->set('data', $data);
-
-//        $tmp = $this->session->get('data');
-//        $tmp1 = ($tmp->getHistory()->count());
     }
 
 
@@ -428,29 +309,15 @@ class ImportController extends AbstractController
 //
 //        } catch (PdfParserException|CrossReferenceException $e) {
 
-            $cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . $name . "' '" . $pdf->getPathname() . "'";
-            try {
-                Process::fromShellCommandline($cmd)->setTimeout(null)->setIdleTimeout(null)->run();
-            } catch (\Exception $e) {
-                return false;
-            }
+        $cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . $name . "' '" . $pdf->getPathname() . "'";
+        try {
+            Process::fromShellCommandline($cmd)->setTimeout(null)->setIdleTimeout(null)->run();
+        } catch (\Exception $e) {
+            return false;
+        }
 //        }
 
         return true;
     }
 
-//    /**
-//     * Supprime les fichiers et données mis en cache.
-//     */
-//    public static function clearCache(SessionInterface $session, FileAccess $file_access, int $mode)
-//    {
-//        $session->remove('students');
-//        $session->remove('indexes');
-//
-//        $pdf_file = $file_access->getPdfByMode($mode);
-//        if (file_exists($pdf_file)) unlink($pdf_file);
-//
-//        $etu_file = $file_access->getEtuByMode($mode);
-//        if (file_exists($etu_file)) unlink($etu_file);
-//    }
 }
