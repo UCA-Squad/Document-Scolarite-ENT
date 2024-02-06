@@ -1,7 +1,7 @@
 {
-  "build/app.css": "build/app.328865b9.css",
-  "build/app.js": "build/app.0f978d7f.js",
-  "build/runtime.js": "build/runtime.18a02a75.js",
-  "build/625.ff7a3f0a.css": "build/625.ff7a3f0a.css",
-  "build/625.31225f74.js": "build/625.31225f74.js"
+  "build/app.css": "doc-scola/build/app.328865b9.css",
+  "build/app.js": "doc-scola/build/app.0f978d7f.js",
+  "build/runtime.js": "doc-scola/build/runtime.18a02a75.js",
+  "build/625.ff7a3f0a.css": "doc-scola/build/625.ff7a3f0a.css",
+  "build/625.31225f74.js": "doc-scola/build/625.31225f74.js"
 }
