@@ -57,16 +57,16 @@ axios.interceptors.response.use(function (response) {
     return Promise.reject(error);
 });
 
-router.beforeEach((to, from, next) => {
-    if (user.isEtudiant() && to.path !== '/student') {
-        next({path: '/student'});
-    } else if (to.meta.requiresScola) {
-        if (user.isScola()) next()
-        else next({path: '/'})
-    } else {
-        next()
-    }
-});
+// router.beforeEach((to, from, next) => {
+//     if (user.isEtudiant() && to.path !== '/student') {
+//         next({path: '/student'});
+//     } else if (to.meta.requiresScola) {
+//         if (user.isScola()) next()
+//         else next({path: '/'})
+//     } else {
+//         next()
+//     }
+// });
 
 const app = createApp(App, {})
 
