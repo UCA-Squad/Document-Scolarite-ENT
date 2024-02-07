@@ -28,6 +28,6 @@ export const user = reactive({
         return this.asRole("ROLE_ETUDIANT");
     },
     isScola(){
-        return this.asRole("ROLE_SCOLA");
+        return this.isAdmin() || this.asRole("ROLE_SCOLA");
     }
 })
