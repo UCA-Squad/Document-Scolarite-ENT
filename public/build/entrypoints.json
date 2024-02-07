@@ -2,13 +2,13 @@
   "entrypoints": {
     "app": {
       "js": [
-        "/doc-scola/build/runtime.18a02a75.js",
-        "/doc-scola/build/625.31225f74.js",
-        "/doc-scola/build/app.5cbc0c67.js"
+        "https://ent-test.uca.fr/doc-scola/build/runtime.18a02a75.js",
+        "https://ent-test.uca.fr/doc-scola/build/625.31225f74.js",
+        "https://ent-test.uca.fr/doc-scola/build/app.5cbc0c67.js"
       ],
       "css": [
-        "/doc-scola/build/625.ff7a3f0a.css",
-        "/doc-scola/build/app.328865b9.css"
+        "https://ent-test.uca.fr/doc-scola/build/625.ff7a3f0a.css",
+        "https://ent-test.uca.fr/doc-scola/build/app.328865b9.css"
       ]
     }
   }
