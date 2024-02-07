@@ -76,7 +76,7 @@ Encore
 ;
 
 if (Encore.isProduction()) {
-    Encore.setPublicPath('/doc-scola');
+    Encore.setPublicPath('/doc-scola/build/');
 
     // guarantee that the keys in manifest.json are *still*
     // prefixed with build/
