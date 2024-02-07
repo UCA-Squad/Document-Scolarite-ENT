@@ -2,13 +2,13 @@
   "entrypoints": {
     "app": {
       "js": [
-        "/build/runtime.18a02a75.js",
-        "/build/625.31225f74.js",
-        "/build/app.5cbc0c67.js"
+        "/doc-scola/build/runtime.18a02a75.js",
+        "/doc-scola/build/625.31225f74.js",
+        "/doc-scola/build/app.5cbc0c67.js"
       ],
       "css": [
-        "/build/625.ff7a3f0a.css",
-        "/build/app.328865b9.css"
+        "/doc-scola/build/625.ff7a3f0a.css",
+        "/doc-scola/build/app.328865b9.css"
       ]
     }
   }
