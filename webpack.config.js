@@ -12,7 +12,7 @@ Encore
     // public path used by the web server to access the output path
     .setPublicPath('/build')
     // only needed for CDN's or subdirectory deploy
-    .setManifestKeyPrefix('doc-scola/')
+    //.setManifestKeyPrefix('doc-scola/')
 
     /*
      * ENTRY CONFIG
@@ -74,14 +74,5 @@ Encore
 // uncomment if you're having problems with a jQuery plugin
 //.autoProvidejQuery()
 ;
-
-if (Encore.isProduction()) {
-    Encore.setPublicPath('https://ent-test.uca.fr/doc-scola/build/');
-
-    // guarantee that the keys in manifest.json are *still*
-    // prefixed with build/
-    // (e.g. "build/dashboard.js": "https://my-cool-app.com.global.prod.fastly.net/dashboard.js")
-    Encore.setManifestKeyPrefix('build/');
-}
 
 module.exports = Encore.getWebpackConfig();
