@@ -94,6 +94,10 @@ class WebService {
     getDownloadURL(){
         return this.BASE_URL + "/api/etudiant/download/releve/";
     }
+
+    getSrcTampon(){
+        return this.BASE_URL + "/api/get_tampon/";
+    }
 }
 
 export default new WebService();

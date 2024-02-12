@@ -1,8 +1,7 @@
 <template>
 
   <img alt="tampon" style="z-index: 1; position: absolute" id="draggable" draggable="true"
-       v-on:mousedown="onMouseDown" :src="'/api/get_tampon/' + this.mode">
-
+       v-on:mousedown="onMouseDown" :src="WebService().getSrcTampon() + this.mode">
 
   <button class="btn btn-primary mb-2" type="button" v-on:click="applyTampon">Appliquer le tampon</button>
 
@@ -33,6 +32,9 @@ export default {
     }
   },
   methods: {
+    WebService() {
+      return WebService
+    },
     fetchTampon() {
       WebService.getTamponExample(this.mode).then(response => {
         console.log(response.data);
