@@ -91,13 +91,32 @@ class WebService {
         });
     }
 
-    getDownloadURL(){
+    getDownloadURL() {
         return this.BASE_URL + "/api/etudiant/download/releve/";
     }
 
-    getSrcTampon(){
+    getSrcTampon() {
         return this.BASE_URL + "/api/get_tampon/";
     }
+
+    getPreviewTmpRn(num) {
+        return this.BASE_URL + "/preview/tmp/releves/" + num;
+    }
+
+    getPreviewTmpAttest(num) {
+        return this.BASE_URL + "/preview/tmp/attests/" + num;
+    }
+
+    getPreviewRn(num, index) {
+        return this.BASE_URL + `/preview/releves/${num}/${index}`;
+    }
+
+    getPreviewAttest(num, index) {
+        return this.BASE_URL + `/preview/attests/${num}/${index}`;
+    }
+
+
+
 }
 
 export default new WebService();

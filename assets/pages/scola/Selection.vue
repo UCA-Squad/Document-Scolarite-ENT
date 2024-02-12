@@ -96,18 +96,18 @@ export default {
         {
           headerName: "Relevé", flex: 2, cellRenderer: params => {
             if (this.mode === 0)
-              return `<a target="_blank" href="/preview/tmp/releves/${params.data.numero}">${params.data.file}</a>`;
+              return `<a target="_blank" href="${WebService.getPreviewTmpRn(params.data.numero)}">${params.data.file}</a>`;
             else
-              return `<a target="_blank" href="/preview/tmp/attests/${params.data.numero}">${params.data.file}</a>`;
+              return `<a target="_blank" href="${WebService.getPreviewTmpAttest(params.data.numero)}">${params.data.file}</a>`;
           }
         },
         {
           headerName: "Relevé déjà existant", cellStyle: {textAlign: 'center'}, cellRenderer: params => {
             if (params.data.index !== -1) {
               if (this.mode === 0)
-                return `<a target="_blank" href="/preview/releves/${params.data.numero}/${params.data.index}">Voir</a>`;
+                return `<a target="_blank" href="${WebService.getPreviewRn(params.data.numero, params.data.index)}">Voir</a>`;
               else
-                return `<a target="_blank" href="/preview/attests/${params.data.numero}/${params.data.index}">Voir</a>`;
+                return `<a target="_blank" href="${WebService.getPreviewAttest(params.data.numero, params.data.index)}">Voir</a>`;
             }
           }
         },
