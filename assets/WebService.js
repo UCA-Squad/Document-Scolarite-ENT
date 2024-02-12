@@ -72,18 +72,18 @@ class WebService {
     }
 
     fetchRnFiles(importId) {
-        return axios.get("/api/import/imported/" + importId);
+        return axios.get(BASE_URL + "/api/import/imported/" + importId);
     }
 
     removeFiles(id, nums) {
-        return axios.post("/api/monitoring/delete", {
+        return axios.post(BASE_URL + "/api/monitoring/delete", {
             'dataId': id,
             'numsEtu': nums
         });
     }
 
     sendMails(nums) {
-        return axios.post("/api/transfert/mail", {
+        return axios.post(BASE_URL + "/api/transfert/mail", {
             'numsEtu': nums,
             'mode': 0
         });
