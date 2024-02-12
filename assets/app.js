@@ -10,6 +10,7 @@ import MonitoringDoc from "./pages/scola/Monitoring.vue";
 import SearchStudent from "./pages/scola/SearchStudent.vue";
 import StudentView from "./pages/StudentView.vue";
 import axios from "axios";
+import WebService from "./WebService";
 
 const b64 = document.querySelector('#app').dataset.info;
 const jsonUser = JSON.parse(atob(b64));
@@ -35,8 +36,13 @@ const routes = [
     {path: '/:pathMatch(.*)*', redirect: '/scola'}
 ]
 
+const BASE_URL = '/doc-scola';   // PROD
+// const BASE_URL = '';        // DEV
+
+WebService.BASE_URL = BASE_URL;
+
 const router = createRouter({
-    history: createWebHistory('/doc-scola/'),
+    history: createWebHistory(BASE_URL),
     routes,
 });
 

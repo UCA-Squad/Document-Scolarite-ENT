@@ -1,21 +1,23 @@
 import axios from "axios";
 
-const BASE_URL = '/doc-scola';
+// const this.BASE_URL = '/doc-scola';
 
 class WebService {
 
+    BASE_URL = '';
+
     getMonitoring(mode) {
         if (mode === 0)
-            return axios.get(BASE_URL + "/api/monitoring/rn");
-        return axios.get(BASE_URL + "/api/monitoring/attest");
+            return axios.get(this.BASE_URL + "/api/monitoring/rn");
+        return axios.get(this.BASE_URL + "/api/monitoring/attest");
     }
 
     searchStudent(searchFiled) {
-        return axios.post(BASE_URL + "/api/scola/search", searchFiled);
+        return axios.post(this.BASE_URL + "/api/scola/search", searchFiled);
     }
 
     getStudentDocs(num) {
-        return axios.get(BASE_URL + "/api/etudiant/" + num);
+        return axios.get(this.BASE_URL + "/api/etudiant/" + num);
     }
 
     importRn(mode, rn) {
@@ -30,13 +32,13 @@ class WebService {
         formData.append("numTampon", rn.numTampon);
 
         if (mode === 0)
-            return axios.post(BASE_URL + "/api/import/rn", formData, {headers: {"Content-Type": "multipart/form-data"}});
+            return axios.post(this.BASE_URL + "/api/import/rn", formData, {headers: {"Content-Type": "multipart/form-data"}});
 
-        return axios.post(BASE_URL + "/api/import/attests", formData, {headers: {"Content-Type": "multipart/form-data"}});
+        return axios.post(this.BASE_URL + "/api/import/attests", formData, {headers: {"Content-Type": "multipart/form-data"}});
     }
 
     truncate(pageIndex, mode) {
-        return axios.post(BASE_URL + "/api/import/truncate_unit", {
+        return axios.post(this.BASE_URL + "/api/import/truncate_unit", {
             'page': pageIndex,
             'mode': mode
         });
@@ -44,49 +46,53 @@ class WebService {
 
     getSelection(mode) {
         if (mode === 0)
-            return axios.get(BASE_URL + "/api/selection/rn");
-        return axios.get(BASE_URL + "/api/selection/attest");
+            return axios.get(this.BASE_URL + "/api/selection/rn");
+        return axios.get(this.BASE_URL + "/api/selection/attest");
     }
 
     transfertRn(studentNums, mode) {
-        return axios.post(BASE_URL + "/api/transfert/releves", {'nums': studentNums, 'mode': mode});
+        return axios.post(this.BASE_URL + "/api/transfert/releves", {'nums': studentNums, 'mode': mode});
     }
 
     fetchMailTemplate() {
-        return axios.get(BASE_URL + "/api/transfert/mail/template");
+        return axios.get(this.BASE_URL + "/api/transfert/mail/template");
     }
 
     sendMail(studentsNum, mode) {
-        return axios.post(BASE_URL + "/api/transfert/mail", {'ids': studentsNum, 'mode': mode});
+        return axios.post(this.BASE_URL + "/api/transfert/mail", {'ids': studentsNum, 'mode': mode});
     }
 
     getTamponExample(mode) {
-        return axios.get(BASE_URL + "/api/get_tampon_example/" + mode, {responseType: 'blob'});
+        return axios.get(this.BASE_URL + "/api/get_tampon_example/" + mode, {responseType: 'blob'});
     }
 
     applyTampon(dx, dy) {
-        return axios.post(BASE_URL + "/api/apply_tampon", {
+        return axios.post(this.BASE_URL + "/api/apply_tampon", {
             'dx': dx,
             'dy': dy
         });
     }
 
     fetchRnFiles(importId) {
-        return axios.get(BASE_URL + "/api/import/imported/" + importId);
+        return axios.get(this.BASE_URL + "/api/import/imported/" + importId);
     }
 
     removeFiles(id, nums) {
-        return axios.post(BASE_URL + "/api/monitoring/delete", {
+        return axios.post(this.BASE_URL + "/api/monitoring/delete", {
             'dataId': id,
             'numsEtu': nums
         });
     }
 
     sendMails(nums) {
-        return axios.post(BASE_URL + "/api/transfert/mail", {
+        return axios.post(this.BASE_URL + "/api/transfert/mail", {
             'numsEtu': nums,
             'mode': 0
         });
+    }
+
+    getDownloadURL(){
+        return this.BASE_URL + "/api/etudiant/download/releve/";
     }
 }
 
