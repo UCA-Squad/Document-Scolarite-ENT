@@ -105,7 +105,7 @@ export default {
         this.$emit('finished');
         return;
       }
-      WebService.sendMails(this.numsToTransfert).then(response => {
+      WebService.sendMails(this.selectedRows).then(response => {
         alert("Les mails ont été envoyés");
         this.$emit('finished');
       }).catch(err => {

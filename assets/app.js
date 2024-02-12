@@ -14,8 +14,6 @@ import axios from "axios";
 const b64 = document.querySelector('#app').dataset.info;
 const jsonUser = JSON.parse(atob(b64));
 
-alert('ok');
-
 user.setName(jsonUser.username);
 user.setRoles(jsonUser.roles);
 user.setEncryptedName(jsonUser.encryptedUsername);
@@ -34,41 +32,41 @@ const routes = [
 
     {path: '/student/:num*', component: StudentView, meta: {requiresScola: false}},
 
-   // {path: '/:pathMatch(.*)*', redirect: '/scola'}
+    {path: '/:pathMatch(.*)*', redirect: '/scola'}
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory('/doc-scola/'),
     routes,
 });
 
-//axios.interceptors.response.use(function (response) {
+axios.interceptors.response.use(function (response) {
     // Optional: Do something with response data
-  //  return response;
-//}, function (error) {
-    // Do whatever you want with the response error here:
+    return response;
+}, function (error) {
+    //Do whatever you want with the response error here:
 
-  //  console.log('AXIOS ERR');
+    console.log('AXIOS ERR');
 
-    //if (error.response.status === 403) {
-      //  window.location.reload();
-    //}
+    if (error.response.status === 403) {
+        window.location.reload();
+    }
 
-    // But, be SURE to return the rejected promise, so the caller still has
-    // the option of additional specialized handling at the call-site:
-    //return Promise.reject(error);
-//});
+    //But, be SURE to return the rejected promise, so the caller still has
+    //the option of additional specialized handling at the call-site:
+    return Promise.reject(error);
+});
 
-// router.beforeEach((to, from, next) => {
-//     if (user.isEtudiant() && to.path !== '/student') {
-//         next({path: '/student'});
-//     } else if (to.meta.requiresScola) {
-//         if (user.isScola()) next()
-//         else next({path: '/'})
-//     } else {
-//         next()
-//     }
-// });
+router.beforeEach((to, from, next) => {
+    if (user.isEtudiant() && to.path !== '/student') {
+        next({path: '/student'});
+    } else if (to.meta.requiresScola) {
+        if (user.isScola()) next()
+        else next({path: '/'})
+    } else {
+        next()
+    }
+});
 
 const app = createApp(App, {})
 

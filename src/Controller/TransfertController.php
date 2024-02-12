@@ -36,18 +36,16 @@ class TransfertController extends AbstractController
     private $finder;
     private $params;
     private $docapost;
-    private $session;
     private $em;
     private $repo;
 
     public function __construct(FileAccess   $file_access, CustomFinder $finder, ParameterBagInterface $params,
-                                DocapostFast $docapost, RequestStack $session, EntityManagerInterface $em, ImportedDataRepository $repo)
+                                DocapostFast $docapost, EntityManagerInterface $em, ImportedDataRepository $repo)
     {
         $this->file_access = $file_access;
         $this->finder = $finder;
         $this->params = $params;
         $this->docapost = $docapost;
-        $this->session = $session->getSession();
         $this->em = $em;
         $this->repo = $repo;
     }
@@ -56,12 +54,12 @@ class TransfertController extends AbstractController
      * @Route("/mail/template", name="api_mail_template")
      * @return Response
      */
-    public function api_get_mail_template(): Response
+    public function api_get_mail_template(Request $request): Response
     {
         $mode = 0;
 
-        $stud = $this->session->get('students')[0];
-        $bddData = $this->session->get('data');
+        $stud = $request->getSession()->get('students')[0];
+        $bddData = $request->getSession()->get('data');
 
 //        $this->session->clear();
 
@@ -93,7 +91,7 @@ class TransfertController extends AbstractController
         // How many files to transfert at once
         $batchCount = 10;
 
-        $data = $this->session->get('data');
+        $data = $request->getSession()->get('data');
 
 
 //        try {
@@ -102,7 +100,7 @@ class TransfertController extends AbstractController
             $this->transfert($mode === ImportedData::RN ? ImportedData::RN : ImportedData::ATTEST, $nums[$i], $data);
         }
 
-        $this->session->set('data', $data);
+        $request->getSession()->set('data', $data);
 
 
         $numsTodo = array_slice($nums, $i);
@@ -110,7 +108,7 @@ class TransfertController extends AbstractController
 
         // Last batch
         if (empty($numsTodo)) {
-            $import = $this->session->get('data');
+            $import = $request->getSession()->get('data');
 
             if ($import->getId() !== null) {
                 $existingImport = $this->repo->find($import->getId());
@@ -288,32 +286,33 @@ class TransfertController extends AbstractController
                                ImportedDataRepository $repo, LDAP $ldap): JsonResponse
     {
         $params = json_decode($request->getContent(), true);
-        $ids = $request->get('ids');
+        $ids = $params['numsEtu'];
         $mode = $params['mode'];
 
         $etu = $mode == ImportedData::RN ? $this->getParameter("output_etu_rn") : $this->getParameter("output_etu_attest");
 
         $bddData = $repo->findOneBy(['username' => $this->getUser()->getUserIdentifier()], ['id' => 'DESC']); // findLastDataByMode($mode, $this->getUser()->getUsername());
 
-        $students = $this->session->get('students');
+        $students = $request->getSession()->get('students');
 
         foreach ($students as $stud) {
 
-            if (isset($ids) && $ids != null && in_array($stud->getNumero(), $ids))
+            if (!isset($ids) || !in_array($stud->getNumero(), $ids))
                 continue;
 
             $num = $stud->getNumero();
-            $user = current($ldap->search("(CLFDcodeEtu=$num)", "ou=people,", ["CLFDcodeEtu", "CLFDstatus"]));
+            $user = current($ldap->search("(CLFDcodeEtu=$num)", "ou=people,", ["CLFDcodeEtu", "CLFDstatus", "memberOf"]));
 
             // Vérifie que l'étudiant est actif et non blacklisté pour envoyer mail
-            if (!isset($user) || $user->getAttribute("CLFDstatus")[0] != 0 ||
-                in_array($this->params->get("ldap")["bl_group"], $user->getAttribute("memberOf")))
+            if (!isset($user) || $user->getAttribute("CLFDstatus")[0] == 0 /*||
+                in_array($this->params->get("ldap")["bl_group"], $user->getAttribute("memberOf"))*/)
                 continue;
 
             $this->send_mail($stud, $mode, $bddData, $twig, $mailer);
         }
-        $this->session->clear();
+        $request->getSession()->clear();
         $this->finder->deleteDirectory($etu . $this->getUser()->getUsername() . '.etu');
+
         return new JsonResponse();
     }
 
@@ -328,7 +327,7 @@ class TransfertController extends AbstractController
             'bddData' => $bddData
         ]);
 
-        $to = $this->params->get('kernel.environment') == "dev" ? $this->getUser()->getExtraFields()["mail"] : $stud->getMail();
+        $to = $this->params->get('kernel.environment') == "dev" ? $this->getUser()->getEmail() : $stud->getMail();
 
         $msg = (new Email())
             ->from($this->getParameter('mail_sender'))
