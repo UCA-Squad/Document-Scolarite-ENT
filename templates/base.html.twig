@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdn.uca.fr/v2/css/uca.min.css">
     <script src="https://cdn.uca.fr/v2/js/uca.min.js"></script>
 
-    <link href="https://cdn.uca.fr/menu/css/app.css" rel="stylesheet">
+    {#    <link href="https://cdn.uca.fr/menu/css/app.css" rel="stylesheet"> #}
+    <link href="https://menu.ent.uca.fr/app.css" rel="stylesheet">
 
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
@@ -22,8 +23,9 @@
 
 <div id="app" data-info="{{ b64Info }}"></div>
 
-<script defer src="https://cdn.uca.fr/menu/js/app.js"></script>
-<script defer src="https://cdn.uca.fr/menu/js/chunk-vendors.js"></script>
+{#<script defer src="https://cdn.uca.fr/menu/js/app.js"></script>#}
+{#<script defer src="https://cdn.uca.fr/menu/js/chunk-vendors.js"></script>#}
+<script defer src="https://menu.ent.uca.fr/app.js"></script>
 {% block body %}
 
 {% endblock %}
