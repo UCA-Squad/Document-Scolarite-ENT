@@ -36,8 +36,8 @@ const routes = [
     {path: '/:pathMatch(.*)*', redirect: '/scola'}
 ]
 
-// const BASE_URL = '/doc-scola';   // PROD
-const BASE_URL = '';        // DEV
+const BASE_URL = '/doc-scola';   // PROD
+// const BASE_URL = '';        // DEV
 
 WebService.BASE_URL = BASE_URL;
 
