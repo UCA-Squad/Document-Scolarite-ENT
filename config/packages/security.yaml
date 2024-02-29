@@ -1,28 +1,36 @@
 security:
-    enable_authenticator_manager: true
-    providers:
-        cas:
-            id: App\Security\UserProvider
+  enable_authenticator_manager: true
 
-    firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
-        main:
-            access_denied_handler: App\Security\AccessDeniedHandler
-            logout:
-                path: logout
-            remote_user:
-                provider: cas
-            custom_authenticator: yraiso.cas_authenticator
-            entry_point: yraiso.cas_auth_entry_point
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+  #password_hashers:
+  #   Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+  # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+  providers:
+    cas:
+      id: App\Security\UserProvider
 
-    role_hierarchy:
-        ROLE_ADMIN: [ROLE_SCOLA]
-        ROLE_SCOLA: [ROLE_ETUDIANT]
-        ROLE_ETUDIANT: [ROLE_USER]
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+    main:
+      access_denied_handler: App\Security\AccessDeniedHandler
+      logout:
+        path: logout
+      remote_user:
+        provider: cas
+      custom_authenticator: yraiso.cas_authenticator
+      entry_point: yraiso.cas_auth_entry_point
+      #lazy: true
 
-    access_control:
-        - { path: ^/, roles: ROLE_USER }
-        - { path: ^/scola, roles: ROLE_SCOLA }
-        - { path: ^/etudiant, roles: ROLE_ETUDIANT }
+
+  role_hierarchy:
+    ROLE_ADMIN: [ ROLE_SCOLA ]
+    ROLE_SCOLA: [ ROLE_ETUDIANT ]
+    ROLE_ETUDIANT: [ ROLE_USER ]
+
+  access_control:
+    - { path: ^/, roles: ROLE_USER }
+    - { path: ^/scola, roles: ROLE_SCOLA }
+    - { path: ^/etudiant, roles: ROLE_ETUDIANT }
+
