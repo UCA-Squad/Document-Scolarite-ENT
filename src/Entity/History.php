@@ -4,12 +4,11 @@
 namespace App\Entity;
 
 
+use App\Repository\HistoryRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\HistoryRepository")
- */
+#[ORM\Entity(repositoryClass: HistoryRepository::class)]
 class History implements \JsonSerializable
 {
     // Imported before Selection
@@ -19,31 +18,19 @@ class History implements \JsonSerializable
     // Modified after suppression
     public const Modified = 3;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=false)
-     */
+    #[ORM\Column(type: "datetime", nullable: false)]
     private $date;
 
-    /**
-     * @ORM\Column(type="integer", nullable=false)
-     */
+    #[ORM\Column(type: "integer", nullable: false)]
     private $state;
 
-    /**
-     * @ORM\Column(type="integer", nullable=false)
-     */
+    #[ORM\Column(type: "integer", nullable: false)]
     private $nb_files;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ImportedData", inversedBy="history", fetch="EAGER")
-     */
+    #[ORM\ManyToOne(targetEntity: ImportedData::class, fetch: "EAGER", inversedBy: "history")]
     private $importedData;
 
     public function __construct(int $nb_files, int $state = self::Imported)

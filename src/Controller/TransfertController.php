@@ -13,23 +13,18 @@ use App\Logic\FileAccess;
 use App\Logic\LDAP;
 use App\Repository\ImportedDataRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Twig\Environment;
 
-/**
- * @Route("/api/transfert")
- * @IsGranted("ROLE_SCOLA")
- */
+#[Route('/api/transfert'), IsGranted('ROLE_SCOLA')]
 class TransfertController extends AbstractController
 {
     private $file_access;
@@ -50,10 +45,7 @@ class TransfertController extends AbstractController
         $this->repo = $repo;
     }
 
-    /**
-     * @Route("/mail/template", name="api_mail_template")
-     * @return Response
-     */
+    #[Route('/mail/template', name: 'api_mail_template')]
     public function api_get_mail_template(Request $request): Response
     {
         $mode = 0;
@@ -75,11 +67,7 @@ class TransfertController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/releves", name="transfert_rn")
-     * @param Request $request
-     * @return JsonResponse
-     */
+    #[Route('/releves', name: 'transfert_rn')]
     public function transfert_rn(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -128,11 +116,7 @@ class TransfertController extends AbstractController
 //        }
     }
 
-    /**
-     * @Route("/attests", name="transfert_attest")
-     * @param Request $request
-     * @return JsonResponse
-     */
+    #[Route('/attests', name: 'transfert_attest')]
     public function transfert_attest(Request $request): JsonResponse
     {
         $ids = $request->get("ids");
@@ -273,15 +257,7 @@ class TransfertController extends AbstractController
 //		}
     }
 
-    /**
-     * @Route("/mail", name="send_mails")
-     * @param Request $request
-     * @param MailerInterface $mailer
-     * @param Environment $twig
-     * @param ImportedDataRepository $repo
-     * @param LDAP $ldap
-     * @return JsonResponse
-     */
+    #[Route('/mail', name: 'send_mails')]
     public function send_mails(Request                $request, MailerInterface $mailer, Environment $twig,
                                ImportedDataRepository $repo, LDAP $ldap): JsonResponse
     {

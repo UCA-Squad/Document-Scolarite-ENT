@@ -7,20 +7,14 @@ namespace App\Controller;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Logic\LDAP;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @IsGranted("ROLE_SCOLA")
- * @Route("/api/scola")
- */
+#[Route('/api/scola')]
+#[IsGranted('ROLE_SCOLA')]
 class ScolaController extends AbstractController
 {
     private $file_access;
@@ -32,9 +26,7 @@ class ScolaController extends AbstractController
         $this->finder = $finder;
     }
 
-    /**
-     * @Route("/search", name="api_search")
-     */
+    #[Route('/search', name: 'api_search')]
     public function api_search(Request $request, LDAP $ldap): JsonResponse
     {
         $searchField = $request->getContent();

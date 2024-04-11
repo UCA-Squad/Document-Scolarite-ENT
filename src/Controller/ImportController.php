@@ -12,7 +12,6 @@ use App\Logic\PDF;
 use App\Parser\EtuParser;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
 use setasign\Fpdi\PdfParser\Filter\FilterException;
 use setasign\Fpdi\PdfParser\PdfParserException;
@@ -25,12 +24,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/api/import")
- * @IsGranted("ROLE_SCOLA")
- */
+#[Route('/api/import'), IsGranted('ROLE_SCOLA')]
 class ImportController extends AbstractController
 {
     private $file_access;
@@ -51,13 +48,7 @@ class ImportController extends AbstractController
         $this->pdfTool = $pdfTool;
     }
 
-    /**
-     * @param ImportedData $import
-     * @param FileAccess $fileAccess
-     * @param EtuParser $parser
-     * @return JsonResponse
-     * @Route("/imported/{id}")
-     */
+    #[Route('/imported/{id}')]
     public function getImportedFiles(ImportedData $import, FileAccess $fileAccess, EtuParser $parser): JsonResponse
     {
         if (empty($import->getSemestre()) && empty($import->getSession())) {
@@ -73,29 +64,19 @@ class ImportController extends AbstractController
         return $this->json($files);
     }
 
-    /**
-     * @Route("/rn", name="api_import_rn", methods={"POST"})
-     * @param Request $request
-     * @return Response
-     */
+    #[Route('/rn', name: 'api_import_rn', methods: ['POST'])]
     public function api_import_rn(Request $request): Response
     {
         return $this->import_generique($request, ImportedData::RN);
     }
 
-    /**
-     * @Route("/attests", name="api_import_attests", methods={"POST"})
-     * @param Request $request
-     * @return Response
-     */
+    #[Route('/attests', name: 'api_import_attests', methods: ['POST'])]
     public function import_attests(Request $request): Response
     {
         return $this->import_generique($request, ImportedData::ATTEST);
     }
 
-    /**
-     * @Route("/truncate_unit", name="truncate_by_unit")
-     */
+    #[Route('/truncate_unit', name: 'truncate_by_unit')]
     public function truncateByUnit(Request $request, PDF $pdfTool, ImportedDataRepository $repo): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

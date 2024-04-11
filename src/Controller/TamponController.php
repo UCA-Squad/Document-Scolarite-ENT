@@ -10,32 +10,22 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * Class TamponController
  * @package App\Controller
- * @Route("/api")
  */
+#[Route('/api')]
 class TamponController extends AbstractController
 {
-    /**
-     * @param int $mode
-     * @param FileAccess $file_access
-     * @return BinaryFileResponse
-     * @Route("/get_tampon/{mode}", name="api_get_tampon")
-     */
+    #[Route('/get_tampon/{mode}', name: 'api_get_tampon')]
     public function api_get_tampon(int $mode, FileAccess $file_access): BinaryFileResponse
     {
         return $this->file($file_access->getTamponByMode($mode));
     }
 
-    /**
-     * @param int $mode
-     * @param FileAccess $file_access
-     * @return BinaryFileResponse
-     * @Route("/get_tampon_example/{mode}", name="api_get_tampon_example")
-     */
+    #[Route('/get_tampon_example/{mode}', name: 'api_get_tampon_example')]
     public function api_get_tampon_example(int $mode, FileAccess $file_access): BinaryFileResponse
     {
         return $this->file($file_access->getPdfTamponByMode($mode));
@@ -43,11 +33,8 @@ class TamponController extends AbstractController
 
     /**
      * Enregistre dans la session la position du tampon.
-     * @param Request $request
-     * @param SessionInterface $session
-     * @return JsonResponse
-     * @Route("/apply_tampon", name="apply_images")
      */
+    #[Route('/apply_tampon', name: 'apply_images')]
     public function apply_images(Request $request, SessionInterface $session): JsonResponse
     {
         $position = json_decode($request->getContent(), true);

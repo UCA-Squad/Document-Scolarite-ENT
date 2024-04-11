@@ -3,17 +3,14 @@
 namespace App\Controller;
 
 use App\Security\AesCipher;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class PublicController extends AbstractController
 {
-    /**
-     * @Route("/{route}", name="scola", requirements={"route"="^(?!api|_(profiler|wdt)).*"})
-     * @IsGranted("ROLE_ETUDIANT")
-     */
+    #[Route('/{route}', name: 'scola', requirements: ['route' => '^(?!api|_(profiler|wdt)).*']), IsGranted('ROLE_ETUDIANT')]
     public function scolaIndex(AesCipher $aes): Response
     {
         $b64Info = json_encode([
@@ -28,9 +25,7 @@ class PublicController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/logout", name="logout")
-     */
+    #[Route('/logout', name: 'logout')]
     public function logout()
     {
 

@@ -8,19 +8,16 @@ use App\Entity\ImportedData;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Logic\PdfResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/api/selection")
- * @IsGranted("ROLE_SCOLA")
- */
+#[Route('/api/selection'), IsGranted('ROLE_SCOLA')]
 class SelectionController extends AbstractController
 {
     private $file_access;
@@ -32,11 +29,7 @@ class SelectionController extends AbstractController
         $this->finder = $finder;
     }
 
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     * @Route("/rn", name="api_selection_rn")
-     */
+    #[Route('/rn', name: 'api_selection_rn')]
     public function api_get_selection_rn(Request $request): JsonResponse
     {
         $bddData = $request->getSession()->get('data');
@@ -49,11 +42,7 @@ class SelectionController extends AbstractController
         return new JsonResponse(['data' => $bddData, 'students' => $etu,]);
     }
 
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     * @Route("/attest", name="api_selection_attest")
-     */
+    #[Route('/attest', name: 'api_selection_attest')]
     public function api_get_selection_attest(Request $request): JsonResponse
     {
         $bddData = $request->getSession()->get('data');
@@ -68,8 +57,8 @@ class SelectionController extends AbstractController
 
     /**
      * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
-     * @Route("/rebuild", name="rebuild_doc")
      */
+    #[Route('/rebuild', name: 'rebuild_doc')]
     public function reBuild(Request $request): JsonResponse
     {
         $mode = $request->get('mode');
@@ -129,11 +118,11 @@ class SelectionController extends AbstractController
 
     /**
      * Retourne le document pdf rebuild sous forme de réponse PDF.
-     * @Route("/rebuild/{mode}", name="get_rebuilded_doc")
      * @param int $mode
      * @return BinaryFileResponse|Response
      */
-    public function get_rebuilded_doc(int $mode)
+    #[Route('/rebuild/{mode}', name: 'get_rebuilded_doc')]
+    public function get_rebuilded_doc(int $mode): BinaryFileResponse|Response
     {
         $folder = $this->file_access->getTmpByMode($mode);
         $index = $this->finder->getFileIndex($folder, "rebuild.pdf");

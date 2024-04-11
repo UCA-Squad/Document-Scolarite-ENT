@@ -9,94 +9,61 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ImportedDataRepository;
 
-/**
- * @ORM\Entity(repositoryClass=ImportedDataRepository::class)
- */
+#[ORM\Entity(repositoryClass: ImportedDataRepository::class)]
 class ImportedData implements \JsonSerializable
 {
     public const RN = 0;
     public const ATTEST = 1;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=3, nullable=true)
-     */
+    #[ORM\Column(type: "string", length: 3, nullable: true)]
     private $semestre;
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     */
+
+    #[ORM\Column(type: "string", length: 1, nullable: true)]
     private $session;
-    /**
-     * @ORM\Column(type="string", length=100, nullable=true)
-     */
+
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
     private $libelle_form;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=false)
-     */
-    private $libelle_obj;
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    private string $libelle_obj;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=false)
-     */
-    private $libelle;
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    private string $libelle;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=false)
-     */
-    private $pdf_filename;
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    private string $pdf_filename;
 
-    /**
-     * @ORM\Column(type="string", length=100, nullable=false)
-     */
-    private $etu_filename;
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    private string $etu_filename;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=false)
-     */
-    private $year;
+    #[ORM\Column(type: "string", length: 10, nullable: false)]
+    private string $year;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=false)
-     */
-    private $type;
+    #[ORM\Column(type: "string", length: 10, nullable: false)]
+    private string $type;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=false)
-     */
-    private $code;
+    #[ORM\Column(type: "string", length: 10, nullable: false)]
+    private string $code;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=false)
-     */
-    private $code_obj;
+    #[ORM\Column(type: "string", length: 10, nullable: false)]
+    private string $code_obj;
 
-    /**
-     * @ORM\Column(type="integer", nullable=false)
-     */
+    #[ORM\Column(type: "integer", nullable: false)]
     private $nb_students;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=false)
-     */
-    private $username;
+    #[ORM\Column(type: "string", length: 10, nullable: false)]
+    private string $username;
 
-    /**
-     * @ORM\OneToMany(targetEntity="History", mappedBy="importedData", cascade={"all"}, fetch="EAGER")
-     */
-    private $history;
+    #[ORM\OneToMany(mappedBy: "importedData", targetEntity: History::class, cascade: ["all"], fetch: "EAGER")]
+    private Collection $history;
 
     public function __construct()
     {
         $this->history = new ArrayCollection();
     }
-
 
     public function getHistory(): Collection
     {
@@ -110,7 +77,7 @@ class ImportedData implements \JsonSerializable
         return $this->history[$this->history->count() - 1];
     }
 
-    public function addHistory(History $hist)
+    public function addHistory(History $hist): void
     {
         $hist->setImportedData($this);
         $this->history->add($hist);
@@ -161,7 +128,7 @@ class ImportedData implements \JsonSerializable
         return $this;
     }
 
-    public function LoadStudentData(Student $stud, string $year, int $nb_students, string $username)
+    public function LoadStudentData(Student $stud, string $year, int $nb_students, string $username): void
     {
         $this->year = $year;
         $this->type = $stud->getType();
