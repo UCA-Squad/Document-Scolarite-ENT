@@ -22,16 +22,16 @@ class History implements \JsonSerializable
     private $id;
 
     #[ORM\Column(type: "datetime", nullable: false)]
-    private $date;
+    private DateTime $date;
 
     #[ORM\Column(type: "integer", nullable: false)]
-    private $state;
+    private int $state;
 
     #[ORM\Column(type: "integer", nullable: false)]
-    private $nb_files;
+    private int $nb_files;
 
     #[ORM\ManyToOne(targetEntity: ImportedData::class, fetch: "EAGER", inversedBy: "history")]
-    private $importedData;
+    private ImportedData $importedData;
 
     public function __construct(int $nb_files, int $state = self::Imported)
     {

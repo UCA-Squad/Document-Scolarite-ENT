@@ -8,16 +8,16 @@ use App\Logic\CustomFinder;
 
 class Student implements \JsonSerializable
 {
-    protected $numero;
-    protected $name;
-    protected $surname;
-    protected $mail;
-    protected $libelle;
-    protected $type;
-    protected $code;
-    protected $code_etape;
-    protected $birthday;
-    protected $libelle_obj;
+    protected int $numero;
+    protected string $name;
+    protected string $surname;
+    protected string $mail;
+    protected string $libelle;
+    protected string $type;
+    protected string $code;
+    protected string $code_etape;
+    protected string $birthday;
+    protected string $libelle_obj;
 
 
     // The index of the last pdf file

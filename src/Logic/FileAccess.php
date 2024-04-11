@@ -5,8 +5,8 @@ namespace App\Logic;
 
 
 use App\Entity\ImportedData;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Security\Core\Security;
 
 class FileAccess
 {
@@ -24,7 +24,7 @@ class FileAccess
 	 */
 	private function getUsername(): string
 	{
-		return $this->security->getUser()->getUsername();
+		return $this->security->getUser()->getUserIdentifier();
 	}
 
 	/**
@@ -127,7 +127,7 @@ class FileAccess
      */
 	public function getPdfRn(string $filter = ''): string
 	{
-        return $this->filter($this->params->get('output_tmp_pdf'), 'rn_' . $this->security->getUser()->getUsername() . '.pdf', $filter);
+        return $this->filter($this->params->get('output_tmp_pdf'), 'rn_' . $this->getUsername() . '.pdf', $filter);
 //		return $this->params->get('output_tmp_pdf') . 'rn_' . $this->security->getUser()->getUsername() . '.pdf';
 	}
 
@@ -137,7 +137,7 @@ class FileAccess
 	 */
 	public function getPdfAttest(string $filter = ''): string
 	{
-		return $this->filter($this->params->get('output_tmp_pdf'), 'attest_' . $this->security->getUser()->getUsername() . '.pdf', $filter);
+		return $this->filter($this->params->get('output_tmp_pdf'), 'attest_' . $this->getUsername() . '.pdf', $filter);
 	}
 
 	/**
@@ -152,7 +152,7 @@ class FileAccess
 
 	public function getTamponFolder(): string
 	{
-		return $this->params->get('output_tmp_tampon') . $this->security->getUser()->getUsername() . '/';
+		return $this->params->get('output_tmp_tampon') . $this->getUsername() . '/';
 	}
 
 	public function getTamponRn(string $filter = ''): string

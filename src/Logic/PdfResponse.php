@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class PdfResponse
 {
-	public static function getPdfResponse($index, $directory, $download = true)
-	{
+	public static function getPdfResponse($index, $directory, $download = true): BinaryFileResponse|Response
+    {
 		$finder = new CustomFinder();
 		$documents = $finder->getFilesName($directory);
 

@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -30,16 +31,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/import'), IsGranted('ROLE_SCOLA')]
 class ImportController extends AbstractController
 {
-    private $file_access;
-    private $parser;
-    private $session;
+    private SessionInterface $session;
 
-    private $repo;
-
-    private $pdfTool;
-
-    public function __construct(FileAccess             $file_access, IEtuParser $parser, RequestStack $session,
-                                ImportedDataRepository $repo, PDF $pdfTool)
+    public function __construct(private FileAccess             $file_access, private IEtuParser $parser, RequestStack $session,
+                                private ImportedDataRepository $repo, private PDF $pdfTool)
     {
         $this->file_access = $file_access;
         $this->parser = $parser;
@@ -49,14 +44,14 @@ class ImportController extends AbstractController
     }
 
     #[Route('/imported/{id}')]
-    public function getImportedFiles(ImportedData $import, FileAccess $fileAccess, EtuParser $parser): JsonResponse
+    public function getImportedFiles(ImportedData $import): JsonResponse
     {
         if (empty($import->getSemestre()) && empty($import->getSession())) {
-            $folder = $fileAccess->getAttest();
-            $pattern = "*/" . $parser->getAttestFileName($import, '*');
+            $folder = $this->file_access->getAttest();
+            $pattern = "*/" . $this->parser->getAttestFileName($import, '*');
         } else {
-            $folder = $fileAccess->getRn();
-            $pattern = "*/" . $parser->getReleveFileName($import, '*');
+            $folder = $this->file_access->getRn();
+            $pattern = "*/" . $this->parser->getReleveFileName($import, '*');
         }
 
         $files = glob($folder . $pattern);
@@ -77,7 +72,7 @@ class ImportController extends AbstractController
     }
 
     #[Route('/truncate_unit', name: 'truncate_by_unit')]
-    public function truncateByUnit(Request $request, PDF $pdfTool, ImportedDataRepository $repo): JsonResponse
+    public function truncateByUnit(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $mode = $data['mode'];
@@ -88,8 +83,8 @@ class ImportController extends AbstractController
 
         $tampon_position = $request->getSession()->get('tampon');
         if (isset($tampon_position)) {
-            $pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
-            $pdfTool->setupImage($this->file_access->getTamponByMode($mode));
+            $this->pdfTool->setupPosition($tampon_position['x'], $tampon_position['y']);
+            $this->pdfTool->setupImage($this->file_access->getTamponByMode($mode));
         }
 
         if ($request->getSession()->get('data') !== null)
@@ -101,7 +96,7 @@ class ImportController extends AbstractController
             //$request->getSession()->set('data', $importedData);
         }
 
-        $mode == ImportedData::RN ? $pdfTool->setupRn() : $pdfTool->setupAttest();
+        $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
 
         $tmp_folder = $this->file_access->getTmpByMode($mode);
         $indexes = $request->getSession()->get('indexes');
@@ -110,9 +105,9 @@ class ImportController extends AbstractController
 
         $count = 0;
         $batchCount = 25;
-        $page = $pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
+        $page = $this->pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
         while ($page > 0 && $count < $batchCount) {
-            $page = $pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
+            $page = $this->pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
             $count++;
         }
 
@@ -202,7 +197,7 @@ class ImportController extends AbstractController
         if (isset($tampon) && $numTampon > 0) {
             $solo_index = $this->extractFirstIndex($this->session->get('indexes'), $numTampon);
             $this->pdfTool->truncateFile($this->file_access->getPdfByMode($mode), $data,
-                $this->getUser()->getUsername() . '/', $solo_index, $this->session->get('students'),
+                $this->getUser()->getUserIdentifier() . '/', $solo_index, $this->session->get('students'),
                 true);
             return true;
         }
@@ -220,7 +215,7 @@ class ImportController extends AbstractController
      * @return void
      * @throws ImportException
      */
-    private function import_process(ImportedData $data, int $mode, UploadedFile $pdfFile, UploadedFile $etuFile, UploadedFile $tampon_img = null)
+    private function import_process(ImportedData $data, int $mode, UploadedFile $pdfFile, UploadedFile $etuFile, UploadedFile $tampon_img = null): void
     {
         // Rewrite the pdf file with GhostScript to use it with pdf lib
         if (!$this->rewritePdf($pdfFile, $mode))
@@ -246,7 +241,7 @@ class ImportController extends AbstractController
             throw new ImportException("L'application n'a pas réussi à extraire les informations d'un ou plusieurs étudiant(s)");
         }
 
-        $data->LoadStudentData($etu[0], $date, count($etu), $this->getUser()->getUsername());
+        $data->LoadStudentData($etu[0], $date, count($etu), $this->getUser()->getUserIdentifier());
 
         $this->session->set('data', $data);
     }

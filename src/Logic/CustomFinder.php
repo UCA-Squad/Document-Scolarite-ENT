@@ -25,7 +25,7 @@ class CustomFinder
 		$finder->ignoreDotFiles(true)->in($directory)->files();
 
 		foreach ($finder as $file) {
-			array_push($results, $file->getFilename());
+			$results[] = $file->getFilename();
 		}
 		return $results;
 	}
@@ -46,7 +46,7 @@ class CustomFinder
 		$finder->ignoreDotFiles(true)->in($directory)->files();
 
 		foreach ($finder as $file) {
-			array_push($results, $file->getPathname());
+			$results[] = $file->getPathname();
 		}
 		return $results;
 	}
@@ -67,7 +67,7 @@ class CustomFinder
 		$finder->ignoreDotFiles(true)->in($directory)->files();
 
 		foreach ($finder as $file) {
-			array_push($results, $file);
+			$results[] = $file;
 		}
 		return $results;
 	}
@@ -88,7 +88,7 @@ class CustomFinder
 		$finder->ignoreDotFiles(true)->in($directory)->directories();
 
 		foreach ($finder as $dir) {
-			array_push($results, $dir->getFilename());
+			$results[] = $dir->getFilename();
 		}
 		return $results;
 	}
@@ -123,12 +123,12 @@ class CustomFinder
 		return -1;
 	}
 
-	/**
-	 * Return the $index ième file in $directory
-	 * @param string $directory
-	 * @param int $index
-	 * @return mixed|string
-	 */
+    /**
+     * Return the $index ième file in $directory
+     * @param string $directory
+     * @param int $index
+     * @return string
+     */
 	public function getFileByIndex(string $directory, int $index): string
 	{
 		$filesnames = $this->getFilesName($directory);
