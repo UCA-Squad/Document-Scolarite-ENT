@@ -5,7 +5,6 @@
     <title>{% block title %}Documents de scolarite{% endblock %}</title>
 
     <link rel="stylesheet" href="https://cdn.uca.fr/v2/css/uca.min.css">
-    <script src="https://cdn.uca.fr/v2/js/uca.min.js"></script>
 
     {#    <link href="https://cdn.uca.fr/menu/css/app.css" rel="stylesheet"> #}
     <link href="https://menu.ent.uca.fr/app.css" rel="stylesheet">
@@ -25,10 +24,12 @@
 
 {#<script defer src="https://cdn.uca.fr/menu/js/app.js"></script>#}
 {#<script defer src="https://cdn.uca.fr/menu/js/chunk-vendors.js"></script>#}
-<script defer src="https://menu.ent.uca.fr/app.js"></script>
+<script type="module" src="https://menu.ent.uca.fr/app.js"></script>
 {% block body %}
 
 {% endblock %}
+
+<script src="https://cdn.uca.fr/v2/js/uca.min.js"></script>
 
 </body>
 </html>

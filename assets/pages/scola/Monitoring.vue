@@ -3,7 +3,7 @@
   <div class="container-fluid">
 
     <!-- Historique Modal -->
-    <div v-if="this.selected !== null" class="modal fade" id="historiqueModal" tabindex="-1"
+    <div class="modal fade" id="historiqueModal" tabindex="-1"
          aria-labelledby="historiqueModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -12,16 +12,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <ag-grid-vue
-                class="ag-theme-alpine"
-                style="height: 40vh"
-                :columnDefs="columnHistorique"
-                :rowData="this.selected.history"
-                :defaultColDef="defaultColDef"
-                pagination="true"
-                animateRows="true"
-                :ensureDomOrder="true"
-                :enableCellTextSelection="true"/>
+            <ag-grid-vue v-if="this.selected !== null"
+                         class="ag-theme-alpine"
+                         style="height: 40vh"
+                         :columnDefs="columnHistorique"
+                         :rowData="this.selected.history"
+                         :defaultColDef="defaultColDef"
+                         pagination="true"
+                         animateRows="true"
+                         :ensureDomOrder="true"
+                         :enableCellTextSelection="true"/>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -31,7 +31,7 @@
     </div>
 
     <!-- Suppression Modal -->
-    <div v-if="this.selected !== null" class="modal fade" id="suppressionModal" tabindex="-1"
+    <div class="modal fade" id="suppressionModal" tabindex="-1"
          aria-labelledby="suppressionModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -40,18 +40,18 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <ag-grid-vue
-                class="ag-theme-alpine"
-                style="height: 60vh"
-                :columnDefs="columnEdit"
-                :rowData="this.files"
-                :defaultColDef="defaultColDef"
-                :onSelectionChanged=onSelectionDeleteChanged
-                rowSelection="multiple"
-                pagination="true"
-                animateRows="true"
-                :ensureDomOrder="true"
-                :enableCellTextSelection="true"/>
+            <ag-grid-vue v-if="this.selected !== null"
+                         class="ag-theme-alpine"
+                         style="height: 60vh"
+                         :columnDefs="columnEdit"
+                         :rowData="this.files"
+                         :defaultColDef="defaultColDef"
+                         :onSelectionChanged=onSelectionDeleteChanged
+                         rowSelection="multiple"
+                         pagination="true"
+                         animateRows="true"
+                         :ensureDomOrder="true"
+                         :enableCellTextSelection="true"/>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -87,7 +87,7 @@ import "ag-grid-community/styles/ag-grid.css"; // Core CSS
 import "ag-grid-community/styles/ag-theme-alpine.css"; // Theme
 
 const BtnModalComponent = {
-  template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" class="btn btn-secondary mt-1"
+  template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" data-bs-backdrop="true" class="btn btn-secondary mt-1"
                 style="height: 30px"
                 v-on:click="this.params.onClicked(this.params.data)">{{ this.params.txt }}</button>`
 };
