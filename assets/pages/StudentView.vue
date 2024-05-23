@@ -2,8 +2,7 @@
   <div v-if="this.docs !== null && (Object.keys(docs.rns).length > 0)" class="container">
 
     <div class="mt-2 mb-2">
-      <h5>Vous avez des documents disponibles sur {{ Object.keys(docs.rns) }} années
-        différentes</h5>
+      <h5>{{ this.docs.student.nom }} {{ this.docs.student.prenom }} ({{ this.docs.student.numero }})</h5>
     </div>
 
 

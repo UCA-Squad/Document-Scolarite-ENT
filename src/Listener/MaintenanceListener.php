@@ -11,23 +11,21 @@ use Twig\Environment;
 
 class MaintenanceListener
 {
-	private $params;
-	private $twig;
+    private bool $isMaintenance;
 
-	public function __construct(ParameterBagInterface $params, Environment $twig)
-	{
-		$this->params = $params;
-		$this->twig = $twig;
-	}
-
-	public function onKernelRequest(RequestEvent $event): void
+    public function __construct(ParameterBagInterface $params, private Environment $twig)
     {
-		$isMaintenance = $this->params->has('is_maintenance') ? $this->params->get('is_maintenance') : false;
+        $this->isMaintenance = $params->has('is_maintenance') ? $params->get('is_maintenance') : false;
+    }
 
-		if ($isMaintenance === true) {
-			$content = $this->twig->render('closed.html.twig');
-			$event->setResponse(new Response($content, 200));
-			$event->stopPropagation();
-		}
-	}
+    public function onKernelRequest(RequestEvent $event): void
+    {
+//		$isMaintenance = $this->params->has('is_maintenance') ? $this->params->get('is_maintenance') : false;
+
+        if ($this->isMaintenance === true) {
+            $content = $this->twig->render('closed.html.twig');
+            $event->setResponse(new Response($content, 200));
+            $event->stopPropagation();
+        }
+    }
 }

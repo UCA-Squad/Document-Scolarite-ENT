@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Logic\CustomFinder;
+use App\Logic\LDAP;
 use App\Logic\PdfResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class EtudiantController extends AbstractController
 {
     #[Route('/{numero}', name: 'api_student')]
-    public function api_etudiant(int $numero, ParameterBagInterface $params): JsonResponse
+    public function api_etudiant(int $numero, ParameterBagInterface $params, LDAP $ldap): JsonResponse
     {
         if (!$this->isGranted("ROLE_SCOLA") && $numero != $this->getUser()->getNumero()) {
             return new JsonResponse("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
@@ -50,9 +51,17 @@ class EtudiantController extends AbstractController
             ];
         }
 
+        $ldapUser = current($ldap->search("(CLFDcodeEtu=$numero)", "ou=people,", ["CLFDcodeEtu", "sn", "givenName"]));
+        $user = [
+            'numero' => $numero,
+            'nom' => $ldapUser->getAttribute("sn")[0],
+            'prenom' => $ldapUser->getAttribute("givenName")[0],
+        ];
+
         return new JsonResponse([
             'rns' => $jsonRns,
             'attests' => $jsonAttests,
+            'student' => $user
         ]);
     }
 

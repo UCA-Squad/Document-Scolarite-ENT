@@ -20,13 +20,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/selection'), IsGranted('ROLE_SCOLA')]
 class SelectionController extends AbstractController
 {
-    private $file_access;
-    private $finder;
-
-    public function __construct(FileAccess $file_access, CustomFinder $finder)
+    public function __construct(private FileAccess $file_access, private CustomFinder $finder)
     {
-        $this->file_access = $file_access;
-        $this->finder = $finder;
     }
 
     #[Route('/rn', name: 'api_selection_rn')]

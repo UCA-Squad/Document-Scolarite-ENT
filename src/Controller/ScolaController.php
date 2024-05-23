@@ -13,17 +13,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/scola')]
-#[IsGranted('ROLE_SCOLA')]
+#[Route('/api/scola'), IsGranted('ROLE_SCOLA')]
 class ScolaController extends AbstractController
 {
-    private $file_access;
-    private $finder;
-
-    public function __construct(FileAccess $fileAccess, CustomFinder $finder)
+    public function __construct(private FileAccess $file_access, private CustomFinder $finder)
     {
-        $this->file_access = $fileAccess;
-        $this->finder = $finder;
     }
 
     #[Route('/search', name: 'api_search')]
