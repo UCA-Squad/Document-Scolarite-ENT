@@ -87,7 +87,8 @@
 import {AgGridVue} from "ag-grid-vue3";
 import WebService from "../../WebService";
 import "ag-grid-community/styles/ag-grid.css"; // Core CSS
-import "ag-grid-community/styles/ag-theme-alpine.css"; // Theme
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import {displayNotif} from "../../notyf"; // Theme
 
 const BtnModalComponent = {
   template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" data-bs-backdrop="true" class="btn btn-secondary mt-1"
@@ -238,6 +239,8 @@ export default {
         if (index !== -1) {
           this.monitoring = [...this.monitoring.slice(0, index), response.data, ...this.monitoring.slice(index + 1)];
         }
+
+        displayNotif(numsEtu.length +  ' fichier(s) supprimé(s)', 'short_success');
 
       }).catch(error => {
         console.log(error);
