@@ -79,13 +79,13 @@ class MonitoringController extends AbstractController
             if (!file_exists($folder . $numEtu . "/" . $filename))
                 return $this->json('Impossible de supprimer le document', 500);
 
-            $data->getHistory()->last()->setNbFiles($data->getHistory()->last()->getNbFiles() - 1);
             unlink($folder . $numEtu . "/" . $filename);
+            $data->getHistory()->last()->setNbFiles($data->getHistory()->last()->getNbFiles() - 1);
         }
 
         $em->persist($data);
         $em->flush();
 
-        return $this->json(null);
+        return new JsonResponse($data);
     }
 }

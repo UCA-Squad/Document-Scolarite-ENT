@@ -55,7 +55,10 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" v-on:click="removeFiles">Supprimer les documents</button>
+            <button type="button" class="btn btn-primary" v-on:click="removeFiles"
+                    :disabled="this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0">Supprimer les
+              documents
+            </button>
           </div>
         </div>
       </div>
@@ -218,11 +221,24 @@ export default {
       });
     },
     removeFiles() {
+
+      if (this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0)
+        return;
+
       const numsEtu = this.selectedDeleteRows.map(r => r.split('_')[0]);
       console.log(numsEtu);
 
       WebService.removeFiles(this.selected.id, numsEtu).then(response => {
         console.log(response.data);
+        const myModalEl = document.querySelector('#suppressionModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(myModalEl); // Returns a Bootstrap modal instance
+        modal.hide();
+
+        let index = this.monitoring.findIndex(f => f.id === response.data.id);
+        if (index !== -1) {
+          this.monitoring = [...this.monitoring.slice(0, index), response.data, ...this.monitoring.slice(index + 1)];
+        }
+
       }).catch(error => {
         console.log(error);
       });
