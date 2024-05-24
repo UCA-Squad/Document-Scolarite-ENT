@@ -97,7 +97,7 @@ const BtnModalComponent = {
 };
 
 const BtnComponent = {
-  template: '<button class="btn btn-secondary" v-on:click="this.params.onClicked(this.params.data)">{{ this.params.txt }}</button>'
+  template: '<button style="height: 30px" class="btn btn-secondary mt-1" v-on:click="this.params.onClicked(this.params.data)">{{ this.params.txt }}</button>'
 };
 
 export default {
@@ -120,9 +120,40 @@ export default {
         minWidth: 100,
         editable: false,
         flex: 1,
-        menuTabs: ['columnsMenuTab'],
       },
-      columnDefs: [
+      columnDefs: this.getColDefs(),
+      columnHistorique: [
+        {field: "date", headerName: "Date"},
+        {
+          headerName: "Nombre de fichiers", valueGetter: params => {
+            return params.data.nb_files + " / " + this.selected.nb_students;
+          }
+        },
+        {
+          headerName: "Action", editable: false, valueGetter: params => {
+            if (params.data.state === 1) return 'Dépot initial';
+            else if (params.data.state === 2) return 'Dépot supplémentaire';
+            else if (params.data.state === 3) return 'Suppression';
+            else return 'Erreur';
+          }
+        },
+      ],
+      columnEdit: [
+        {
+          headerName: 'fichier', valueGetter: params => {
+            return params.data;
+          },
+          headerCheckboxSelection: true,
+          checkboxSelection: true,
+          headerCheckboxSelectionFilteredOnly: true, // Selectionner que les lignes filtrées
+          showDisabledCheckboxes: true,
+        },
+      ]
+    }
+  },
+  methods: {
+    getColDefs() {
+      return [
         {field: "username", headerName: "Utilisateur"},
         {
           headerName: "Date de traitement", valueGetter: params => {
@@ -135,8 +166,12 @@ export default {
           }
         },
         {
-          headerName: "Année universitaire / Session / Semestre", valueGetter: params => {
-            return params.data.year + " / " + params.data.session + " / " + params.data.semestre;
+          headerName: this.mode === 0 ? "Année universitaire / Session / Semestre" : "Année universitaire",
+          valueGetter: params => {
+            if (this.mode === 0)
+              return params.data.year + " / " + params.data.session + " / " + params.data.semestre;
+            else
+              return params.data.year;
           }
         },
         {
@@ -171,50 +206,48 @@ export default {
             txt: "Edit",
             modal: "#suppressionModal"
           }
+        },
+        {
+          headerName: "Reconstruction", cellRenderer: BtnComponent, cellRendererParams: {
+            onClicked: (data) => this.rebuildDoc(data),
+            txt: "Reconstruire"
+          }
         }
-      ],
-      columnHistorique: [
-        {field: "date", headerName: "Date"},
-        {
-          headerName: "Nombre de fichiers", valueGetter: params => {
-            return params.data.nb_files + " / " + this.selected.nb_students;
-          }
-        },
-        {
-          headerName: "Action", editable: false, valueGetter: params => {
-            if (params.data.state === 1) return 'Dépot initial';
-            else if (params.data.state === 2) return 'Dépot supplémentaire';
-            else if (params.data.state === 3) return 'Suppression';
-            else return 'Erreur';
-          }
-        },
-      ],
-      columnEdit: [
-        {
-          headerName: 'fichier', valueGetter: params => {
-            return params.data;
-          },
-          headerCheckboxSelection: true,
-          checkboxSelection: true,
-          headerCheckboxSelectionFilteredOnly: true, // Selectionner que les lignes filtrées
-          showDisabledCheckboxes: true,
-        },
-      ]
-    }
-  },
-  methods: {
+      ];
+    },
+    rebuildDoc(data) {
+
+      displayNotif('Reconstruction en cours...', 'short_success')
+
+      console.log(data.id);
+      WebService.rebuild(data.id).then(response => {
+        displayNotif('Reconstruction finie', 'short_success')
+        const contentDispositionHeader = response.headers['content-disposition'];
+        const fileName = contentDispositionHeader.split(';')[1].split('=')[1].trim().replace(/"/g, '');
+        const url = URL.createObjectURL(response.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }).catch(error => {
+        displayNotif('Reconstruction fail', 'short_error')
+      });
+    },
     fetchRnMonitoring() {
       WebService.getMonitoring(this.mode).then(response => {
         this.monitoring = response.data;
-        console.log(this.monitoring);
+        // console.log(this.monitoring);
       }).catch(error => {
         console.log(error);
-        alert("Erreur lors de la récupération des données");
+        displayNotif('Erreur lors de la récupération des données', 'short_error')
       });
     },
     fetchFiles(importId) {
       WebService.fetchRnFiles(importId).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         this.files = response.data;
       }).catch(error => {
         console.log(error);
@@ -240,7 +273,7 @@ export default {
           this.monitoring = [...this.monitoring.slice(0, index), response.data, ...this.monitoring.slice(index + 1)];
         }
 
-        displayNotif(numsEtu.length +  ' fichier(s) supprimé(s)', 'short_success');
+        displayNotif(numsEtu.length + ' fichier(s) supprimé(s)', 'short_success');
 
       }).catch(error => {
         console.log(error);
@@ -249,7 +282,7 @@ export default {
     },
     onSelectionDeleteChanged(event) {
       this.selectedDeleteRows = event.api.getSelectedRows();
-      console.log(this.selectedDeleteRows);
+      // console.log(this.selectedDeleteRows);
     },
   },
   beforeMount() {
@@ -260,6 +293,7 @@ export default {
   },
   watch: {
     mode() {
+      this.columnDefs = this.getColDefs();
       this.fetchRnMonitoring();
     }
   }

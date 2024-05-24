@@ -43,8 +43,8 @@ class FileAccess
 	 * @param string $filter
 	 * @return string
 	 */
-	private function filter(string $dir, string $filename, string $filter = '')
-	{
+	private function filter(string $dir, string $filename, string $filter = ''): string
+    {
 		if ($filter == 'd')
 			return $dir;
 		if ($filter == 'f')

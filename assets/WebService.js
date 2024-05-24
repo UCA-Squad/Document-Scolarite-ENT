@@ -115,7 +115,9 @@ class WebService {
         return this.BASE_URL + `/preview/attests/${num}/${index}`;
     }
 
-
+    rebuild(importId){
+        return axios.get(this.BASE_URL + `/api/selection/rebuild/${importId}`, {responseType: 'blob'});
+    }
 
 }
 

@@ -7,12 +7,10 @@ namespace App\Controller;
 use App\Entity\ImportedData;
 use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
-use App\Logic\PdfResponse;
+use App\Parser\IEtuParser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -53,26 +51,45 @@ class SelectionController extends AbstractController
     /**
      * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
      */
-    #[Route('/rebuild', name: 'rebuild_doc')]
-    public function reBuild(Request $request): JsonResponse
+    #[Route('/rebuild/{id}', name: 'rebuild_doc')]
+    public function reBuild(ImportedData $import, IEtuParser $parser): JsonResponse
     {
-        $mode = $request->get('mode');
-        $folder = $this->file_access->getTmpByMode($mode);
-        $new_path = $folder . 'rebuild.pdf';
+        $mode = empty($import->getSemestre()) && empty($import->getSession()) ? 1 : 0;
+        $folder = "/tmp";
 
-        $etu = $request->getSession()->get('students');
-        $transfered = $this->getEtuTransfered($request->getSession()->get('transfered'), $etu);
+        if (str_contains($import->getPdfFilename(), '.pdf') === false)
+            $fileName = $import->getPdfFilename();
+        else
+            $fileName = explode('.pdf', $import->getPdfFilename())[0];
 
-        // Trie des étudiants par nom,prenom
-        usort($transfered, function ($a, $b) {
-            $cmpNom = strcmp($a[0]->getName(), $b[0]->getName());
-            $cmpPrenom = strcmp($a[0]->getSurname(), $b[0]->getSurname());
-            return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
-        });
+        $fileName = $fileName . '_rebuild.pdf';
+
+        $new_path = "$folder/$fileName";
+
+//        $etu = $request->getSession()->get('students');
+//        $transfered = $this->getEtuTransfered($request->getSession()->get('transfered'), $etu);
+
+
+        if ($mode == ImportedData::ATTEST) {
+            $folder = $this->file_access->getAttest();
+            $pattern = "*/" . $parser->getAttestFileName($import, '*');
+        } else {
+            $folder = $this->file_access->getRn();
+            $pattern = "*/" . $parser->getReleveFileName($import, '*');
+        }
+
+        $files = glob($folder . $pattern);
+
+//        // Trie des étudiants par nom,prenom
+//        usort($transfered, function ($a, $b) {
+//            $cmpNom = strcmp($a[0]->getName(), $b[0]->getName());
+//            $cmpPrenom = strcmp($a[0]->getSurname(), $b[0]->getSurname());
+//            return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
+//        });
 
         $cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
-        foreach ($transfered as $key => $transfer) {
-            $filepath = str_replace(' ', "\ ", $transfer[1]);
+        foreach ($files as $file) {
+            $filepath = str_replace(' ', "\ ", $file);
             $filepath = str_replace('(', "\(", $filepath);
             $filepath = str_replace(')', "\)", $filepath);
             $cmd .= $filepath . " ";
@@ -84,11 +101,16 @@ class SelectionController extends AbstractController
             $proc->setIdleTimeout(null);
             $proc->run();
 
-            $index = $this->finder->getFileIndex($folder, "rebuild.pdf");
-            return new JsonResponse(['index' => $index], 200);
+            $response = $this->file($new_path, $fileName);
+            $response->send();
+
+            if (file_exists($new_path))
+                unlink($new_path);
+
         } catch (\Exception $e) {
-            return new JsonResponse(['index' => -1], 500);
         }
+
+        return new JsonResponse("ok");
     }
 
     /**
@@ -111,17 +133,17 @@ class SelectionController extends AbstractController
         return $res;
     }
 
-    /**
-     * Retourne le document pdf rebuild sous forme de réponse PDF.
-     * @param int $mode
-     * @return BinaryFileResponse|Response
-     */
-    #[Route('/rebuild/{mode}', name: 'get_rebuilded_doc')]
-    public function get_rebuilded_doc(int $mode): BinaryFileResponse|Response
-    {
-        $folder = $this->file_access->getTmpByMode($mode);
-        $index = $this->finder->getFileIndex($folder, "rebuild.pdf");
-
-        return PdfResponse::getPdfResponse($index, $folder);
-    }
+//    /**
+//     * Retourne le document pdf rebuild sous forme de réponse PDF.
+//     * @param int $mode
+//     * @return BinaryFileResponse|Response
+//     */
+//    #[Route('/rebuild/{mode}', name: 'get_rebuilded_doc')]
+//    public function get_rebuilded_doc(int $mode): BinaryFileResponse|Response
+//    {
+//        $folder = $this->file_access->getTmpByMode($mode);
+//        $index = $this->finder->getFileIndex($folder, "rebuild.pdf");
+//
+//        return PdfResponse::getPdfResponse($index, $folder);
+//    }
 }
