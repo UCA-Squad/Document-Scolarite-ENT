@@ -19,13 +19,13 @@ class ImportedData implements \JsonSerializable
     private $id;
 
     #[ORM\Column(type: "string", length: 3, nullable: true)]
-    private $semestre;
+    private ?string $semestre;
 
     #[ORM\Column(type: "string", length: 1, nullable: true)]
-    private $session;
+    private ?string $session;
 
     #[ORM\Column(type: "string", length: 100, nullable: true)]
-    private $libelle_form;
+    private ?string $libelle_form;
 
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private string $libelle_obj;
@@ -88,7 +88,7 @@ class ImportedData implements \JsonSerializable
         return (string)$this->semestre;
     }
 
-    public function setSemestre(string $semestre): self
+    public function setSemestre(?string $semestre): self
     {
         $this->semestre = $semestre;
 
@@ -100,7 +100,7 @@ class ImportedData implements \JsonSerializable
         return (string)$this->session;
     }
 
-    public function setSession(string $session): self
+    public function setSession(?string $session): self
     {
         $this->session = $session;
 
@@ -121,7 +121,7 @@ class ImportedData implements \JsonSerializable
      * Call by the form
      * @param string $libelle
      */
-    public function setLibelleForm(string $libelle): self
+    public function setLibelleForm(?string $libelle): self
     {
         $this->libelle_form = str_replace('/', ' ', $libelle);
 

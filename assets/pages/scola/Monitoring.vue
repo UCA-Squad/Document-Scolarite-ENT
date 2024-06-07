@@ -24,7 +24,7 @@
                          :enableCellTextSelection="true"/>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@
                          :enableCellTextSelection="true"/>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             <button type="button" class="btn btn-primary" v-on:click="removeFiles"
                     :disabled="this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0">Supprimer les
               documents
@@ -181,7 +181,10 @@ export default {
         },
         {
           headerName: "Libellé", valueGetter: params => {
-            return params.data.libelle_form + " / " + params.data.libelle;
+            if (this.mode === 0)
+              return params.data.libelle_form + " / " + params.data.libelle;
+            else
+              return params.data.libelle_obj + " / " + params.data.libelle;
           }
         },
         {
@@ -198,7 +201,7 @@ export default {
           }
         },
         {
-          headerName: "Suppression", editable: false, cellRenderer: BtnModalComponent, cellRendererParams: {
+          headerName: "Fichiers", editable: false, cellRenderer: BtnModalComponent, cellRendererParams: {
             onClicked: (data) => {
               this.selected = data;
               this.fetchFiles(data.id);
@@ -290,6 +293,17 @@ export default {
   },
   mounted() {
     console.log(this.mode);
+  },
+  beforeRouteLeave(to, from, next) {
+    const myModalEl = document.querySelector('#suppressionModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(myModalEl);
+    modal.hide();
+
+    const myModalEl1 = document.querySelector('#historiqueModal');
+    const modal1 = bootstrap.Modal.getOrCreateInstance(myModalEl1);
+    modal1.hide();
+
+    next();
   },
   watch: {
     mode() {

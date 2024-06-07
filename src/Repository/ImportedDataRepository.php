@@ -42,10 +42,10 @@ class ImportedDataRepository extends ServiceEntityRepository
     public function findAllAttests(string $username = null)
     {
         $query = $this->createQueryBuilder('i')
-            ->where('i.semestre = :semestre')
-            ->andWhere('i.session = :session')
-            ->setParameter('semestre', '')
-            ->setParameter('session', '');
+            ->where('i.semestre is NULL')
+            ->andWhere('i.session is NULL');
+//            ->setParameter('semestre', '')
+//            ->setParameter('session', '');
 
         if (isset($username)) {
             $query->andWhere('i.username = :username')

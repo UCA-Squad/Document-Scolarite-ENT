@@ -67,7 +67,7 @@ class TransfertController extends AbstractController
         ]);
     }
 
-    #[Route('/releves', name: 'transfert_rn')]
+    #[Route('/releves', name: 'transfert_rn', methods: ['POST'])]
     public function transfert_rn(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -77,7 +77,7 @@ class TransfertController extends AbstractController
         $mode = $data['mode'];
 
         // How many files to transfert at once
-        $batchCount = 10;
+        $batchCount = 100;
 
         $data = $request->getSession()->get('data');
 
@@ -116,19 +116,19 @@ class TransfertController extends AbstractController
 //        }
     }
 
-    #[Route('/attests', name: 'transfert_attest')]
-    public function transfert_attest(Request $request): JsonResponse
-    {
-        $ids = $request->get("ids");
-        $num = $request->get('num');
-
-        try {
-            $this->transfert(ImportedData::ATTEST, $num, $ids);
-            return new JsonResponse(true);
-        } catch (\Exception $e) {
-            return new JsonResponse($e->getMessage(), 500);
-        }
-    }
+//    #[Route('/attests', name: 'transfert_attest')]
+//    public function transfert_attest(Request $request): JsonResponse
+//    {
+//        $ids = $request->get("ids");
+//        $num = $request->get('num');
+//
+//        try {
+//            $this->transfert(ImportedData::ATTEST, $num, $ids);
+//            return new JsonResponse(true);
+//        } catch (\Exception $e) {
+//            return new JsonResponse($e->getMessage(), 500);
+//        }
+//    }
 
     private function transfert(int $mode, int $num, ImportedData $data): void
     {

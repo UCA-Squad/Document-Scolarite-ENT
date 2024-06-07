@@ -58,6 +58,7 @@ class EtuParser implements IEtuParser
             [new CsvEncoder(array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true))]);
 
         $students = $serializer->decode($content, 'csv', array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true));
+
         $studs = [];
         foreach ($students as $student) {
             $stud = $serializer->denormalize($student, Student::class);

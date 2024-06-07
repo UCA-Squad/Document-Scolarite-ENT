@@ -5,7 +5,6 @@ namespace App\Repository;
 
 
 use App\Entity\History;
-use App\Entity\ImportedData;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;

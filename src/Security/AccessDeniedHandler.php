@@ -12,16 +12,10 @@ use Twig\Environment;
 
 class AccessDeniedHandler implements AccessDeniedHandlerInterface
 {
-    private $twig;
-
-    public function __construct(Environment $twig)
+    public function __construct(private Environment $twig)
     {
-        $this->twig = $twig;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function handle(Request $request, AccessDeniedException $accessDeniedException): Response
     {
         return new Response($this->twig->render('public/access_denied.html.twig'));

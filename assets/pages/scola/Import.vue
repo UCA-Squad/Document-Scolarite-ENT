@@ -6,7 +6,7 @@
   <form class="mt-3" @submit.prevent="this.importRn()">
 
     <div class="mb-3">
-      <label for="input_rn" class="form-label">Relevé de notes</label>
+      <label for="input_rn" class="form-label">{{ this.mode === 0 ? "Relevé de notes" : "Attestation" }}</label>
       <input type="file" accept="application/pdf" required @change="onPdfFileChange($event)" class="form-control"
              id="input_rn">
     </div>

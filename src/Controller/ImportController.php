@@ -9,7 +9,6 @@ use App\Entity\ImportedData;
 use App\Exception\ImportException;
 use App\Logic\FileAccess;
 use App\Logic\PDF;
-use App\Parser\EtuParser;
 use App\Parser\IEtuParser;
 use App\Repository\ImportedDataRepository;
 use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
@@ -56,6 +55,7 @@ class ImportController extends AbstractController
 
         $files = glob($folder . $pattern);
         foreach ($files as &$file) $file = basename($file);
+
         return $this->json($files);
     }
 
@@ -104,7 +104,7 @@ class ImportController extends AbstractController
 
 
         $count = 0;
-        $batchCount = 25;
+        $batchCount = 100;
         $page = $this->pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
         while ($page > 0 && $count < $batchCount) {
             $page = $this->pdfTool->truncateFileByPage($this->file_access->getPdfByMode($mode), $importedData, $tmp_folder, $indexes, $etu, $page);
@@ -122,12 +122,16 @@ class ImportController extends AbstractController
         $tampon = $request->files->get('tampon');
         $numTampon = $request->get('numTampon');
 
+        $session = $request->get('sess');
+        $libelle = $request->get('lib');
+        $semestre = $request->get('sem');
+
         $import = (new ImportedData())
             ->setPdfFilename($pdfFile->getClientOriginalName())
             ->setEtuFilename($etuFile->getClientOriginalName())
-            ->setSession($request->get('sess'))
-            ->setLibelleForm($request->get('lib'))
-            ->setSemestre($request->get('sem'));
+            ->setSession(empty($session) ? null : $session)
+            ->setLibelleForm(empty($libelle) ? null : $libelle)
+            ->setSemestre(empty($semestre) ? null : $semestre);
 
         // existing import with same files name
         $existingImport = $this->repo->findOneBy([

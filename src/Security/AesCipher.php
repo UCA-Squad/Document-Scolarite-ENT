@@ -9,8 +9,8 @@ class AesCipher
     private const OPENSSL_CIPHER_NAME = "aes-128-cbc";
     private const CIPHER_KEY_LEN = 16;
 
-    private $hashkey;
-    private $initVector;
+    private string $hashkey;
+    private string $initVector;
 
     public function __construct(ParameterBagInterface $params)
     {

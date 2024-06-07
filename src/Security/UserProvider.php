@@ -9,12 +9,10 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class UserProvider implements UserProviderInterface
 {
-    private $ldap;
     private $params;
 
-    public function __construct(LDAP $ldap, ParameterBagInterface $params)
+    public function __construct(private LDAP $ldap, ParameterBagInterface $params)
     {
-        $this->ldap = $ldap;
         $this->params = $params;
     }
 

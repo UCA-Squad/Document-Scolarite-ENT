@@ -6,12 +6,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface
 {
-    private $username;
-    private $roles;
-    private $email;
-    private $numero;
-
-    private $casAttributes = [];
+    private string $username;
+    private array $roles;
+    private string $email;
+    private string $numero;
+    private array $casAttributes = [];
 
     public function __construct(string $username, array $roles, string $email = "", string $numero = "")
     {
@@ -26,19 +25,8 @@ class User implements UserInterface
         return $this->roles;
     }
 
-    public function getPassword(): ?string
-    {
-        return null;
-    }
-
-    public function getSalt(): ?string
-    {
-        return null;
-    }
-
     public function eraseCredentials(): void
     {
-        // TODO: Implement eraseCredentials() method.
     }
 
     public function getUsername(): string
@@ -51,10 +39,10 @@ class User implements UserInterface
         return $this->username;
     }
 
-    public function __call($name, $arguments)
+    /*public function __call($name, $arguments)
     {
         return $this->username;
-    }
+    }*/
 
     public function getCasAttributes(): array
     {
