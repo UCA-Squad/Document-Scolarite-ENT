@@ -91,8 +91,11 @@ class WebService {
         });
     }
 
-    getDownloadURL() {
-        return this.BASE_URL + "/api/etudiant/download/releve/";
+    getDownloadURL(mode) {
+        if (mode === 0)
+            return this.BASE_URL + "/api/etudiant/download/releve/";
+        else
+            return this.BASE_URL + "/api/etudiant/download/attest/";
     }
 
     getSrcTampon() {
@@ -115,7 +118,7 @@ class WebService {
         return this.BASE_URL + `/preview/attests/${num}/${index}`;
     }
 
-    rebuild(importId){
+    rebuild(importId) {
         return axios.get(this.BASE_URL + `/api/selection/rebuild/${importId}`, {responseType: 'blob'});
     }
 

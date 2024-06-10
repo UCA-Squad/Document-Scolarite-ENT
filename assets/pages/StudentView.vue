@@ -1,13 +1,14 @@
 <template>
-  <div v-if="this.docs !== null && (Object.keys(docs.rns).length > 0)" class="container">
+  <div v-if="this.docs !== null && Object.keys(docs.data).length > 0" class="container">
 
-    <div class="mt-2 mb-2">
+    <div class="mt-2 mb-2 row">
+      <h4>Documents de scolarité</h4>
       <h5>{{ this.docs.student.nom }} {{ this.docs.student.prenom }} ({{ this.docs.student.numero }})</h5>
     </div>
 
 
     <div class="accordion" id="accordionPanelsStayOpenExample">
-      <div v-for="(year, index) in Object.keys(docs.rns)" class="accordion-item mt-2">
+      <div v-for="(year, index) in Object.keys(docs.data)" class="accordion-item mt-2">
         <h2 class="accordion-header" :id="'panelsStayOpen-heading' + year">
           <button class="accordion-button" type="button" data-bs-toggle="collapse"
                   :data-bs-target="'#panelsStayOpen-collapse' + year" aria-expanded="true"
@@ -23,14 +24,18 @@
               <div class="col-6">
                 <h6><strong>Relevés de notes</strong></h6>
                 <ul>
-                  <li v-for="rn in docs.rns[year]"><a
-                      :href="WebService().getDownloadURL() + this.$route.params.num + '/'+ rn.index"
+                  <li v-for="rn in docs.data[year].rn"><a
+                      :href="WebService().getDownloadURL(0) + this.$route.params.num + '/'+ rn.index"
                       target="_blank">{{ rn.name }}</a></li>
                 </ul>
               </div>
               <div class="col-6">
                 <h6><strong>Attestations de réussite</strong></h6>
-
+                <ul>
+                  <li v-for="attest in docs.data[year].attest"><a
+                      :href="WebService().getDownloadURL(1) + this.$route.params.num + '/'+ attest.index"
+                      target="_blank">{{ attest.name }}</a></li>
+                </ul>
               </div>
             </div>
           </div>

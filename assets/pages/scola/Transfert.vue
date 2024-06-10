@@ -98,6 +98,7 @@ export default {
         }
       }).catch(err => {
         console.log("fail");
+        alert("Une erreur est survenue lors du transfert des documents. Merci de réessayer plus tard.");
       });
     },
     sendMails(shouldSendMail) {

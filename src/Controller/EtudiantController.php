@@ -31,12 +31,18 @@ class EtudiantController extends AbstractController
         $jsonRns = [];
         $jsonAttests = [];
 
+        $data = [];
+
         $i = 0;
         foreach ($rns as $rn) {
             $year = explode("_", $rn->getFilename())[1];
-            $jsonRns[$year][] = [
+//            $jsonRns[$year][] = [
+//                'name' => $rn->getFilename(),
+//                'date' => date("d/m/Y", $rn->getCTime()),
+//                'index' => $i++,
+//            ];
+            $data[$year]['rn'][] = [
                 'name' => $rn->getFilename(),
-                'date' => date("d/m/Y", $rn->getCTime()),
                 'index' => $i++,
             ];
         }
@@ -44,9 +50,13 @@ class EtudiantController extends AbstractController
         $i = 0;
         foreach ($attests as $attest) {
             $year = explode("_", $attest->getFilename())[1];
-            $jsonAttests[$year][] = [
+//            $jsonAttests[$year][] = [
+//                'name' => $attest->getFilename(),
+//                'date' => date("d/m/Y", $attest->getCTime()),
+//                'index' => $i++,
+//            ];
+            $data[$year]['attest'][] = [
                 'name' => $attest->getFilename(),
-                'date' => date("d/m/Y", $attest->getCTime()),
                 'index' => $i++,
             ];
         }
@@ -58,10 +68,13 @@ class EtudiantController extends AbstractController
             'prenom' => $ldapUser->getAttribute("givenName")[0],
         ];
 
+//        dd($data);
+
         return new JsonResponse([
             'rns' => $jsonRns,
             'attests' => $jsonAttests,
-            'student' => $user
+            'student' => $user,
+            'data' => $data,
         ]);
     }
 
@@ -73,7 +86,9 @@ class EtudiantController extends AbstractController
                 return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
         }
 
+
         $directory = $this->getParameter("output_dir_rn");
+
         return PdfResponse::getPdfResponse($index, $directory . $numero, true);
     }
 
