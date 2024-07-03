@@ -110,6 +110,8 @@ export default {
         else
           alert("Une erreur est survenue lors de l'importation du relevé de notes");
 
+        console.log(err);
+
         this.canSubmit = true;
       })
     },

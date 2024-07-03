@@ -76,6 +76,7 @@
         pagination="true"
         animateRows="true"
         :ensureDomOrder="true"
+        @cellFocused="onCellFocused"
         :enableCellTextSelection="true">
     </ag-grid-vue>
 
@@ -91,13 +92,16 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import {displayNotif} from "../../notyf"; // Theme
 
 const BtnModalComponent = {
-  template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" data-bs-backdrop="true" class="btn btn-secondary mt-1"
-                style="height: 30px"
-                v-on:click="this.params.onClicked(this.params.data)">{{ this.params.txt }}</button>`
+  template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" data-bs-backdrop="true" class="btn btn-outline-secondary mt-1"
+                style="height: 30px;width: 15px" v-on:click="this.params.onClicked(this.params.data)">
+                    <span :class="this.params.txt"></span>
+             </button>`
 };
 
 const BtnComponent = {
-  template: '<button style="height: 30px" class="btn btn-secondary mt-1" v-on:click="this.params.onClicked(this.params.data)">{{ this.params.txt }}</button>'
+  template: `<button style="height: 30px;width: 15px" class="btn btn-outline-secondary mt-1" v-on:click="this.params.onClicked(this.params.data)">
+                 <span :class="this.params.txt"></span>
+            </button>`
 };
 
 export default {
@@ -152,6 +156,13 @@ export default {
     }
   },
   methods: {
+    onCellFocused(event) {
+      console.log(event.column.getColId());
+      if (event.column.getColId() === 6) {
+        event.api.deselectAll();
+        event.api.clearFocusCell();
+      }
+    },
     getColDefs() {
       return [
         {field: "username", headerName: "Utilisateur"},
@@ -194,26 +205,30 @@ export default {
           }
         },
         {
-          headerName: "Historique", floatingFilter: false, cellRenderer: BtnModalComponent, cellRendererParams: {
+          headerName: "Historique",
+          floatingFilter: false,
+          cellRenderer: BtnModalComponent,
+          cellClassRules: {'non-selectable': true},
+          cellRendererParams: {
             onClicked: (data) => this.selected = data,
-            txt: "Voir",
+            txt: "mdi mdi-history mdi-24px",
             modal: "#historiqueModal"
           }
         },
         {
-          headerName: "Fichiers", editable: false, cellRenderer: BtnModalComponent, cellRendererParams: {
+          headerName: "Fichiers", floatingFilter: false, cellRenderer: BtnModalComponent, cellRendererParams: {
             onClicked: (data) => {
               this.selected = data;
               this.fetchFiles(data.id);
             },
-            txt: "Edit",
+            txt: "mdi mdi-file-remove mdi-24px",
             modal: "#suppressionModal"
           }
         },
         {
-          headerName: "Reconstruction", cellRenderer: BtnComponent, cellRendererParams: {
+          headerName: "Reconstruction", floatingFilter: false, cellRenderer: BtnComponent, cellRendererParams: {
             onClicked: (data) => this.rebuildDoc(data),
-            txt: "Reconstruire"
+            txt: "mdi mdi-file-multiple mdi-24px"
           }
         }
       ];
@@ -315,5 +330,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

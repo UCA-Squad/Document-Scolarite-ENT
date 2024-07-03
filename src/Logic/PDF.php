@@ -107,9 +107,11 @@ class PDF
         foreach ($pdf->getPages() as $page) {
             $i++;
             $content = $page->getText();
+
             $index = $this->parser->findStudentByNum($content, $students);
-            if ($index === false)
+            if ($index === false) {
                 $index = $this->parser->findStudentByName($content, $students);
+            }
 
             // Date modif here - A verifier
             if ($date == "" && preg_match($this->dateRegex, $content, $ymatches)) {
@@ -136,6 +138,7 @@ class PDF
                 return false;
             }
         }
+
 
         if (!isset($date) || $date == "")
             throw new Exception("Impossible d'extraire l'année universitaire");

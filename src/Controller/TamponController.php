@@ -11,12 +11,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Class TamponController
  * @package App\Controller
  */
-#[Route('/api')]
+#[Route('/api'), IsGranted('ROLE_SCOLA')]
 class TamponController extends AbstractController
 {
     #[Route('/get_tampon/{mode}', name: 'api_get_tampon')]
