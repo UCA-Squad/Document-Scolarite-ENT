@@ -8,7 +8,7 @@
 
 
     <div class="accordion" id="accordionPanelsStayOpenExample">
-      <div v-for="(year, index) in Object.keys(docs.data)" class="accordion-item mt-2">
+      <div v-for="(year, index) in Object.keys(docs.data).reverse()" class="accordion-item mt-2">
         <h2 class="accordion-header" :id="'panelsStayOpen-heading' + year">
           <button class="accordion-button" type="button" data-bs-toggle="collapse"
                   :data-bs-target="'#panelsStayOpen-collapse' + year" aria-expanded="true"
