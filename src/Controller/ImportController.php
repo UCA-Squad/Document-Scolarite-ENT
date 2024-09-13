@@ -35,11 +35,7 @@ class ImportController extends AbstractController
     public function __construct(private FileAccess             $file_access, private IEtuParser $parser, RequestStack $session,
                                 private ImportedDataRepository $repo, private PDF $pdfTool)
     {
-        $this->file_access = $file_access;
-        $this->parser = $parser;
         $this->session = $session->getSession();
-        $this->repo = $repo;
-        $this->pdfTool = $pdfTool;
     }
 
     #[Route('/imported/{id}')]
@@ -134,29 +130,22 @@ class ImportController extends AbstractController
             ->setSemestre(empty($semestre) ? null : $semestre);
 
         // existing import with same files name
-        $existingImport = $this->repo->findOneBy([
-            'pdf_filename' => $import->getPdfFilename(),
-            'etu_filename' => $import->getEtuFilename()
-        ]);
+//        $existingImport = $this->repo->findOneBy([
+//            'pdf_filename' => $import->getPdfFilename(),
+//            'etu_filename' => $import->getEtuFilename()
+//        ]);
 
         // if the existing import params match
-        $sameParams = isset($existingImport) &&
-            $existingImport->getSemestre() == $import->getSemestre() &&
-            $existingImport->getSession() == $import->getSession();
+//        $sameParams = isset($existingImport) &&
+//            $existingImport->getSemestre() == $import->getSemestre() &&
+//            $existingImport->getSession() == $import->getSession();
 
 //        dd($existingImport, $import);
 
-        if (isset($existingImport)) {
-            $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
-            $existingImport->addHistory(new History($nbFiles));
-        } else {
-            $import->addHistory(new History(0));
-        }
-
         // Throw an error if an import with same files and different params exists
-        if (isset($existingImport) && !$sameParams) {
-            return $this->json(['error' => "L'import existe déjà"], 500);
-        }
+//        if (isset($existingImport) && !$sameParams) {
+//            return $this->json(['error' => "L'import existe déjà"], 500);
+//        }
 
         $this->session->clear();
 
@@ -164,6 +153,23 @@ class ImportController extends AbstractController
         $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
         $shouldTampon = $this->import($mode, $existingImport ?? $import, $pdfFile, $etuFile, $tampon, $numTampon);
 
+        $existingImport = $this->repo->findOneBy([
+            'semestre' => $import->getSemestre(),
+            'session' => $import->getSession(),
+            'year' => $import->getYear(),
+            'type' => $import->getType(),
+            'code' => $import->getCode(),
+            'code_obj' => $import->getCodeObj(),
+        ]);
+
+        $sameParams = isset($existingImport);
+
+        if (isset($existingImport)) {
+            $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
+            $existingImport->addHistory(new History($nbFiles));
+        } else {
+            $import->addHistory(new History(0));
+        }
 
         $pageCount = $this->pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
         $pageFirst = $request->getSession()->get('indexes') !== null ? array_key_first($request->getSession()->get('indexes')) : null;
@@ -232,9 +238,7 @@ class ImportController extends AbstractController
         $etuFile->move($this->file_access->getEtuByMode($mode, 'd'), $this->file_access->getEtuByMode($mode, 'f'));
 
         // Images
-        if (isset($tampon_img)) {
-            $tampon_img->move($this->file_access->getTamponByMode($mode, 'd'), $this->file_access->getTamponByMode($mode, 'f'));
-        }
+        $tampon_img?->move($this->file_access->getTamponByMode($mode, 'd'), $this->file_access->getTamponByMode($mode, 'f'));
 
         // Index process to handle pagination
         [$date, $indexes] = $this->pdfTool->indexPages($this->file_access->getPdfByMode($mode), $etu);

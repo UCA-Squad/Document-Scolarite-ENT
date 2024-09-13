@@ -70,6 +70,11 @@ class ImportedData implements \JsonSerializable
         return $this->history;
     }
 
+    public function setNbStudents(int $nb_students): void
+    {
+        $this->nb_students = $nb_students;
+    }
+
     public function getLastHistory(): ?History
     {
         if (!$this->history || $this->history->count() == 0)

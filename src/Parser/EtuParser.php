@@ -29,8 +29,8 @@ class EtuParser implements IEtuParser
         $this->nb_doublons = 0;
 
         try {
-            $this->name_regexes = json_decode(file_get_contents("../src/Parser/NameRegexes.json"));
-            $this->num_regexes = json_decode(file_get_contents("../src/Parser/NumRegexes.json"));
+            $this->name_regexes = json_decode(file_get_contents(__DIR__ . "/NameRegexes.json"));
+            $this->num_regexes = json_decode(file_get_contents(__DIR__ . "/NumRegexes.json"));
         } catch (\Exception $e) {
             throw new \Exception("L'un des fichiers regex json n'est pas valide");
         }

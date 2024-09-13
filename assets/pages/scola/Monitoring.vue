@@ -171,11 +171,11 @@ export default {
             return params.data.history.slice(-1)[0].date;
           }
         },
-        {
-          headerName: "Fichiers traités", flex: 2, valueGetter: params => {
-            return params.data.pdf_filename + " / " + params.data.etu_filename;
-          }
-        },
+        // {
+        //   headerName: "Fichiers traités", flex: 2, valueGetter: params => {
+        //     return params.data.pdf_filename + " / " + params.data.etu_filename;
+        //   }
+        // },
         {
           headerName: this.mode === 0 ? "Année universitaire / Session / Semestre" : "Année universitaire",
           valueGetter: params => {
