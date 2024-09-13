@@ -151,6 +151,15 @@ class ImportController extends AbstractController
 
         $sameParams = isset($existingImport);
 
+        $existingImport = $this->repo->findOneBy([
+            'semestre' => $import->getSemestre(),
+            'session' => $import->getSession(),
+            'year' => $import->getYear(),
+            'type' => $import->getType(),
+            'code' => $import->getCode(),
+            'code_obj' => $import->getCodeObj(),
+        ]);
+
         if (isset($existingImport)) {
             $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
             $existingImport->addHistory(new History($nbFiles));
@@ -160,15 +169,6 @@ class ImportController extends AbstractController
 
         $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
         $shouldTampon = $this->import($mode, $existingImport ?? $import, $pdfFile, $etuFile, $tampon, $numTampon);
-
-        $existingImport = $this->repo->findOneBy([
-            'semestre' => $import->getSemestre(),
-            'session' => $import->getSession(),
-            'year' => $import->getYear(),
-            'type' => $import->getType(),
-            'code' => $import->getCode(),
-            'code_obj' => $import->getCodeObj(),
-        ]);
 
         $pageCount = $this->pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
         $pageFirst = $request->getSession()->get('indexes') !== null ? array_key_first($request->getSession()->get('indexes')) : null;
