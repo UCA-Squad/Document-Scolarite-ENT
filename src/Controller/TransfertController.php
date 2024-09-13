@@ -184,10 +184,10 @@ class TransfertController extends AbstractController
         if ($data->getHistory()->count() > 1)
             $hist->setState(History::Transfered);
 
-        if ($newDoc) {
+        if ($newDoc)
             $hist->setNbFiles($hist->getNbFiles() + 1);
-            $hist->setDate();
-        }
+
+        $hist->setDate();
 
         // Supprime les dossiers temporaires vides
         if (is_dir($from . $num) && empty($this->finder->getFilesName($from . $num)))

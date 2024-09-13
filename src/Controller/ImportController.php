@@ -149,7 +149,8 @@ class ImportController extends AbstractController
 
         $this->session->clear();
 
-        $sameParams = isset($existingImport);
+        $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
+        $shouldTampon = $this->import($mode, $existingImport ?? $import, $pdfFile, $etuFile, $tampon, $numTampon);
 
         $existingImport = $this->repo->findOneBy([
             'semestre' => $import->getSemestre(),
@@ -160,6 +161,8 @@ class ImportController extends AbstractController
             'code_obj' => $import->getCodeObj(),
         ]);
 
+        $sameParams = isset($existingImport);
+
         if (isset($existingImport)) {
             $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
             $existingImport->addHistory(new History($nbFiles));
@@ -167,11 +170,10 @@ class ImportController extends AbstractController
             $import->addHistory(new History(0));
         }
 
-        $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
-        $shouldTampon = $this->import($mode, $existingImport ?? $import, $pdfFile, $etuFile, $tampon, $numTampon);
-
         $pageCount = $this->pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
         $pageFirst = $request->getSession()->get('indexes') !== null ? array_key_first($request->getSession()->get('indexes')) : null;
+
+        $this->session->set('data', $import);
 
         return $this->json([
             'step' => $shouldTampon ? 'tampon' : 'truncate',
