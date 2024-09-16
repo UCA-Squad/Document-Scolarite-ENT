@@ -1,6 +1,6 @@
-{% extends 'base.html.twig' %}
-
 {% block stylesheets %}
+	<link rel="stylesheet" href="https://cdn.uca.fr/v2/css/uca.min.css">
+
 	<style>
 		html,
 		body {
@@ -20,7 +20,11 @@
 {% block body %}
 
 	<div class="container">
-		<h2>Maintenance en cours. Reprise du service dans 15 minutes environ.</h2>
+		<h3>Maintenance en cours. Reprise du service dans 15 minutes environ.</h3>
 	</div>
 
+{% endblock %}
+
+{% block javascripts %}
+	<script src="https://cdn.uca.fr/v2/js/uca.min.js"></script>
 {% endblock %}
