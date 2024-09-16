@@ -173,7 +173,7 @@ class ImportController extends AbstractController
         $pageCount = $this->pdfTool->getPageCount($this->file_access->getPdfByMode($mode));
         $pageFirst = $request->getSession()->get('indexes') !== null ? array_key_first($request->getSession()->get('indexes')) : null;
 
-        $this->session->set('data', $import);
+        $this->session->set('data', $existingImport ?? $import);
 
         return $this->json([
             'step' => $shouldTampon ? 'tampon' : 'truncate',
