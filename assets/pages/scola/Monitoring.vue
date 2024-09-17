@@ -77,6 +77,7 @@
         animateRows="true"
         :ensureDomOrder="true"
         @cellFocused="onCellFocused"
+        :localeText="{noRowsToShow: 'Aucune donnée à afficher'}"
         :enableCellTextSelection="true">
     </ag-grid-vue>
 
@@ -144,7 +145,7 @@ export default {
       ],
       columnEdit: [
         {
-          headerName: 'fichier', valueGetter: params => {
+          headerName: 'Fichiers', valueGetter: params => {
             return params.data;
           },
           headerCheckboxSelection: true,
@@ -219,6 +220,7 @@ export default {
           headerName: "Fichiers", floatingFilter: false, cellRenderer: BtnModalComponent, cellRendererParams: {
             onClicked: (data) => {
               this.selected = data;
+              this.files = [];
               this.fetchFiles(data.id);
             },
             txt: "mdi mdi-file-remove mdi-24px",
