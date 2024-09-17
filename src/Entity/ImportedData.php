@@ -8,15 +8,17 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ImportedDataRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ImportedDataRepository::class)]
-class ImportedData implements \JsonSerializable
+#[Groups(['import:read'])]
+class ImportedData
 {
     public const RN = 0;
     public const ATTEST = 1;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
-    private $id;
+    private ?int $id;
 
     #[ORM\Column(type: "string", length: 3, nullable: true)]
     private ?string $semestre;
@@ -52,7 +54,7 @@ class ImportedData implements \JsonSerializable
     private string $code_obj;
 
     #[ORM\Column(type: "integer", nullable: false)]
-    private $nb_students;
+    private int $nb_students;
 
     #[ORM\Column(type: "string", length: 10, nullable: false)]
     private string $username;
@@ -219,25 +221,25 @@ class ImportedData implements \JsonSerializable
         $this->year = $year;
     }
 
-    public function jsonSerialize(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'libelle_obj' => $this->getLibelleObj(),
-            'libelle' => $this->getLibelle(),
-            'pdf_filename' => $this->getPdfFilename(),
-            'etu_filename' => $this->getEtuFilename(),
-            'year' => $this->getYear(),
-            'type' => $this->getType(),
-            'code' => $this->getCode(),
-            'code_obj' => $this->getCodeObj(),
-            'nb_students' => $this->getNbStudents(),
-            'username' => $this->getUsername(),
-            'semestre' => $this->getSemestre(),
-            'session' => $this->getSession(),
-            'libelle_form' => $this->getLibelleForm(),
-            'history' => $this->getHistory()->toArray()
-        ];
-    }
+//    public function jsonSerialize(): array
+//    {
+//        return [
+//            'id' => $this->getId(),
+//            'libelle_obj' => $this->getLibelleObj(),
+//            'libelle' => $this->getLibelle(),
+//            'pdf_filename' => $this->getPdfFilename(),
+//            'etu_filename' => $this->getEtuFilename(),
+//            'year' => $this->getYear(),
+//            'type' => $this->getType(),
+//            'code' => $this->getCode(),
+//            'code_obj' => $this->getCodeObj(),
+//            'nb_students' => $this->getNbStudents(),
+//            'username' => $this->getUsername(),
+//            'semestre' => $this->getSemestre(),
+//            'session' => $this->getSession(),
+//            'libelle_form' => $this->getLibelleForm(),
+//            'history' => $this->getHistory()->toArray()
+//        ];
+//    }
 
 }

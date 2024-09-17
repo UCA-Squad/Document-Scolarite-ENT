@@ -7,9 +7,11 @@ namespace App\Entity;
 use App\Repository\HistoryRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 
 #[ORM\Entity(repositoryClass: HistoryRepository::class)]
-class History implements \JsonSerializable
+class History
 {
     // Imported before Selection
     public const Imported = 1;
@@ -19,15 +21,24 @@ class History implements \JsonSerializable
     public const Modified = 3;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
-    private $id;
+    #[Groups(['import:read'])]
+    private ?int $id;
 
     #[ORM\Column(type: "datetime", nullable: false)]
     private DateTime $date;
 
+    #[Groups(['import:read'])]
+    public function getFormattedDate(): string
+    {
+        return $this->date->format('d/m/Y à H:i');
+    }
+
     #[ORM\Column(type: "integer", nullable: false)]
+    #[Groups(['import:read'])]
     private int $state;
 
     #[ORM\Column(type: "integer", nullable: false)]
+    #[Groups(['import:read'])]
     private int $nb_files;
 
     #[ORM\ManyToOne(targetEntity: ImportedData::class, fetch: "EAGER", inversedBy: "history")]
@@ -89,15 +100,15 @@ class History implements \JsonSerializable
         $this->importedData = $importedData;
     }
 
-    public function jsonSerialize(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'date' => $this->getDate()->format('d/m/Y à H:i'),
-            'state' => $this->getState(),
-            'nb_files' => $this->getNbFiles(),
-            'importedDataId' => $this->getImportedData()->getId()
-        ];
-    }
+//    public function jsonSerialize(): array
+//    {
+//        return [
+//            'id' => $this->getId(),
+//            'date' => $this->getDate()->format('d/m/Y à H:i'),
+//            'state' => $this->getState(),
+//            'nb_files' => $this->getNbFiles(),
+//            'importedDataId' => $this->getImportedData()->getId()
+//        ];
+//    }
 
 }

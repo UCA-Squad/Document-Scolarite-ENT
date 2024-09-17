@@ -127,7 +127,7 @@ export default {
       },
       columnDefs: this.getColDefs(),
       columnHistorique: [
-        {field: "date", headerName: "Date"},
+        {field: "formattedDate", headerName: "Date"},
         {
           headerName: "Nombre de fichiers", valueGetter: params => {
             return params.data.nb_files + " / " + this.selected.nb_students;
@@ -168,7 +168,7 @@ export default {
         {field: "username", headerName: "Utilisateur"},
         {
           headerName: "Date de traitement", valueGetter: params => {
-            return params.data.history.slice(-1)[0].date;
+            return params.data.history.slice(-1)[0].formattedDate;
           }
         },
         // {
@@ -281,7 +281,7 @@ export default {
       console.log(numsEtu);
 
       WebService.removeFiles(this.selected.id, numsEtu).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         const myModalEl = document.querySelector('#suppressionModal');
         const modal = bootstrap.Modal.getOrCreateInstance(myModalEl); // Returns a Bootstrap modal instance
         modal.hide();
@@ -323,6 +323,7 @@ export default {
   watch: {
     mode() {
       this.columnDefs = this.getColDefs();
+      this.monitoring = [];
       this.fetchRnMonitoring();
     }
   }

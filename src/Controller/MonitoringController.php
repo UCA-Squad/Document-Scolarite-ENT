@@ -15,12 +15,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/monitoring'), IsGranted("ROLE_SCOLA")]
 class MonitoringController extends AbstractController
 {
     #[Route('/rn', name: 'get_monitoring_rn')]
-    public function get_monitoring_rn(ImportedDataRepository $importedDataRepository): JsonResponse
+    public function get_monitoring_rn(ImportedDataRepository $importedDataRepository, SerializerInterface $ser): JsonResponse
     {
         if (in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
             $imports = $importedDataRepository->findAllRns();
@@ -31,11 +32,13 @@ class MonitoringController extends AbstractController
             return $a->getLastHistory()->getDate() < $b->getLastHistory()->getDate();
         });
 
-        return new JsonResponse($imports);
+        $json = $ser->serialize($imports, 'json', ['groups' => 'import:read']);
+
+        return new JsonResponse($json, 200, [], true);
     }
 
     #[Route('/attest', name: 'get_monitoring_attest')]
-    public function monitoring_attest(ImportedDataRepository $importedDataRepository): Response
+    public function monitoring_attest(ImportedDataRepository $importedDataRepository, SerializerInterface $ser): Response
     {
         if (in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
             $imports = $importedDataRepository->findAllAttests();
@@ -46,11 +49,13 @@ class MonitoringController extends AbstractController
             return $a->getLastHistory()->getDate() < $b->getLastHistory()->getDate();
         });
 
-        return new JsonResponse($imports);
+        $json = $ser->serialize($imports, 'json', ['groups' => 'import:read']);
+
+        return new JsonResponse($json, 200, [], true);
     }
 
     #[Route('/delete', name: 'api_delete_file', methods: ['POST'])]
-    public function removeFile(Request $request, ImportedDataRepository $repo, FileAccess $fileAccess, EtuParser $parser, EntityManagerInterface $em): JsonResponse
+    public function removeFile(Request $request, ImportedDataRepository $repo, FileAccess $fileAccess, EtuParser $parser, EntityManagerInterface $em, SerializerInterface $ser): JsonResponse
     {
         $params = json_decode($request->getContent(), true);
 
@@ -86,6 +91,8 @@ class MonitoringController extends AbstractController
         $em->persist($data);
         $em->flush();
 
-        return new JsonResponse($data);
+        $json = $ser->serialize($data, 'json', ['groups' => 'import:read']);
+
+        return new JsonResponse($json, 200, [], true);
     }
 }
