@@ -5,7 +5,6 @@ namespace App\Controller;
 
 
 use App\Entity\ImportedData;
-use App\Logic\CustomFinder;
 use App\Logic\FileAccess;
 use App\Parser\IEtuParser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,16 +13,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/selection'), IsGranted('ROLE_SCOLA')]
 class SelectionController extends AbstractController
 {
-    public function __construct(private FileAccess $file_access, private CustomFinder $finder)
+    public function __construct(private FileAccess $file_access)
     {
     }
 
     #[Route('/rn', name: 'api_selection_rn')]
-    public function api_get_selection_rn(Request $request): JsonResponse
+    public function api_get_selection_rn(Request $request, SerializerInterface $ser): JsonResponse
     {
         $bddData = $request->getSession()->get('data');
         $etu = $request->getSession()->get('students');
@@ -32,11 +32,12 @@ class SelectionController extends AbstractController
             $entry->LoadFile($this->file_access->getTmpByMode(ImportedData::RN), $this->file_access->getDirByMode(ImportedData::RN));
         }
 
-        return new JsonResponse(['data' => $bddData, 'students' => $etu,]);
+        $json = $ser->serialize(['data' => $bddData, 'students' => $etu], 'json', ['groups' => ['import:read', 'student:read']]);
+        return new JsonResponse($json, 200, [], true);
     }
 
     #[Route('/attest', name: 'api_selection_attest')]
-    public function api_get_selection_attest(Request $request): JsonResponse
+    public function api_get_selection_attest(Request $request, SerializerInterface $ser): JsonResponse
     {
         $bddData = $request->getSession()->get('data');
         $etu = $request->getSession()->get('students');
@@ -45,7 +46,10 @@ class SelectionController extends AbstractController
             $entry->LoadFile($this->file_access->getTmpByMode(ImportedData::ATTEST), $this->file_access->getDirByMode(ImportedData::ATTEST));
         }
 
-        return new JsonResponse(['data' => $bddData, 'students' => $etu,]);
+        $json = $ser->serialize(['data' => $bddData, 'students' => $etu], 'json', ['groups' => ['import:read', 'student:read']]);
+        return new JsonResponse($json, 200, [], true);
+
+//        return new JsonResponse(['data' => $bddData, 'students' => $etu]);
     }
 
     /**

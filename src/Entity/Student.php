@@ -5,8 +5,10 @@ namespace App\Entity;
 
 
 use App\Logic\CustomFinder;
+use Symfony\Component\Serializer\Attribute\Groups;
 
-class Student implements \JsonSerializable
+#[Groups(['student:read'])]
+class Student
 {
     protected int $numero;
     protected string $name;
@@ -159,21 +161,21 @@ class Student implements \JsonSerializable
         $this->birthday = $birthday;
     }
 
-    public function jsonSerialize(): array
-    {
-        return [
-            'numero' => $this->getNumero(),
-            'name' => $this->getName(),
-            'surname' => $this->getSurname(),
-            'mail' => $this->getMail(),
-            'libelle' => $this->getLibelle(),
-            'code' => $this->getCode(),
-            'code_etape' => $this->getCodeEtape(),
-            'birthday' => $this->getBirthday(),
-            'libelle_obj' => $this->getLibelleObj(),
-            'index' => $this->getIndex(),
-            'file' => $this->getFile(),
-            'type' => $this->getType()
-        ];
-    }
+//    public function jsonSerialize(): array
+//    {
+//        return [
+//            'numero' => $this->getNumero(),
+//            'name' => $this->getName(),
+//            'surname' => $this->getSurname(),
+//            'mail' => $this->getMail(),
+//            'libelle' => $this->getLibelle(),
+//            'code' => $this->getCode(),
+//            'code_etape' => $this->getCodeEtape(),
+//            'birthday' => $this->getBirthday(),
+//            'libelle_obj' => $this->getLibelleObj(),
+//            'index' => $this->getIndex(),
+//            'file' => $this->getFile(),
+//            'type' => $this->getType()
+//        ];
+//    }
 }

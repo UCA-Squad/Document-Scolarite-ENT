@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class EtudiantController extends AbstractController
 {
     #[Route('/{numero}', name: 'api_student')]
-    public function api_etudiant(int $numero, ParameterBagInterface $params, LDAP $ldap): JsonResponse
+    public function api_etudiant(int $numero, ParameterBagInterface $params, LDAP $ldap, CustomFinder $finder): JsonResponse
     {
         if (!$this->isGranted("ROLE_SCOLA") && $numero != $this->getUser()->getNumero()) {
             return new JsonResponse("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
@@ -23,24 +23,15 @@ class EtudiantController extends AbstractController
 
         $dir_rn = $params->get("output_dir_rn") . $numero;
         $dir_attest = $params->get("output_dir_attest") . $numero;
-        $finder = new CustomFinder();
 
         $rns = $finder->getFiles($dir_rn);
         $attests = $finder->getFiles($dir_attest);
-
-        $jsonRns = [];
-        $jsonAttests = [];
 
         $data = [];
 
         $i = 0;
         foreach ($rns as $rn) {
             $year = explode("_", $rn->getFilename())[1];
-//            $jsonRns[$year][] = [
-//                'name' => $rn->getFilename(),
-//                'date' => date("d/m/Y", $rn->getCTime()),
-//                'index' => $i++,
-//            ];
             $data[$year]['rn'][] = [
                 'name' => $rn->getFilename(),
                 'index' => $i++,
@@ -50,11 +41,6 @@ class EtudiantController extends AbstractController
         $i = 0;
         foreach ($attests as $attest) {
             $year = explode("_", $attest->getFilename())[1];
-//            $jsonAttests[$year][] = [
-//                'name' => $attest->getFilename(),
-//                'date' => date("d/m/Y", $attest->getCTime()),
-//                'index' => $i++,
-//            ];
             $data[$year]['attest'][] = [
                 'name' => $attest->getFilename(),
                 'index' => $i++,
@@ -68,11 +54,7 @@ class EtudiantController extends AbstractController
             'prenom' => $ldapUser->getAttribute("givenName")[0],
         ];
 
-//        dd($data);
-
         return new JsonResponse([
-            'rns' => $jsonRns,
-            'attests' => $jsonAttests,
             'student' => $user,
             'data' => $data,
         ]);
@@ -86,9 +68,7 @@ class EtudiantController extends AbstractController
                 return new Response("Vous n'avez pas les autorisations nécessaires pour afficher ce contenu", 403);
         }
 
-
         $directory = $this->getParameter("output_dir_rn");
-
         return PdfResponse::getPdfResponse($index, $directory . $numero, true);
     }
 

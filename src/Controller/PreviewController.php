@@ -16,13 +16,13 @@ class PreviewController extends AbstractController
     #[Route('/tmp/releves/{numero}', name: 'preview_tmp_rn')]
 	public function preview_tmp_rn($numero): BinaryFileResponse|Response
     {
-		return $this->watch($numero, 0, $this->getParameter("output_tmp_rn") . $this->getUser()->getUsername() . '/');
+		return $this->watch($numero, 0, $this->getParameter("output_tmp_rn") . $this->getUser()->getUserIdentifier() . '/');
 	}
 
     #[Route('/tmp/attests/{numero}', name: 'preview_tmp_attest')]
 	public function preview_tmp_attest($numero): BinaryFileResponse|Response
     {
-		return $this->watch($numero, 0, $this->getParameter("output_tmp_attest") . $this->getUser()->getUsername() . '/');
+		return $this->watch($numero, 0, $this->getParameter("output_tmp_attest") . $this->getUser()->getUserIdentifier() . '/');
 	}
 
     #[Route('/releves/{numero}/{index}', name: 'preview_rn')]

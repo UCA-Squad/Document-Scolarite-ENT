@@ -2,12 +2,12 @@
 
   <!--  HEADER INFO-->
   <div v-if="this.data !== null" class="mt-2 row justify-content-md-center">
-    <div class="form-group col-sm-2">
+    <div class="form-group col-sm-2" v-if="this.mode === 0">
       <label class="control-label">Semestre</label>
       <input v-model="this.data.semestre" class="form-control" style="text-align: center" name="session" type="text"
              disabled>
     </div>
-    <div class="form-group col-sm-2">
+    <div class="form-group col-sm-2" v-if="this.mode === 0">
       <label class="control-label">Session</label>
       <input v-model="this.data.session" class="form-control" style="text-align: center" type="text" disabled>
     </div>

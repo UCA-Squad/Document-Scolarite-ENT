@@ -279,6 +279,9 @@ export default {
       if (this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0)
         return;
 
+      if (!confirm('Voulez-vous vraiment supprimer ' + this.selectedDeleteRows.length + ' document(s) ?'))
+        return;
+
       const numsEtu = this.selectedDeleteRows.map(r => r.split('_')[0]);
       console.log(numsEtu);
 

@@ -8,7 +8,6 @@ use App\Repository\HistoryRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Serializer\Attribute\SerializedName;
 
 #[ORM\Entity(repositoryClass: HistoryRepository::class)]
 class History
@@ -22,7 +21,7 @@ class History
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
     #[Groups(['import:read'])]
-    private ?int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "datetime", nullable: false)]
     private DateTime $date;
@@ -51,7 +50,7 @@ class History
         $this->setState($state);
     }
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

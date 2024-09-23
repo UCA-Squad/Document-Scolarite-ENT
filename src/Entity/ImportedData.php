@@ -18,16 +18,16 @@ class ImportedData
     public const ATTEST = 1;
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
-    private ?int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "string", length: 3, nullable: true)]
-    private ?string $semestre;
+    private ?string $semestre = null;
 
     #[ORM\Column(type: "string", length: 1, nullable: true)]
-    private ?string $session;
+    private ?string $session = null;
 
     #[ORM\Column(type: "string", length: 100, nullable: true)]
-    private ?string $libelle_form;
+    private ?string $libelle_form = null;
 
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private string $libelle_obj;
@@ -90,9 +90,9 @@ class ImportedData
         $this->history->add($hist);
     }
 
-    public function getSemestre(): string
+    public function getSemestre(): ?string
     {
-        return (string)$this->semestre;
+        return $this->semestre;
     }
 
     public function setSemestre(?string $semestre): self
@@ -102,9 +102,9 @@ class ImportedData
         return $this;
     }
 
-    public function getSession(): string
+    public function getSession(): ?string
     {
-        return (string)$this->session;
+        return $this->session;
     }
 
     public function setSession(?string $session): self
@@ -114,9 +114,9 @@ class ImportedData
         return $this;
     }
 
-    public function getLibelleForm(): string
+    public function getLibelleForm(): ?string
     {
-        return (string)$this->libelle_form;
+        return $this->libelle_form;
     }
 
     public function isRn(): bool
@@ -126,7 +126,8 @@ class ImportedData
 
     /**
      * Call by the form
-     * @param string $libelle
+     * @param string|null $libelle
+     * @return ImportedData
      */
     public function setLibelleForm(?string $libelle): self
     {
@@ -163,47 +164,47 @@ class ImportedData
 
     public function getPdfFilename(): string
     {
-        return (string)$this->pdf_filename;
+        return $this->pdf_filename;
     }
 
     public function getEtuFilename(): string
     {
-        return (string)$this->etu_filename;
+        return $this->etu_filename;
     }
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     public function getYear(): string
     {
-        return (string)$this->year;
+        return $this->year;
     }
 
     public function getType(): string
     {
-        return (string)$this->type;
+        return $this->type;
     }
 
     public function getCode(): string
     {
-        return (string)$this->code;
+        return $this->code;
     }
 
     public function getCodeObj(): string
     {
-        return (string)$this->code_obj;
+        return $this->code_obj;
     }
 
     public function getLibelleObj(): string
     {
-        return (string)$this->libelle_obj;
+        return $this->libelle_obj;
     }
 
     public function getLibelle(): string
     {
-        return (string)$this->libelle;
+        return $this->libelle;
     }
 
     public function getNbStudents(): int
@@ -213,7 +214,7 @@ class ImportedData
 
     public function getUsername(): string
     {
-        return (string)$this->username;
+        return $this->username;
     }
 
     public function setYear(string $year): void

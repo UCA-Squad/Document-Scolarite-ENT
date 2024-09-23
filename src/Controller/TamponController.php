@@ -13,10 +13,6 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * Class TamponController
- * @package App\Controller
- */
 #[Route('/api'), IsGranted('ROLE_SCOLA')]
 class TamponController extends AbstractController
 {
