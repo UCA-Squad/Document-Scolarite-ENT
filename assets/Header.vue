@@ -24,10 +24,14 @@ export default {
   <nav ref="depot-nav" class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
 
-      <div type="button" id="btnMenuEnt"
-           style="width: 28px; height: 28px; color: #fff; cursor: pointer; margin: 5px 8px; padding: 3px; display: flex; align-items: center; justify-content: center;">
-        <span class="mdi mdi-dots-grid" style="font-size: 28px;"></span>
-      </div>
+<!--      <div type="button" id="btnMenuEnt"-->
+<!--           style="width: 28px; height: 28px; color: #fff; cursor: pointer; margin: 5px 8px; padding: 3px; display: flex; align-items: center; justify-content: center;">-->
+<!--        <span class="mdi mdi-dots-grid" style="font-size: 28px;"></span>-->
+<!--      </div>-->
+
+      <span type="button" id="btnMenuEnt" class="mdi mdi-dots-grid" style="font-size: 28px; margin-right: 2px">
+<!--        <span  style="font-size: 28px;"></span>-->
+      </span>
 
       <router-link class="navbar-brand" to="/scola">Doc Scola</router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -96,12 +100,20 @@ export default {
       :data-top="navHeight"
       data-client="DOCSCOLA"
       :data-connected=user.encryptedName
-      data-path-login="https://ent.uca.fr/cas/login?service=http://depotdoc.infra.dsi.uca.fr/scola"
+      data-path-login="https://ent.uca.fr/cas/login?service=http://depotdoc.infra.dsi.uca.fr"
       data-path-logout="https://ent.uca.fr/cas/logout?service=http://depotdoc.infra.dsi.uca.fr/logout"/>
 </template>
 
 <style scoped>
 .navbar {
-  padding: 0.3rem 0;
+  padding: 0.25rem 0;
+}
+
+#btnMenuEnt.active {
+  color: #009dbd;
+}
+
+#btnMenuEnt {
+  color: #fff;
 }
 </style>
