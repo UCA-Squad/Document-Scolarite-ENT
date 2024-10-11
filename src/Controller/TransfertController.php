@@ -189,15 +189,20 @@ class TransfertController extends AbstractController
             $num = $stud->getNumero();
             $user = current($ldap->search("(CLFDcodeEtu=$num)", "ou=people,", ["CLFDcodeEtu", "CLFDstatus", "memberOf"]));
 
-            // Vérifie que l'étudiant est actif et non blacklisté pour envoyer mail
-            if (!isset($user) || $user->getAttribute("CLFDstatus")[0] == 0 /*||
-                in_array($this->params->get("ldap")["bl_group"], $user->getAttribute("memberOf"))*/)
+            // Vérifie que l'étudiant est actif
+            if (!isset($user) || $user->getAttribute("CLFDstatus")[0] == 0)
+                continue;
+
+            // Vérifie que l'étudiant n'est pas blacklisté
+            $memberOf = $user->getAttribute("memberOf");
+            $blGroup = $this->params->get("ldap")["bl_group"];
+            if (isset($memberOf) && $blGroup != "" && in_array($blGroup, $memberOf))
                 continue;
 
             $this->send_mail($stud, $mode, $bddData, $twig, $mailer);
         }
         $request->getSession()->clear();
-        $this->finder->deleteDirectory($etu . $this->getUser()->getUsername() . '.etu');
+        $this->finder->deleteDirectory($etu . $this->getUser()->getUserIdentifier() . '.etu');
 
         return new JsonResponse();
     }

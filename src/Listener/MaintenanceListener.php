@@ -4,7 +4,6 @@
 namespace App\Listener;
 
 
-use App\Security\AesCipher;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
