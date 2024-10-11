@@ -64,10 +64,7 @@ axios.interceptors.response.use(function (response) {
 });
 
 router.beforeEach((to, from, next) => {
-    // if (to.path === '/logout') {
-    //     next(); // Permettre l'accès à la route /logout
-    // } else
-        if (user.isEtudiant() && to.path !== '/student') {
+    if (user.isEtudiant() && to.path !== '/student') {
         next({path: '/student'});
     } else if (to.meta.requiresScola) {
         if (user.isScola()) next()

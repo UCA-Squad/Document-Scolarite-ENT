@@ -62,10 +62,8 @@ export default {
     onDataImported(data) {
       this.importData = data;
 
-      if (this.importData.sameFiles === true && this.importData.sameParams)
-        alert('Le nom des fichiers ainsi que les paramètres correspondent à un dépôt existant');
-      else if (this.importData.sameFiles === true)
-        alert('Le nom des fichiers correspondent à un dépôt existant');
+      if (this.importData.sameParams)
+        alert('Les paramètres correspondent à un dépôt existant');
 
       if (this.importData.step === "tampon")
         this.step = 1;

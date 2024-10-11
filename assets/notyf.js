@@ -11,7 +11,7 @@ const notyf = new Notyf({
         // SUCCESS
         {
             type: 'file_imported',
-            background: '#178F96',
+            background: '#006d82',
             icon: false,
             position: {
                 x: 'right',
@@ -21,7 +21,7 @@ const notyf = new Notyf({
         },
         {
             type: 'short_success',
-            background: '#178F96',
+            background: '#006d82',
             icon: false,
             position: {
                 x: 'right',
@@ -33,7 +33,7 @@ const notyf = new Notyf({
         // ERROR
         {
             type: 'error',
-            background: 'red',
+            background: '#d60550',
             icon: false,
             position: {
                 x: 'right',
@@ -43,7 +43,7 @@ const notyf = new Notyf({
         },
         {
             type: 'short_error',
-            background: 'red',
+            background: '#d60550',
             icon: false,
             position: {
                 x: 'right',
