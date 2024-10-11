@@ -129,24 +129,6 @@ class ImportController extends AbstractController
             ->setLibelleForm(empty($libelle) ? null : $libelle)
             ->setSemestre(empty($semestre) ? null : $semestre);
 
-        // existing import with same files name
-//        $existingImport = $this->repo->findOneBy([
-//            'pdf_filename' => $import->getPdfFilename(),
-//            'etu_filename' => $import->getEtuFilename()
-//        ]);
-
-        // if the existing import params match
-//        $sameParams = isset($existingImport) &&
-//            $existingImport->getSemestre() == $import->getSemestre() &&
-//            $existingImport->getSession() == $import->getSession();
-
-//        dd($existingImport, $import);
-
-        // Throw an error if an import with same files and different params exists
-//        if (isset($existingImport) && !$sameParams) {
-//            return $this->json(['error' => "L'import existe déjà"], 500);
-//        }
-
         $this->session->clear();
 
         $mode == ImportedData::RN ? $this->pdfTool->setupRn() : $this->pdfTool->setupAttest();
@@ -163,7 +145,7 @@ class ImportController extends AbstractController
 
         $sameParams = isset($existingImport);
 
-        if (isset($existingImport)) {
+        if ($sameParams) {
             $nbFiles = $existingImport->getHistory()->last()->getNbFiles();
             $existingImport->addHistory(new History($nbFiles));
         } else {
@@ -180,7 +162,6 @@ class ImportController extends AbstractController
             'mode' => $mode,
             'pageCount' => $pageCount,
             'pageFirst' => $pageFirst,
-            'sameFiles' => isset($existingImport),
             'sameParams' => $sameParams,
         ]);
     }
@@ -288,19 +269,12 @@ class ImportController extends AbstractController
         $new_path = $this->file_access->getPdfByMode($mode, 'd');
         $name = $this->file_access->getPdfByMode($mode, 'f');
 
-//        try {
-//            $pageCount = $this->pdfTool->getPageCount($pdf->getPathname()); // Trigger une exeception si le format du pdf est illisible
-//            $pdf->move($new_path, $name);
-//
-//        } catch (PdfParserException|CrossReferenceException $e) {
-
         $cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . $name . "' '" . $pdf->getPathname() . "'";
         try {
             Process::fromShellCommandline($cmd)->setTimeout(null)->setIdleTimeout(null)->run();
         } catch (\Exception $e) {
             return false;
         }
-//        }
 
         return true;
     }
