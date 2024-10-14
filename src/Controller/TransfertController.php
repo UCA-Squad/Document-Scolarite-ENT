@@ -69,21 +69,35 @@ class TransfertController extends AbstractController
         $data = $request->getSession()->get('data');
 
 
-//        try {
+        try {
 
-        for ($i = 0; $i < $batchCount && $i < count($nums); $i++) {
-            $this->transfert($mode === ImportedData::RN ? ImportedData::RN : ImportedData::ATTEST, $nums[$i], $data);
-        }
+            for ($i = 0; $i < $batchCount && $i < count($nums); $i++) {
+                $this->transfert($mode === ImportedData::RN ? ImportedData::RN : ImportedData::ATTEST, $nums[$i], $data);
+            }
 
-        $request->getSession()->set('data', $data);
+            $request->getSession()->set('data', $data);
 
 
-        $numsTodo = array_slice($nums, $i);
-        unset($nums);
+            $numsTodo = array_slice($nums, $i);
+            unset($nums);
 
-        // Last batch
-        if (empty($numsTodo)) {
-            $import = $request->getSession()->get('data');
+            // Last batch
+            if (empty($numsTodo)) {
+                $import = $request->getSession()->get('data');
+
+                if ($import->getId() !== null) {
+                    $existingImport = $this->repo->find($import->getId());
+                    $existingImport->addHistory($import->getLastHistory());
+                } else {
+                    $this->em->persist($import);
+                }
+                $this->em->flush();
+            }
+            return new JsonResponse($numsTodo);
+
+        } catch (\Exception $e) {
+            // On error, save the already processed data
+            $import = $data;
 
             if ($import->getId() !== null) {
                 $existingImport = $this->repo->find($import->getId());
@@ -92,15 +106,8 @@ class TransfertController extends AbstractController
                 $this->em->persist($import);
             }
             $this->em->flush();
+            return new JsonResponse($e->getMessage(), 500);
         }
-        return new JsonResponse($numsTodo);
-//        } catch (\Exception $e) {
-//            // On error, save the already processed data
-//            $import = $this->session->get('data');
-//            $this->em->persist($import);
-//            $this->em->flush();
-//            return new JsonResponse($e->getMessage(), 500);
-//        }
     }
 
     private function transfert(int $mode, int $num, ImportedData $data): void
@@ -154,6 +161,7 @@ class TransfertController extends AbstractController
 
         $hist = $data->getHistory()->last();
 
+        // Si ce n'est pas le 1er historique, on le tag comme 'Depot supplémentaire'
         if ($data->getHistory()->count() > 1)
             $hist->setState(History::Transfered);
 
