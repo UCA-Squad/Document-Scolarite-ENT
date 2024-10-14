@@ -96,7 +96,7 @@ class TransfertController extends AbstractController
             return new JsonResponse($numsTodo);
 
         } catch (\Exception $e) {
-            // On error, save the already processed data
+            // Si transfert remonte une erreur, on sauvegarde l'import dans son état actuel (incomplet)
             $import = $data;
 
             if ($import->getId() !== null) {
