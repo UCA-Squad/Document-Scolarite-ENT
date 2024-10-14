@@ -45,8 +45,7 @@
 
     <div v-if="mode === 0" class="mb-3">
       <label for="txt_lib" class="form-label">Libellé</label>
-      <input type="text" required v-model="this.rn.lib" class="form-control" id="txt_lib"
-             aria-describedby="emailHelp">
+      <input type="text" required v-model="this.rn.lib" class="form-control" id="txt_lib">
     </div>
 
     <div class="mb-3">
@@ -126,15 +125,19 @@ export default {
     }
   },
   mounted() {
-    console.log(this.mode);
+    // console.log(this.mode);
   },
   watch: {
     mode() {
       this.rn.sem = this.mode === 0 ? "1" : "";
       this.rn.sess = this.mode === 0 ? "1" : "";
-      // this.rn.pdf = "";
-      // this.rn.etu = "";
-      // this.rn.tampon = "";
+      this.rn.pdf = "";
+      document.getElementById('input_rn').value = '';
+      this.rn.etu = "";
+      document.getElementById('input_etu').value = '';
+      this.rn.tampon = "";
+      document.getElementById('input_tampon').value = '';
+      this.rn.numTampon = 1;
     }
   }
 }

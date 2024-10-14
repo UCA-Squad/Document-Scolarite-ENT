@@ -102,7 +102,13 @@ export default {
     }
   },
   mounted() {
-    console.log(this.mode);
+    // console.log(this.mode);
+  },
+  watch: {
+    mode() {
+      // console.log("mode changed : " + this.mode)
+      this.step = 0;
+    }
   }
 }
 </script>
