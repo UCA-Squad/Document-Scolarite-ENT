@@ -46,6 +46,8 @@ parameters:
 
   menu_ent_hashkey: '%env(MENU_ENT_HASHKEY)%'
   menu_ent_init_vector: '%env(MENU_ENT_INIT_VECTOR)%'
+  menu_url_login: '%env(MENU_URL_LOGIN)%'
+  menu_url_logout: '%env(MENU_URL_LOGOUT)%'
 
 services:
   # default configuration for services in *this* file
