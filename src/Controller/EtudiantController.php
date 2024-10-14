@@ -47,6 +47,9 @@ class EtudiantController extends AbstractController
             ];
         }
 
+        // trie sur $data[$year]
+        ksort($data);
+
         $ldapUser = current($ldap->search("(CLFDcodeEtu=$numero)", "ou=people,", ["CLFDcodeEtu", "sn", "givenName"]));
         $user = [
             'numero' => $numero,
