@@ -13,6 +13,10 @@ export default {
       return user
     },
   },
+  props: {
+    url_login: String,
+    url_logout: String
+  },
   methods: {},
   mounted() {
     this.navHeight = this.$refs['depot-nav'].offsetHeight + 1;
@@ -24,14 +28,7 @@ export default {
   <nav ref="depot-nav" class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
 
-<!--      <div type="button" id="btnMenuEnt"-->
-<!--           style="width: 28px; height: 28px; color: #fff; cursor: pointer; margin: 5px 8px; padding: 3px; display: flex; align-items: center; justify-content: center;">-->
-<!--        <span class="mdi mdi-dots-grid" style="font-size: 28px;"></span>-->
-<!--      </div>-->
-
-      <span type="button" id="btnMenuEnt" class="mdi mdi-dots-grid" style="font-size: 28px; margin-right: 2px">
-<!--        <span  style="font-size: 28px;"></span>-->
-      </span>
+      <span type="button" id="btnMenuEnt" class="mdi mdi-dots-grid" style="font-size: 28px; margin-right: 2px"></span>
 
       <router-link class="navbar-brand" to="/scola">Doc Scola</router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -72,26 +69,9 @@ export default {
             </router-link>
           </li>
         </ul>
-        <!--              <div class="d-flex">-->
-        <!--                <button class="btn btn-secondary" id="btnMenuEnt"><span class="mdi mdi-dots-grid"></span></button>-->
-        <!--              </div>-->
       </div>
     </div>
   </nav>
-
-  <!--
-  <div ref="depot-nav"
-       style="width: 100%; height: 50px; display: flex; align-items: center; position: fixed; top: 0; left: 0; background-color: #006d82; box-shadow: 0px 5px 10px 0px #9c9c9c; justify-content: space-between;">
-    <div style="display: flex; align-items: center;">
-      <div type="button" id="btnMenuEnt"
-           style="width: 28px; height: 28px; color: #fff; cursor: pointer; margin: 5px 8px; padding: 3px; display: flex; align-items: center; justify-content: center;">
-        <span class="mdi mdi-dots-grid" style="font-size: 28px;"></span>
-      </div>
-      <router-link class="navbar-brand text-white" to="/scola">Doc Scola</router-link>
-    </div>
-  </div>
-  -->
-
 
   <uca-menu
       data-opener="btnMenuEnt"
@@ -100,8 +80,8 @@ export default {
       :data-top="navHeight"
       data-client="DOCSCOLA"
       :data-connected=user.encryptedName
-      data-path-login="https://ent.uca.fr/cas/login?service=http://depotdoc.infra.dsi.uca.fr"
-      data-path-logout="https://ent.uca.fr/cas/logout?service=http://depotdoc.infra.dsi.uca.fr/logout"/>
+      :data-path-login="url_login"
+      :data-path-logout="url_logout"/>
 </template>
 
 <style scoped>

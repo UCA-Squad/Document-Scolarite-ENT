@@ -37,7 +37,7 @@ export default {
     },
     fetchTampon() {
       WebService.getTamponExample(this.mode).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         this.tamponExample = URL.createObjectURL(response.data);
       }).catch(err => {
         console.log(err.response.data.error);

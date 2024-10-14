@@ -1,5 +1,4 @@
 import './styles/app.css';
-// import './bootstrap';
 import {createApp} from "vue";
 import App from "./App.vue";
 import {createRouter, createWebHistory} from "vue-router";
@@ -37,12 +36,12 @@ const routes = [
 ]
 
 // const BASE_URL = '/doc-scola';   // PROD
-const BASE_URL = '';        // DEV
+// const BASE_URL = '';        // DEV
 
-WebService.BASE_URL = BASE_URL;
+// WebService.BASE_URL = BASE_URL;
 
 const router = createRouter({
-    history: createWebHistory(BASE_URL),
+    history: createWebHistory(),
     routes,
 });
 
@@ -74,7 +73,10 @@ router.beforeEach((to, from, next) => {
     }
 });
 
-const app = createApp(App, {})
+const app = createApp(App, {
+    url_login: jsonUser.url_login,
+    url_logout: jsonUser.url_logout
+})
 
 app.config.compilerOptions.isCustomElement = (tag) => {
     return tag.startsWith('uca-')

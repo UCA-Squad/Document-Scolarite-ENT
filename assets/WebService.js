@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// const this.BASE_URL = '/doc-scola';
-
 class WebService {
 
     BASE_URL = '';
