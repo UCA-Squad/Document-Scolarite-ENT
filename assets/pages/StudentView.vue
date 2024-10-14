@@ -77,7 +77,7 @@ export default {
 
       WebService.getStudentDocs(num).then(response => {
         this.docs = response.data;
-        console.log(this.docs);
+        //console.log(this.docs);
       }).catch(error => {
         console.log("Error fetching docs");
       })
