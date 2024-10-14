@@ -12,8 +12,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(name: 'sinchro:nb_files',
-    description: 'Synchronize le nombre de fichiers sur le serveur')]
+#[AsCommand(name: 'sinchro:nb_files', description: 'Synchronise le nombre de fichiers sur le serveur')]
 class SinchroNbFilesCommand extends Command
 {
     public function __construct(private ImportedDataRepository $repo, private FileAccess $file_access, private IEtuParser $parser, private EntityManagerInterface $em)
