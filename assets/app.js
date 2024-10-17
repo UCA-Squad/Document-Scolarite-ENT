@@ -10,6 +10,7 @@ import SearchStudent from "./pages/scola/SearchStudent.vue";
 import StudentView from "./pages/StudentView.vue";
 import axios from "axios";
 import WebService from "./WebService";
+import Unauthorized from "./pages/Unauthorized.vue";
 
 const b64 = document.querySelector('#app').dataset.info;
 const jsonUser = JSON.parse(atob(b64));
@@ -31,6 +32,8 @@ const routes = [
     {path: '/scola/search', component: SearchStudent, meta: {requiresScola: true}},
 
     {path: '/student/:num*', component: StudentView, meta: {requiresScola: false}},
+
+    {path: '/unauthorized', component: Unauthorized, meta: {requiresScola: false}},
 
     {path: '/:pathMatch(.*)*', redirect: '/scola'}
 ]
@@ -65,6 +68,8 @@ axios.interceptors.response.use(function (response) {
 router.beforeEach((to, from, next) => {
     if (user.isEtudiant() && to.path !== '/student') {
         next({path: '/student'});
+    } else if (user.isAnonym() && to.path !== '/unauthorized') {
+        next({path: '/unauthorized'});
     } else if (to.meta.requiresScola) {
         if (user.isScola()) next()
         else next({path: '/'})
