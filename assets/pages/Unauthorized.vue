@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-2">
     <div class="row justify-content-md-center alert alert-warning">
-      <h5 style="text-align: center">Vous n'avez pas accès à cette page</h5>
+      <h5 style="text-align: center">Vous n'avez pas accès à cette application</h5>
     </div>
   </div>
 </template>
