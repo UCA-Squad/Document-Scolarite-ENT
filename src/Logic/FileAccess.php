@@ -10,13 +10,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FileAccess
 {
-	private $params;
-	private $security;
-
-	public function __construct(ParameterBagInterface $params, Security $security)
+	public function __construct(private ParameterBagInterface $params, private Security $security)
 	{
-		$this->params = $params;
-		$this->security = $security;
 	}
 
 	/**
@@ -40,7 +35,7 @@ class FileAccess
 	/**
 	 * @param string $dir
 	 * @param string $filename
-	 * @param string $filter
+	 * @param string $filter 'd' = dir / 'f' = filename / '' = dir + filename
 	 * @return string
 	 */
 	private function filter(string $dir, string $filename, string $filter = ''): string
@@ -131,10 +126,11 @@ class FileAccess
 //		return $this->params->get('output_tmp_pdf') . 'rn_' . $this->security->getUser()->getUsername() . '.pdf';
 	}
 
-	/**
-	 * Retourne le chemin du fichier pdf complet d'attestations.
-	 * @return string
-	 */
+    /**
+     * Retourne le chemin du fichier pdf complet d'attestations.
+     * @param string $filter
+     * @return string
+     */
 	public function getPdfAttest(string $filter = ''): string
 	{
 		return $this->filter($this->params->get('output_tmp_pdf'), 'attest_' . $this->getUsername() . '.pdf', $filter);
