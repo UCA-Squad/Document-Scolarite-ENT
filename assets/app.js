@@ -66,10 +66,12 @@ axios.interceptors.response.use(function (response) {
 });
 
 router.beforeEach((to, from, next) => {
-    if (user.isEtudiant() && to.path !== '/student') {
+    if (user.isEtudiant() && to.path !== '/student') { // Si étudiant on force sur la page étudiant
         next({path: '/student'});
-    } else if (user.isAnonym() && to.path !== '/unauthorized') {
+    } else if (user.isAnonym() && to.path !== '/unauthorized') { // Si anonyme on force sur la page unauthorized
         next({path: '/unauthorized'});
+    } else if (!user.isAnonym() && to.path === '/unauthorized') { // Si autorisé on cancel la page unauthorized
+        next({path: '/'});
     } else if (to.meta.requiresScola) {
         if (user.isScola()) next()
         else next({path: '/'})
