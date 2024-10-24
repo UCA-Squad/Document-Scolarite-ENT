@@ -64,7 +64,7 @@ class TransfertController extends AbstractController
         $mode = $data['mode'];
 
         // How many files to transfert at once
-        $batchCount = 100;
+        $batchCount = 3;
 
         $data = $request->getSession()->get('data');
 
