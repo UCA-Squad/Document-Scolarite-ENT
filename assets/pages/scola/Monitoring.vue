@@ -71,6 +71,7 @@
     <h3 v-if="this.mode === 1" class="text-center">Suivi des Attestations de réussite</h3>
 
     <ag-grid-vue
+        v-if="this.monitoring !== null"
         class="ag-theme-alpine"
         style="height: 85vh"
         :columnDefs="columnDefs"
@@ -172,7 +173,11 @@ export default {
     },
     getColDefs() {
       return [
-        {field: "username", headerName: "Utilisateur", hide: !user.isAdmin()},
+        {
+          field: "username",
+          headerName: "Utilisateur",
+          hide: this.monitoring?.every(m => m.username === user.name)
+        },
         {
           headerName: "Date de traitement", valueGetter: params => {
             return params.data.history.slice(-1)[0].formattedDate;

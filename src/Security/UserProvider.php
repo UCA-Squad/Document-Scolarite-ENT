@@ -34,6 +34,9 @@ class UserProvider implements UserProviderInterface
         $users = $this->ldap->search("(uid=$username)", "ou=people,", [$affi, "memberOf", $code, "mail", "CLFDstatus"]);
         $user = current($users);
 
+        $compo = $this->ldap->search("(supannCodeEntite=UPK000000A)", "ou=structures,", ["ou"]);
+//        dd($compo);
+
         // Si l'utilisateur est admin
         if (in_array($username, $admins)) {
             $mail = current($user->getAttribute('mail'));

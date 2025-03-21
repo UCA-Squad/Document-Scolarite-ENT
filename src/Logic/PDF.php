@@ -108,6 +108,12 @@ class PDF
             $i++;
             $content = $page->getText();
 
+            // [a-zA-Z]+ ([0-9]+) \/([0-9]+)([a-zA-Z-']+) ([a-zA-Z-']+) - [a-zA-Z-\/. éèêàç]+\n([0-9]+)
+            // dd($content);
+
+            // Erreur qui vient de ghostscript : les apostrophes sont mal encodées sur test/prod
+            $content = str_replace("&#39;", "'", $content);
+
             $index = $this->parser->findStudentByNum($content, $students);
             if ($index === false) {
                 $index = $this->parser->findStudentByName($content, $students);

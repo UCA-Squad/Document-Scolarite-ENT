@@ -18,10 +18,10 @@ class ImportedDataRepository extends ServiceEntityRepository
         parent::__construct($registry, ImportedData::class);
     }
 
-    public function findLastDataByMode(int $mode, string $username)
-    {
-        return $mode == ImportedData::RN ? $this->findLastRnData($username) : $this->findLastAttestData($username);
-    }
+//    public function findLastDataByMode(int $mode, string $username)
+//    {
+//        return $mode == ImportedData::RN ? $this->findLastRnData($username) : $this->findLastAttestData($username);
+//    }
 
     public function findAllRns(string $username = null)
     {
@@ -70,7 +70,8 @@ class ImportedDataRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findAttestsByUsernames(array $usernames){
+    public function findAttestsByUsernames(array $usernames)
+    {
         return $this->createQueryBuilder('i')
             ->where('i.semestre is NULL')
             ->andWhere('i.session is NULL')
@@ -125,81 +126,88 @@ class ImportedDataRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findRnFromUsername(string $username): array
-    {
-        return $this->createQueryBuilder('i')
-            ->where('i.semestre IS NOT NULL')
-            ->andWhere('i.session IS NOT NULL')
-            ->andWhere('i.libelle_form IS NOT NULL')
-            ->andWhere('i.username = :username')
-            ->innerJoin('i.history', 'h', Join::WITH, 'i.id = h.importedData')
-            ->orderBy('h.date', "DESC")
-            ->setParameter('username', $username)
-            ->getQuery()
-            ->getResult();
-    }
+//    public function findRnFromUsername(string $username): array
+//    {
+//        return $this->createQueryBuilder('i')
+//            ->where('i.semestre IS NOT NULL')
+//            ->andWhere('i.session IS NOT NULL')
+//            ->andWhere('i.libelle_form IS NOT NULL')
+//            ->andWhere('i.username = :username')
+//            ->innerJoin('i.history', 'h', Join::WITH, 'i.id = h.importedData')
+//            ->orderBy('h.date', "DESC")
+//            ->setParameter('username', $username)
+//            ->getQuery()
+//            ->getResult();
+//    }
 
-    public function findAttestFromUsername(string $username): array
-    {
-        return $this->createQueryBuilder('i')
-            ->where('i.semestre IS NULL')
-            ->andWhere('i.session IS NULL')
-            ->andWhere('i.libelle_form IS NULL')
-            ->andWhere('i.username = :username')
-            ->innerJoin('i.history', 'h', Join::WITH, 'i.id = h.importedData')
-            ->orderBy('h.date', "DESC")
-            ->setParameter('username', $username)
-            ->getQuery()
-            ->getResult();
-    }
+//    public function findAttestFromUsername(string $username): array
+//    {
+//        return $this->createQueryBuilder('i')
+//            ->where('i.semestre IS NULL')
+//            ->andWhere('i.session IS NULL')
+//            ->andWhere('i.libelle_form IS NULL')
+//            ->andWhere('i.username = :username')
+//            ->innerJoin('i.history', 'h', Join::WITH, 'i.id = h.importedData')
+//            ->orderBy('h.date', "DESC")
+//            ->setParameter('username', $username)
+//            ->getQuery()
+//            ->getResult();
+//    }
 
-    public function findRn(ImportedData $data, string $username, bool $admin = false): ?ImportedData
-    {
-        $query = $this->createQueryBuilder('i')
-            ->where('i.semestre = :semestre')
-            ->andWhere('i.session = :session')
-            ->andWhere('i.libelle_form is not null')
-            ->andWhere('i.etu_filename = :etu')
-            ->andWhere('i.year = :year')
-            ->setParameter('semestre', $data->getSemestre())
-            ->setParameter('session', $data->getSession())
-            ->setParameter('etu', $data->getEtu()->getClientOriginalName())
-            ->setParameter('year', $data->getYear() . '-' . (substr($data->getYear(), 2, 2) + 1));
+//    public function findRn(ImportedData $data, string $username, bool $admin = false): ?ImportedData
+//    {
+//        $query = $this->createQueryBuilder('i')
+//            ->where('i.semestre = :semestre')
+//            ->andWhere('i.session = :session')
+//            ->andWhere('i.libelle_form is not null')
+//            ->andWhere('i.etu_filename = :etu')
+//            ->andWhere('i.year = :year')
+//            ->setParameter('semestre', $data->getSemestre())
+//            ->setParameter('session', $data->getSession())
+//            ->setParameter('etu', $data->getEtu()->getClientOriginalName())
+//            ->setParameter('year', $data->getYear() . '-' . (substr($data->getYear(), 2, 2) + 1));
+//
+//        if (!$admin) {
+//            $query->andWhere('i.username = :username')
+//                ->setParameter('username', $username);
+//        }
+//
+//        return $query
+//            ->setMaxResults(1)
+//            ->getQuery()
+//            ->getOneOrNullResult();    // Retourne null si plusieurs entrées // a CHECK
+//    }
 
-        if (!$admin) {
-            $query->andWhere('i.username = :username')
-                ->setParameter('username', $username);
-        }
-
-        return $query
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();    // Retourne null si plusieurs entrées // a CHECK
-    }
-
-    public function findAttest(ImportedData $data, string $username, bool $admin = false): ?ImportedData
-    {
-        $query = $this->createQueryBuilder('i')
-            ->where('i.semestre IS NULL')
-            ->andWhere('i.session IS NULL')
-            ->andWhere('i.libelle_form IS NULL')
-            ->andWhere('i.etu_filename = :etu')
-            ->andWhere('i.year = :year')
-            ->setParameter('etu', $data->getEtu()->getClientOriginalName())
-            ->setParameter('year', $data->getYear() . '-' . (substr($data->getYear(), 2, 2) + 1));
-
-        if (!$admin) {
-            $query->andWhere('i.username = :username')
-                ->setParameter('username', $username);
-        }
-
-        return $query->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
+//    public function findAttest(ImportedData $data, string $username, bool $admin = false): ?ImportedData
+//    {
+//        $query = $this->createQueryBuilder('i')
+//            ->where('i.semestre IS NULL')
+//            ->andWhere('i.session IS NULL')
+//            ->andWhere('i.libelle_form IS NULL')
+//            ->andWhere('i.etu_filename = :etu')
+//            ->andWhere('i.year = :year')
+//            ->setParameter('etu', $data->getEtu()->getClientOriginalName())
+//            ->setParameter('year', $data->getYear() . '-' . (substr($data->getYear(), 2, 2) + 1));
+//
+//        if (!$admin) {
+//            $query->andWhere('i.username = :username')
+//                ->setParameter('username', $username);
+//        }
+//
+//        return $query->setMaxResults(1)
+//            ->getQuery()
+//            ->getOneOrNullResult();
+//    }
 
     public function findUsernameByNotIn(array $bddUserNames)
     {
+        if (empty($bddUserNames)) {
+            return $this->createQueryBuilder('i')
+                ->select('DISTINCT i.username')
+                ->getQuery()
+                ->getResult();
+        }
+
         return $this->createQueryBuilder('i')
             ->select('DISTINCT i.username')
             ->where("i.username NOT IN (:names)")

@@ -48,25 +48,69 @@ class UserController extends AbstractController
             return $username['username'];
         }, $oldUsernames);
 
-
-        $ldapUsers = $ldap->search(
-            '(|' . implode('', array_map(fn($username) => "(uid=$username)", $usernames)) . ')',
-            "ou=people,",
-            ["mail", "givenName", "sn", "supannEntiteAffectationPrincipale", "uid"]
-        );
-
-        $oldUsers = [];
-        foreach ($ldapUsers as $ldapUser) {
-            $username = current($ldapUser->getAttribute('uid'));
-            $oldUser = new User($username, [], "");
-            $oldUser->setNom(current($ldapUser->getAttribute('sn')));
-            $oldUser->setPrenom(current($ldapUser->getAttribute('givenName')));
-            $oldUser->setComposante(current($ldapUser->getAttribute('supannEntiteAffectationPrincipale') ?? []) ?? "");
+        $oldUsers = $this->loadUsersFromLdap($ldap, '(|' . implode('', array_map(fn($username) => "(uid=$username)", $usernames)) . ')');
+        foreach ($oldUsers as $oldUser) {
             $oldUser->setOld(true);
-            $oldUsers[] = $oldUser;
         }
 
-        return $this->json(array_merge($bddUsers, $oldUsers));
+        $fullusers = array_merge($bddUsers, $oldUsers);
+
+        // trie sur nom puis prenom
+        usort($fullusers, function ($a, $b) {
+            if ($a->getNom() == $b->getNom()) {
+                return $a->getPrenom() > $b->getPrenom();
+            }
+            return $a->getNom() > $b->getNom();
+        });
+
+        return $this->json($fullusers);
+    }
+
+    /**
+     * @param LDAP $ldap
+     * @param string $query
+     * @return array<User>
+     */
+    private function loadUsersFromLdap(LDAP $ldap, string $query): array
+    {
+        $ldapUsers = $ldap->search($query,
+            "ou=people,", ["mail", "givenName", "sn", "supannEntiteAffectationPrincipale", "uid"]);
+
+        $users = [];
+        $codesComposantes = [];
+        foreach ($ldapUsers as $ldapUser) {
+
+            if ($ldapUser->getAttribute('supannEntiteAffectationPrincipale') === null)
+                continue;
+
+            if (!in_array(current($ldapUser->getAttribute('supannEntiteAffectationPrincipale')), $codesComposantes))
+                $codesComposantes[] = current($ldapUser->getAttribute('supannEntiteAffectationPrincipale'));
+
+            $users[] = (new User(current($ldapUser->getAttribute('uid')), []))
+                ->setNom(current($ldapUser->getAttribute('sn')))
+                ->setPrenom(current($ldapUser->getAttribute('givenName')))
+                ->setCodeComposante(current($ldapUser->getAttribute('supannEntiteAffectationPrincipale')))
+                ->setEmail(current($ldapUser->getAttribute('mail')));
+        }
+
+        $composantes = $ldap->search(
+            '(|' . implode('', array_map(fn($code) => "(supannCodeEntite=$code)", $codesComposantes)) . ')',
+            "ou=structures,", ["ou"]
+        );
+
+        $mapCompo = [];
+        foreach ($codesComposantes as $codeCompo) {
+            $compo = array_filter($composantes, function ($comp) use ($codeCompo) {
+                return str_contains($comp->getDn(), $codeCompo);
+            });
+            $mapCompo[$codeCompo] = current(current($compo)->getAttribute('ou'));
+        }
+
+        foreach ($users as $user) {
+            $user->setComposante($mapCompo[$user->getCodeComposante()] ?? "");
+        }
+
+        return $users;
     }
 
     #[Route('/search', name: 'find_users', methods: ['POST'])]
@@ -74,23 +118,7 @@ class UserController extends AbstractController
     {
         $userIdentifier = json_decode($request->getContent())->user;
 
-        $ldapUsers = $ldap->search("(&(|(uid=$userIdentifier)(sn=$userIdentifier))(CLFDstatus=9))",
-            "ou=people,", ["mail", "givenName", "sn", "supannEntiteAffectationPrincipale", "uid"]);
-
-        $users = [];
-        foreach ($ldapUsers as $ldapUser) {
-
-            if ($ldapUser->getAttribute('supannEntiteAffectationPrincipale') === null)
-                continue;
-
-            $users[] = [
-                'username' => current($ldapUser->getAttribute('uid')),
-                'nom' => current($ldapUser->getAttribute('sn')),
-                'prenom' => current($ldapUser->getAttribute('givenName')),
-                'composante' => current($ldapUser->getAttribute('supannEntiteAffectationPrincipale')),
-                'email' => current($ldapUser->getAttribute('mail'))
-            ];
-        }
+        $users = $this->loadUsersFromLdap($ldap, "(&(|(uid=$userIdentifier)(sn=$userIdentifier))(CLFDstatus=9))");
 
         return $this->json($users);
     }
@@ -130,10 +158,13 @@ class UserController extends AbstractController
         if (!isset($user))
             return $this->json(['message' => "Utilisateur [$userIdentifier] introuvable"], 404);
 
+        $codeCompo = current($user->getAttribute('supannEntiteAffectationPrincipale'));
+        $compo = current($ldap->search("(supannCodeEntite=$codeCompo)", "ou=structures,", ["ou"]));
+
         $bddUser = new User($userIdentifier, ['ROLE_SCOLA'], current($user->getAttribute('mail')));
         $bddUser->setNom(current($user->getAttribute('sn')));
         $bddUser->setPrenom(current($user->getAttribute('givenName')));
-        $bddUser->setComposante(current($user->getAttribute('supannEntiteAffectationPrincipale')));
+        $bddUser->setComposante(current($compo->getAttribute('ou')));
         $em->persist($bddUser);
         $em->flush();
 

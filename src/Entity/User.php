@@ -26,6 +26,8 @@ class User implements UserInterface
     #[ORM\Column(type: 'string', length: 25)]
     private string $composante;
 
+    private string $codeComposante;
+
     private bool $old;
 
     public function __construct(string $username, array $roles, string $email = "", string $numero = "")
@@ -150,6 +152,18 @@ class User implements UserInterface
     public function setOld(bool $old): self
     {
         $this->old = $old;
+
+        return $this;
+    }
+
+    public function getCodeComposante(): string
+    {
+        return $this->codeComposante;
+    }
+
+    public function setCodeComposante(string $codeComposante): self
+    {
+        $this->codeComposante = $codeComposante;
 
         return $this;
     }

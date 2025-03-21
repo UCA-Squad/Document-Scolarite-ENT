@@ -302,7 +302,9 @@ export default {
             },
             groups: this.groups.filter(group => group.userGroups.some(userGroup => userGroup.responsable &&
                 userGroup.username === params.data.username))
-          })
+          }),
+          filterValueGetter: params => this.groups.filter(group => group.userGroups.some(userGroup => userGroup.responsable &&
+              userGroup.username === params.data.username)).map(group => group.libelle).join(', ')
         },
         {
           headerName: "Utilisateur dans groupe",
@@ -316,9 +318,9 @@ export default {
             },
             groups: this.groups.filter(group => group.userGroups.some(userGroup => userGroup.user &&
                 userGroup.username === params.data.username))
-          })
-          // valueGetter: params => this.groups.filter(group => group.userGroups.some(userGroup => !userGroup.responsable &&
-          //     userGroup.username === params.data.username)).map(group => group.libelle).join(', ')
+          }),
+          filterValueGetter: params => this.groups.filter(group => group.userGroups.some(userGroup => userGroup.user &&
+              userGroup.username === params.data.username)).map(group => group.libelle).join(', ')
         },
         {
           headerName: "", cellRenderer: BtnComponent, cellRendererParams: (params) => ({
@@ -371,8 +373,16 @@ export default {
           }), comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
             let isCheckA = this.newGroup.userGroups.some(u => u.responsable && u.username === nodeA.data.username)
             let isCheckB = this.newGroup.userGroups.some(u => u.responsable && u.username === nodeB.data.username)
-            return isCheckA === isCheckB ? 0 : isCheckA ? -1 : 1;
-          }
+
+            if (isCheckA && isCheckB) {
+              let userA = this.users.find(user => user.username === nodeA.data.username);
+              let userB = this.users.find(user => user.username === nodeB.data.username);
+              return userA.nom === userB.nom ? userA.prenom === userB.prenom ? 0 : userA.prenom < userB.prenom ? -1 : 1 : userA.nom < userB.nom ? -1 : 1;
+            } else
+              return isCheckA ? -1 : 1;
+          },
+          sort: 'asc',
+          sortIndex: 1
         },
         {
           headerName: "Utilisateur", cellRenderer: CheckboxComponent, cellRendererParams: (params) => ({
@@ -393,8 +403,16 @@ export default {
           }), comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
             let isCheckA = this.newGroup.userGroups.some(u => u.user && u.username === nodeA.data.username)
             let isCheckB = this.newGroup.userGroups.some(u => u.user && u.username === nodeB.data.username)
-            return isCheckA === isCheckB ? 0 : isCheckA ? -1 : 1;
-          }
+
+            if (isCheckA && isCheckB) {
+              let userA = this.users.find(user => user.username === nodeA.data.username);
+              let userB = this.users.find(user => user.username === nodeB.data.username);
+              return userA.nom === userB.nom ? userA.prenom === userB.prenom ? 0 : userA.prenom < userB.prenom ? -1 : 1 : userA.nom < userB.nom ? -1 : 1;
+            } else
+              return isCheckA ? -1 : 1;
+          },
+          sort: 'asc',
+          sortIndex: 2
         },
       ];
     },
