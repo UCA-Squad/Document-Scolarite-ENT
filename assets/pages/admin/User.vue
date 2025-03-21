@@ -378,8 +378,13 @@ export default {
               let userA = this.users.find(user => user.username === nodeA.data.username);
               let userB = this.users.find(user => user.username === nodeB.data.username);
               return userA.nom === userB.nom ? userA.prenom === userB.prenom ? 0 : userA.prenom < userB.prenom ? -1 : 1 : userA.nom < userB.nom ? -1 : 1;
-            } else
-              return isCheckA ? -1 : 1;
+            } else if (isCheckA) {
+              return -1;
+            } else if (isCheckB) {
+              return 1;
+            } else {
+              return 0;
+            }
           },
           sort: 'asc',
           sortIndex: 1
@@ -408,8 +413,13 @@ export default {
               let userA = this.users.find(user => user.username === nodeA.data.username);
               let userB = this.users.find(user => user.username === nodeB.data.username);
               return userA.nom === userB.nom ? userA.prenom === userB.prenom ? 0 : userA.prenom < userB.prenom ? -1 : 1 : userA.nom < userB.nom ? -1 : 1;
-            } else
-              return isCheckA ? -1 : 1;
+            } else if (isCheckA) {
+              return -1;
+            } else if (isCheckB) {
+              return 1;
+            } else {
+              return 0;
+            }
           },
           sort: 'asc',
           sortIndex: 2
