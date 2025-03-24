@@ -71,7 +71,6 @@
     <h3 v-if="this.mode === 1" class="text-center">Suivi des Attestations de réussite</h3>
 
     <ag-grid-vue
-        v-if="this.monitoring !== null"
         class="ag-theme-alpine"
         style="height: 85vh"
         :columnDefs="columnDefs"

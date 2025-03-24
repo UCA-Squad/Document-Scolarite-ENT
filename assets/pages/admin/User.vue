@@ -99,19 +99,19 @@
       <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
         <h3>Liste des utilisateurs</h3>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Ajouter</button>
-        <ag-grid-vue v-if="users !== null"
-                     ref="usersGrid"
-                     class="ag-theme-alpine mt-1"
-                     style="height: 60vh"
-                     :columnDefs="usersColumnDefs"
-                     :rowData="this.users"
-                     :defaultColDef="defaultColDef"
-                     pagination="true"
-                     animateRows="true"
-                     :ensureDomOrder="true"
-                     :rowClassRules=this.userClassRules
-                     :localeText="{noRowsToShow: 'Aucune donnée à afficher'}"
-                     :enableCellTextSelection="true">
+        <ag-grid-vue
+            ref="usersGrid"
+            class="ag-theme-alpine mt-1"
+            style="height: 60vh"
+            :columnDefs="usersColumnDefs"
+            :rowData="this.users"
+            :defaultColDef="defaultColDef"
+            pagination="true"
+            animateRows="true"
+            :ensureDomOrder="true"
+            :rowClassRules=this.userClassRules
+            :localeText="{noRowsToShow: 'Aucune donnée à afficher'}"
+            :enableCellTextSelection="true">
         </ag-grid-vue>
       </div>
       <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
@@ -153,23 +153,13 @@ const BtnComponent = {
 
 const CheckboxComponent = {
   template: `<input type="checkbox" :checked="this.params.value" :disabled="this.params.disabled"
-                    v-on:change="this.params.onChanged(this.params.data)">`,
+                    v-on:change="this.params.onChanged(this.params.data)">`
 };
 
 const GroupLinkRenderer = {
   template: `<span><a v-for="(grp, index) in this.params.groups" href="#"
                       @click.prevent="this.params.openGroup(grp)">{{ grp.libelle }}<span
-      v-if="index < this.params.groups.length - 1">, </span></a></span>`,
-  // methods: {
-  //   openGroup(grp) {
-  //     // open modal
-  //     console.log(grp);
-  //     this.newGroup = grp;
-  //
-  //     const modal = new bootstrap.Modal(document.getElementById('addGroupModal'));
-  //     modal.show();
-  //   }
-  // }
+      v-if="index < this.params.groups.length - 1">, </span></a></span>`
 };
 
 export default {
@@ -234,7 +224,7 @@ export default {
         {
           headerName: "", cellRenderer: BtnComponent, cellRendererParams: (params) => ({
             onClicked: (data) => {
-              console.log(params);
+              // console.log(params);
               this.deleteGroup(data);
             },
             txt: "mdi mdi-delete mdi-24px",
@@ -252,14 +242,14 @@ export default {
   watch: {
     newGroup: {
       handler(newVal, oldVal) {
-        console.log("newGroup changed => getGroupUsersColumnDefs");
+        // console.log("newGroup changed => getGroupUsersColumnDefs");
         this.groupUsersColumnDefs = this.getGroupUsersColumnDefs();
       },
       deep: false
     },
     users: {
       handler() {
-        console.log("users changed => getGroupUsersColumnDefs");
+        // console.log("users changed => getGroupUsersColumnDefs");
         // this.groupUsersColumnDefs = this.getGroupUsersColumnDefs();
         this.$nextTick(() => {
           if (this.$refs.usersGrid) {
@@ -272,16 +262,6 @@ export default {
       },
       deep: true
     },
-    // groups: {
-    //   handler(newGroups, oldGroups) {
-    //     console.log("groups changed => getUsersColumnDefs");
-    //     // this.usersColumnDefs = this.getUsersColumnDefs();
-    //     // this.$nextTick(() => {
-    //     //   this.$refs.groupsGrid.api.setGridOption('rowData', this.groups);
-    //     // });
-    //   },
-    //   deep: true
-    // },
   },
   methods: {
     getUsersColumnDefs() {
@@ -295,7 +275,7 @@ export default {
           cellRenderer: GroupLinkRenderer,
           cellRendererParams: params => ({
             openGroup: (grp) => {
-              console.log(grp);
+              // console.log(grp);
               this.newGroup = grp;
               const modal = new bootstrap.Modal(document.getElementById('addGroupModal'));
               modal.show();
@@ -304,14 +284,21 @@ export default {
                 userGroup.username === params.data.username))
           }),
           filterValueGetter: params => this.groups.filter(group => group.userGroups.some(userGroup => userGroup.responsable &&
-              userGroup.username === params.data.username)).map(group => group.libelle).join(', ')
+              userGroup.username === params.data.username)).map(group => group.libelle).join(', '),
+          comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+            let libelleA = this.groups.filter(group => group.userGroups.some(userGroup => userGroup.responsable &&
+                userGroup.username === nodeA.data.username)).map(group => group.libelle).join(', ');
+            let libelleB = this.groups.filter(group => group.userGroups.some(userGroup => userGroup.responsable &&
+                userGroup.username === nodeB.data.username)).map(group => group.libelle).join(', ');
+            return libelleA === libelleB ? 0 : libelleA === '' ? 1 : libelleB === '' ? -1 : libelleA < libelleB ? -1 : 1;
+          }
         },
         {
           headerName: "Utilisateur dans groupe",
           cellRenderer: GroupLinkRenderer,
           cellRendererParams: params => ({
             openGroup: (grp) => {
-              console.log(grp);
+              // console.log(grp);
               this.newGroup = grp;
               const modal = new bootstrap.Modal(document.getElementById('addGroupModal'));
               modal.show();
@@ -320,7 +307,14 @@ export default {
                 userGroup.username === params.data.username))
           }),
           filterValueGetter: params => this.groups.filter(group => group.userGroups.some(userGroup => userGroup.user &&
-              userGroup.username === params.data.username)).map(group => group.libelle).join(', ')
+              userGroup.username === params.data.username)).map(group => group.libelle).join(', '),
+          comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+            let libelleA = this.groups.filter(group => group.userGroups.some(userGroup => userGroup.user &&
+                userGroup.username === nodeA.data.username)).map(group => group.libelle).join(', ');
+            let libelleB = this.groups.filter(group => group.userGroups.some(userGroup => userGroup.user &&
+                userGroup.username === nodeB.data.username)).map(group => group.libelle).join(', ');
+            return libelleA === libelleB ? 0 : libelleA === '' ? 1 : libelleB === '' ? -1 : libelleA < libelleB ? -1 : 1;
+          }
         },
         {
           headerName: "", cellRenderer: BtnComponent, cellRendererParams: (params) => ({
@@ -334,11 +328,16 @@ export default {
           minWidth: 110,
           maxWidth: 110,
           floatingFilter: false,
+          comparator: (valueA, valueB, nodeA, nodeB, isDescending) => {
+            let userAIsOld = nodeA.data.old;
+            let userBIsOld = nodeB.data.old;
+            return userAIsOld === userBIsOld ? 0 : userAIsOld ? 1 : -1;
+          }
         },
       ];
     },
     getGroupUsersColumnDefs() {
-      console.log("getGroupUsersColumnDefs");
+      // console.log("getGroupUsersColumnDefs");
       return [
         {field: "username", headerName: "Pseudo"},
         {
@@ -434,7 +433,7 @@ export default {
     },
     onSearchUsersSelectionChanged(event) {
       this.selectedSearchUser = event.api.getSelectedRows()[0];
-      console.log(this.selectedSearchUser);
+      // console.log(this.selectedSearchUser);
     },
     findUsers() {
       WebService.findUsers(this.newUsername).then(response => {
@@ -509,7 +508,7 @@ export default {
       });
     },
     addGroup() {
-      console.log(this.newGroup);
+      // console.log(this.newGroup);
       WebService.addGroup(this.newGroup).then(response => {
         displayNotif('Groupe [' + this.newGroup.libelle + '] ajouté', 'short_success');
         if (this.newGroup.id === undefined) {
