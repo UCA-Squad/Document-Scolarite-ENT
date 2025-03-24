@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Logic\LDAP;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -14,7 +15,7 @@ class UserProvider implements UserProviderInterface
 {
     private $params;
 
-    public function __construct(private LDAP $ldap, private UserRepository $userRepo, ParameterBagInterface $params)
+    public function __construct(private LDAP $ldap, private UserRepository $userRepo, ParameterBagInterface $params, private EntityManagerInterface $em)
     {
         $this->params = $params;
     }
@@ -31,11 +32,8 @@ class UserProvider implements UserProviderInterface
         $affi = $this->params->get("ldap_affiliation");
         $affi_student = $this->params->get("ldap_affiliation_student");
 
-        $users = $this->ldap->search("(uid=$username)", "ou=people,", [$affi, "memberOf", $code, "mail", "CLFDstatus"]);
+        $users = $this->ldap->search("(uid=$username)", "ou=people,", [$affi, "memberOf", $code, "mail", "CLFDstatus", "supannEntiteAffectationPrincipale"]);
         $user = current($users);
-
-        $compo = $this->ldap->search("(supannCodeEntite=UPK000000A)", "ou=structures,", ["ou"]);
-//        dd($compo);
 
         // Si l'utilisateur est admin
         if (in_array($username, $admins)) {
@@ -54,14 +52,21 @@ class UserProvider implements UserProviderInterface
             return new User($username, ["ROLE_ETUDIANT"], "", $numero);
         }
 
-        // Si l'utilisateur fait parti du groupe LDAP gestionnaire
-//        if ($user->hasAttribute("memberOf") && in_array($this->params->get("ldap")["admin_group"], $user->getAttribute("memberOf"))) {
-//            $mail = current($user->getAttribute('mail'));
-//            return new User($username, ["ROLE_SCOLA"], $mail);
-//        }
         $bddUser = $this->userRepo->findOneBy(['username' => $username]);
         if ($bddUser && current($user->getAttribute('CLFDstatus')) == 9) {
             $bddUser->setRoles(["ROLE_SCOLA"]);
+
+            if (($affectation = $user->getAttribute('supannEntiteAffectationPrincipale')) !== null) {
+                $affectation = current($affectation);
+                $compoEntry = $this->ldap->search("(supannCodeEntite=$affectation)", "ou=structures,", ["ou"]);
+                $compo = current($compoEntry)->getAttribute("ou")[0];
+
+                if ($compo !== $bddUser->getComposante()) {
+                    $bddUser->setComposante($compo);
+                    $this->em->flush();
+                }
+            }
+
             return $bddUser;
         }
 
