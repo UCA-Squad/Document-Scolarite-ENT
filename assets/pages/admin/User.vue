@@ -98,7 +98,9 @@
     <div class="tab-content" id="myTabContent">
       <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
         <h3>Liste des utilisateurs</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Ajouter</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal" v-on:click="onAddUser()">
+          Ajouter
+        </button>
         <ag-grid-vue
             ref="usersGrid"
             class="ag-theme-alpine mt-1"
@@ -430,6 +432,10 @@ export default {
         libelle: '',
         userGroups: []
       };
+    },
+    onAddUser() {
+      this.newUsername = '';
+      this.searchUsers = null;
     },
     onSearchUsersSelectionChanged(event) {
       this.selectedSearchUser = event.api.getSelectedRows()[0];
