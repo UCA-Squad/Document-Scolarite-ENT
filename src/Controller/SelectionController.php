@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\ImportedData;
 use App\Logic\FileAccess;
+use App\Logic\LDAP;
 use App\Parser\IEtuParser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -54,7 +55,7 @@ class SelectionController extends AbstractController
      * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
      */
     #[Route('/rebuild/{id}', name: 'rebuild_doc')]
-    public function reBuild(ImportedData $import, IEtuParser $parser): JsonResponse
+    public function reBuild(ImportedData $import, IEtuParser $parser, LDAP $ldap): JsonResponse
     {
         $mode = $import->isRn() ? 0 : 1;
         $folder = "/tmp";
@@ -76,19 +77,47 @@ class SelectionController extends AbstractController
         }
 
         $files = glob($folder . $pattern);
+        $filesnames = array_map(fn($file) => basename($file), $files);
+        $codesEtu = array_map(fn($file) => explode('_', $file)[0], $filesnames);
 
-//        // Trie des étudiants par nom,prenom
-//        usort($transfered, function ($a, $b) {
-//            $cmpNom = strcmp($a[0]->getName(), $b[0]->getName());
-//            $cmpPrenom = strcmp($a[0]->getSurname(), $b[0]->getSurname());
-//            return $cmpNom == 0 ? $cmpPrenom : $cmpNom;
-//        });
+        $query = "(|";
+        foreach ($codesEtu as $code) {
+            $query .= "(CLFDcodeEtu=$code)";
+        }
+        $query .= ")";
+        $ldapUser = $ldap->search($query, "ou=people,", ["CLFDcodeEtu", "sn", "givenName"]);
+
+        $infos = [];
+
+        $i = count($ldapUser);
+        if ($i != count($codesEtu))
+            return new JsonResponse("Erreur lors de la récupération des informations", 500);
+
+        for ($y = 0; $y < $i; $y++) {
+
+            $ldapNum = $ldapUser[$y]->getAttribute("CLFDcodeEtu")[0];
+
+            $codeIndex = array_search($ldapNum, $codesEtu);
+            if ($codeIndex === false)
+                return new JsonResponse("Erreur lors de la récupération des informations", 500);
+
+            $infos[] = [
+                'codeEtu' => $codesEtu[$codeIndex],
+                'nom' => $ldapUser[$y]->getAttribute("sn")[0],
+                'prenom' => $ldapUser[$y]->getAttribute("givenName")[0],
+                'file' => $filesnames[$codeIndex],
+                'filepath' => $files[$codeIndex],
+            ];
+        }
+
+        // Trie par nom, prénom
+        usort($infos, function ($a, $b) {
+            return strcasecmp($a['nom'], $b['nom']) ?: strcasecmp($a['prenom'], $b['prenom']);
+        });
 
         $cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
-        foreach ($files as $file) {
-            $filepath = str_replace(' ', "\ ", $file);
-            $filepath = str_replace('(', "\(", $filepath);
-            $filepath = str_replace(')', "\)", $filepath);
+        foreach ($infos as $file) {
+            $filepath = escapeshellarg($file['filepath']);
             $cmd .= $filepath . " ";
         }
 
