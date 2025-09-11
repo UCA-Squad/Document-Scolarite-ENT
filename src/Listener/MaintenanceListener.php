@@ -23,6 +23,10 @@ class MaintenanceListener
     {
         $isAdmin = $this->security->isGranted('ROLE_ADMIN');
 
+        /*if (in_array("ROLE_ETUDIANT", $this->security->getUser()->getRoles())) {
+            return;
+	    }*/
+
         if ($this->isMaintenance === true && !$isAdmin) {
 
             $content = $this->twig->render('closed.html.twig');
