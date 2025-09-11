@@ -1,7 +1,18 @@
 <template>
-  <div style="text-align: center">
-    <h3 style="display: inline-block;margin: 0 auto">Transfert de
-      {{ this.nbDocToTransfert }} / {{ this.students.length }} documents</h3>
+  <!--  <div style="text-align: center">-->
+  <!--    <h3 style="display: inline-block;margin: 0 auto">Transfert de-->
+  <!--      {{ this.nbDocToTransfert }} / {{ this.students.length }} documents</h3>-->
+  <!--  </div>-->
+
+  <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
+    <div style="text-align: center; flex: 1;">
+      <h3 style="display: inline-block; margin: 0 auto;">
+        Transfert de {{ nbDocToTransfert }} / {{ students.length }} documents
+      </h3>
+    </div>
+    <button v-if="templateMail !== null" v-on:click="rebuild()" class="btn btn-primary">
+      Reconstruire
+    </button>
   </div>
 
   <div v-if="!tranfert_done" class="row justify-content-md-center"
@@ -62,6 +73,7 @@
 
 <script>
 import WebService from "../../WebService";
+import {displayNotif} from "../../notyf";
 
 export default {
   name: "Transfert",
@@ -117,11 +129,32 @@ export default {
       }).catch(err => {
         console.log("fail");
       });
+    },
+    rebuild() {
+      WebService.rebuild_after_transfert(this.selectedRows).then(response => {
+        displayNotif('Reconstruction finie', 'short_success')
+        const contentDispositionHeader = response.headers['content-disposition'];
+        const fileName = contentDispositionHeader.split(';')[1].split('=')[1].trim().replace(/"/g, '');
+        const url = URL.createObjectURL(response.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }).catch(err => {
+        displayNotif('Reconstruction échouée', 'short_error')
+
+      })
     }
   },
   mounted() {
     this.nbDocToTransfert = this.selectedRows.length;
     this.numsToTransfert = this.selectedRows;
+
+    console.log(this.numsToTransfert);
+
     this.transfert();
   }
 }

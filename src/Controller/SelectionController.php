@@ -139,4 +139,61 @@ class SelectionController extends AbstractController
 
         return new JsonResponse("ok");
     }
+
+    #[Route('/rebuild_after_transfert', name: 'rebuild_doc_after_transfert', methods: 'POST')]
+    public function reBuildAfterTransfert(Request $request, IEtuParser $parser, FileAccess $fileAccess): JsonResponse
+    {
+        $import = $request->getSession()->get('data');
+        if (!$import)
+            return $this->json("Aucune donnée en session", 400);
+
+        $selectedNums = json_decode($request->getContent(), true);
+        if (!$selectedNums || !is_array($selectedNums) || count($selectedNums) == 0)
+            return $this->json("Aucun étudiant sélectionné", 400);
+
+        $files = [];
+        $mode = $import->isRn() ? 0 : 1;
+        $folder = $fileAccess->getDirByMode($mode);
+
+        foreach ($selectedNums as $num) {
+            if ($mode == ImportedData::ATTEST)
+                $file = $num . '/' . $parser->getAttestFileName($import, $num);
+            else
+                $file = $num . '/' . $parser->getReleveFileName($import, $num);
+            $files[] = $folder . $file;
+        }
+
+        $genFolder = '/tmp';
+        if (str_contains($import->getPdfFilename(), '.pdf') === false)
+            $fileName = $import->getPdfFilename();
+        else
+            $fileName = explode('.pdf', $import->getPdfFilename())[0];
+
+        $fileName = $fileName . '_rebuild.pdf';
+        $new_path = "$genFolder/$fileName";
+
+        $cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
+        foreach ($files as $file) {
+            $filepath = escapeshellarg($file);
+            $cmd .= $filepath . " ";
+        }
+
+        try {
+            $proc = Process::fromShellCommandline($cmd);
+            $proc->setTimeout(null);
+            $proc->setIdleTimeout(null);
+            $proc->run();
+
+            $response = $this->file($new_path, $fileName);
+            $response->send();
+
+            if (file_exists($new_path))
+                unlink($new_path);
+
+        } catch (\Exception $e) {
+            return new JsonResponse("Erreur lors de la reconstruction du document", 500);
+        }
+
+        return $this->json("ok");
+    }
 }

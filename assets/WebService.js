@@ -120,6 +120,10 @@ class WebService {
         return axios.get(this.BASE_URL + `/api/selection/rebuild/${importId}`, {responseType: 'blob'});
     }
 
+    rebuild_after_transfert(selected_nums){
+        return axios.post(this.BASE_URL + `/api/selection/rebuild_after_transfert`, selected_nums, {responseType: 'blob'});
+    }
+
     getUsers() {
         return axios.get(this.BASE_URL + "/api/user/");
     }
