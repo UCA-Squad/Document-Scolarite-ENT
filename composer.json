@@ -14,7 +14,7 @@
         "phpdocumentor/reflection-docblock": "^5.3",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.3",
-        "smalot/pdfparser": "^0.14.0",
+        "smalot/pdfparser": "^2.0",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "6.4.*",
         "symfony/console": "6.4.*",
