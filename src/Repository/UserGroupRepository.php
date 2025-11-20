@@ -6,13 +6,14 @@ use App\Entity\ImportedData;
 use App\Entity\UserGroup;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @extends ServiceEntityRepository<UserGroup>
  */
 class UserGroupRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private Security $security)
     {
         parent::__construct($registry, UserGroup::class);
     }
@@ -78,6 +79,10 @@ class UserGroupRepository extends ServiceEntityRepository
      */
     public function hasRightOn(ImportedData $import, string $username): bool
     {
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
         $usernames = $this->getUsernamesByResponsable($username);
 
         return in_array($import->getUsername(), $usernames);
