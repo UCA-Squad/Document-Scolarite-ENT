@@ -9,7 +9,6 @@ parameters:
     bind_dn: '%env(LDAP_BIND_DN)%'
     bind_password: '%env(LDAP_BIND_PASSWORD)%'
     base_dn: '%env(LDAP_BASE_DN)%'
-    #admin_group: '%env(LDAP_ADMIN_GROUP_DN)%' # Plus besoin depuis la gestion des users en interne
     bl_group: '%env(LDAP_BL_GROUP_DN)%'
 
   docapost:
@@ -84,21 +83,3 @@ services:
   App\Listener\MaintenanceListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request }
-
-#  App\Listener\StudentFileUpdateListener:
-#    arguments: [ '@mailer', '@twig', '@parser.etu' ]
-
-  #App\Parser\IEtuParser: '@parser.etu'
-
-  ############################### CONFIGURATION SECTION ###############################################
-
-  # Parser use to extract info from files
-#  parser.etu:
-#    class: App\Parser\EtuParser # Has to implement IEtuParser
-#    arguments: [ "@service_container" ]
-##
-#  # Normalizer use to transform one line of etu file into Student
-#  normalizer:
-#    class: App\Normalizer\StudentNormalizer
-#    tags: [ 'serializer.normalizer' ]
-#####################################################################################################

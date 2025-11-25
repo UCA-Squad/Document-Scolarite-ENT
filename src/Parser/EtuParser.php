@@ -10,27 +10,28 @@ use App\Normalizer\StudentNormalizer;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class EtuParser implements IEtuParser
 {
-    protected $num_regexes;
+    protected array $num_regexes;
 
-    protected $name_regexes;
+    protected array $name_regexes;
 
-    protected $nb_doublons;
+    protected int $nb_doublons;
 
     public function getNbDoublons(): int
     {
         return $this->nb_doublons;
     }
 
-    public function __construct()
+    public function __construct(private SerializerInterface $serializer)
     {
         $this->nb_doublons = 0;
 
         try {
-            $this->name_regexes = json_decode(file_get_contents(__DIR__ . "/NameRegexes.json"));
-            $this->num_regexes = json_decode(file_get_contents(__DIR__ . "/NumRegexes.json"));
+            $this->name_regexes = json_decode(file_get_contents(__DIR__ . "/NameRegexes.json"), true);
+            $this->num_regexes = json_decode(file_get_contents(__DIR__ . "/NumRegexes.json"), true);
         } catch (\Exception $e) {
             throw new \Exception("L'un des fichiers regex json n'est pas valide");
         }
@@ -49,25 +50,50 @@ class EtuParser implements IEtuParser
     {
         $content = file_get_contents($filename);
 
-        $content = utf8_encode($content);
+//        $content = utf8_encode($content);
         $content = mb_convert_encoding($content, "UTF-8", mb_list_encodings());
 
         $content = preg_replace('/^\h*\v+/m', '', $content);
 
-        $serializer = new Serializer([new StudentNormalizer()],
-            [new CsvEncoder(array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true))]);
+//        $serializer = new Serializer([new StudentNormalizer()],
+//            [new CsvEncoder(array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true))]);
+//        $students = $serializer->decode($content, 'csv', array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true));
 
-        $students = $serializer->decode($content, 'csv', array(CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true));
+        $students = $this->serializer->decode($content, 'csv', [CsvEncoder::DELIMITER_KEY => ";", CsvEncoder::NO_HEADERS_KEY => true]);
 
         $studs = [];
         foreach ($students as $student) {
-            $stud = $serializer->denormalize($student, Student::class);
+            $stud = $this->parseOneEtu($student);
             if (!(in_array($stud, $studs)))
                 $studs[] = $stud;
             else
                 $this->nb_doublons++;
         }
         return $studs;
+    }
+
+    private function parseOneEtu(array $data): Student
+    {
+        $numero = $data[0];
+        $name = $data[1];
+        $surname = $data[2];
+        $birthday = $data[3];
+        $mail = empty($data[5]) ? $data[4] : $data[5];
+        $type = $data[6] ?? "";
+        $code = $data[7] ?? "";
+
+        if (count($data) <= 12) {    // Releves
+            $libelle_obj = $data[8] ?? "";
+            $code_etape = $data[9] ?? "";
+            $libelle = isset($data[11]) && $data[11] != "--" ? $data[11] : "";
+        } else {                    // Attests
+            $libelle_obj = $data[9];
+            $code_etape = $data[10];
+            $libelle = isset($data[12]) && $data[12] != "--" ? $data[12] : "";
+        }
+
+        return new Student($numero, $name, $surname, $birthday, $mail, $libelle, $code, $code_etape, $type, $libelle_obj);
+
     }
 
     public function getReleveFileName(ImportedData $data, string $num): string
@@ -156,13 +182,19 @@ class EtuParser implements IEtuParser
     public function findStudentByName(string $content, array $students)
     {
         foreach ($this->name_regexes as $regex_info) {
-            if (preg_match($regex_info->regex, $content, $matches)) {
-                $date = $regex_info->indexDate > 0 && isset($matches[$regex_info->indexDate]) ? $matches[$regex_info->indexDate] : null;
-                if ($regex_info->indexNom == $regex_info->indexPrenom && isset($matches[$regex_info->indexPrenom]))
-                    $id = preg_replace('/[ ]+/', ' ', trim($matches[$regex_info->indexPrenom]));
+            $regex = $regex_info['regex'];
+            $indexNom = $regex_info['indexNom'];
+            $indexPrenom = $regex_info['indexPrenom'];
+            $indexDate = $regex_info['indexDate'];
+
+            if (preg_match($regex, $content, $matches)) {
+                $date = $indexDate > 0 && isset($matches[$indexDate]) ? $matches[$indexDate] : null;
+
+                if ($indexNom == $indexPrenom && isset($matches[$indexPrenom]))
+                    $id = preg_replace('/[ ]+/', ' ', trim($matches[$indexPrenom]));
                 else {
-                    $first = preg_replace('/[ ]+/', ' ', trim($matches[$regex_info->indexPrenom]));
-                    $second = preg_replace('/[ ]+/', ' ', trim($matches[$regex_info->indexNom]));
+                    $first = preg_replace('/[ ]+/', ' ', trim($matches[$indexPrenom]));
+                    $second = preg_replace('/[ ]+/', ' ', trim($matches[$indexNom]));
                     $id = $first . " " . $second;
                 }
                 $index = array_search($this->getEtuByName($id, $students, $date), $students);

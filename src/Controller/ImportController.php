@@ -311,10 +311,27 @@ class ImportController extends AbstractController
     {
         $new_path = $this->file_access->getPdfByMode($mode, 'd');
         $name = $this->file_access->getPdfByMode($mode, 'f');
+//
+//        $cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . $name . "' '" . $pdf->getPathname() . "'";
+//        try {
+//            Process::fromShellCommandline($cmd)->setTimeout(null)->setIdleTimeout(null)->run();
+//        } catch (\Exception $e) {
+//            return false;
+//        }
 
-        $cmd = "gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='" . $new_path . $name . "' '" . $pdf->getPathname() . "'";
+        $process = new Process([
+            'qpdf',
+            '--decrypt',
+            '--object-streams=disable',
+            '--linearize',
+            $pdf->getPathname(),
+            $new_path . $name
+        ]);
+
+        $process->setTimeout(null)->setIdleTimeout(null);
+
         try {
-            Process::fromShellCommandline($cmd)->setTimeout(null)->setIdleTimeout(null)->run();
+            $process->run();
         } catch (\Exception $e) {
             return false;
         }
