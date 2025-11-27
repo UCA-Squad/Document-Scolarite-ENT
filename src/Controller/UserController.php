@@ -11,6 +11,7 @@ use App\Repository\ImportedDataRepository;
 use App\Repository\UserGroupRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -124,7 +125,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_user', methods: ['DELETE'])]
-    public function deleteUser(User $user, UserGroupRepository $userGroupRepository, ImportedDataRepository $importRepo): JsonResponse
+    public function deleteUser(#[MapEntity(id: 'id')]User $user, UserGroupRepository $userGroupRepository, ImportedDataRepository $importRepo): JsonResponse
     {
         $userGroups = $userGroupRepository->findBy(['username' => $user->getUsername()]);
 

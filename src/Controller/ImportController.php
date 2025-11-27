@@ -18,6 +18,7 @@ use setasign\Fpdi\PdfParser\Filter\FilterException;
 use setasign\Fpdi\PdfParser\PdfParserException;
 use setasign\Fpdi\PdfParser\Type\PdfTypeException;
 use setasign\Fpdi\PdfReader\PdfReaderException;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -42,7 +43,7 @@ class ImportController extends AbstractController
     }
 
     #[Route('/imported/{id}')]
-    public function getImportedFiles(ImportedData $import, Security $security, LDAP $ldap, UserGroupRepository $userGroupRepo): JsonResponse
+    public function getImportedFiles(#[MapEntity(id: 'id')] ImportedData $import, Security $security, LDAP $ldap, UserGroupRepository $userGroupRepo): JsonResponse
     {
         if (!$security->isGranted('ROLE_ADMIN') && !$userGroupRepo->hasRightOn($import, $this->getUser()->getUserIdentifier()))
             return new JsonResponse("Vous n'avez pas les droits pour accéder à cette ressource", 403);
