@@ -1,15 +1,21 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
+        <div class="card shadow-sm rounded-3 w-100" style="max-width:720px;">
+            <div class="card-body text-center p-4">
+                <h1 class="fw-bold mb-1"> Erreur </h1>
 
-	<div style="margin-top: 50px" class="container">
-		<div class="row justify-content-md-center">
-			<h2>Erreur</h2>
-		</div>
-		<div style="margin-top: 50px" class="row justify-content-md-center">
-			<h3>
-				<a href="{{ path('scola') }}">Accueil</a>
-			</h3>
-		</div>
-	</div>
+                <h5 class="text-muted mb-3">
+                    Une erreur est survenue
+                </h5>
+
+                <p class="text-secondary mb-4">La page demandée n'a pas pu être affichée.</p>
+
+                <div>
+                    <a href="{{ path('scola', {'route': ''}) }}" class="btn btn-primary btn-lg">Accueil</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
