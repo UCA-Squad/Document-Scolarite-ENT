@@ -56,7 +56,7 @@ class SelectionController extends AbstractController
      * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
      */
     #[Route('/rebuild/{id}', name: 'rebuild_doc')]
-    public function reBuild(#[MapEntity(id: 'id')]ImportedData $import, IEtuParser $parser, LDAP $ldap): JsonResponse
+    public function reBuild(#[MapEntity(id: 'id')] ImportedData $import, IEtuParser $parser, LDAP $ldap): JsonResponse
     {
         $mode = $import->isRn() ? 0 : 1;
         $folder = "/tmp";
@@ -116,14 +116,11 @@ class SelectionController extends AbstractController
             return strcasecmp($a['nom'], $b['nom']) ?: strcasecmp($a['prenom'], $b['prenom']);
         });
 
-        $cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
-        foreach ($infos as $file) {
-            $filepath = escapeshellarg($file['filepath']);
-            $cmd .= $filepath . " ";
-        }
+        $pages = array_column($infos, 'filepath');
+        $cmd = array_merge(['qpdf', '--empty', '--pages'], $pages, ['--', $new_path]);
 
         try {
-            $proc = Process::fromShellCommandline($cmd);
+            $proc = new Process($cmd);
             $proc->setTimeout(null);
             $proc->setIdleTimeout(null);
             $proc->run();
@@ -173,14 +170,10 @@ class SelectionController extends AbstractController
         $fileName = $fileName . '_rebuild.pdf';
         $new_path = "$genFolder/$fileName";
 
-        $cmd = "gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='" . $new_path . "' ";
-        foreach ($files as $file) {
-            $filepath = escapeshellarg($file);
-            $cmd .= $filepath . " ";
-        }
+        $cmd = array_merge(['qpdf', '--empty', '--pages'], $files, ['--', $new_path]);
 
         try {
-            $proc = Process::fromShellCommandline($cmd);
+            $proc = new Process($cmd);
             $proc->setTimeout(null);
             $proc->setIdleTimeout(null);
             $proc->run();
