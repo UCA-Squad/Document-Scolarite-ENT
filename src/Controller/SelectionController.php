@@ -12,6 +12,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -56,7 +57,7 @@ class SelectionController extends AbstractController
      * Reconstruit un document PDF avec les PDFs qui ont été transférés dans les dossiers étudiants.
      */
     #[Route('/rebuild/{id}', name: 'rebuild_doc')]
-    public function reBuild(#[MapEntity(id: 'id')] ImportedData $import, IEtuParser $parser, LDAP $ldap): JsonResponse
+    public function reBuild(#[MapEntity(id: 'id')] ImportedData $import, IEtuParser $parser, LDAP $ldap): Response
     {
         $mode = $import->isRn() ? 0 : 1;
         $folder = "/tmp";
@@ -126,20 +127,22 @@ class SelectionController extends AbstractController
             $proc->run();
 
             $response = $this->file($new_path, $fileName);
-            $response->send();
+//            $response->send();
+            $response->deleteFileAfterSend(true);
+            return $response;
 
-            if (file_exists($new_path))
-                unlink($new_path);
+//            if (file_exists($new_path))
+//                unlink($new_path);
 
         } catch (\Exception $e) {
             return new JsonResponse("Erreur lors de la reconstruction du document", 500);
         }
 
-        return new JsonResponse("ok");
+//        return new JsonResponse("ok");
     }
 
     #[Route('/rebuild_after_transfert', name: 'rebuild_doc_after_transfert', methods: 'POST')]
-    public function reBuildAfterTransfert(Request $request, IEtuParser $parser, FileAccess $fileAccess): JsonResponse
+    public function reBuildAfterTransfert(Request $request, IEtuParser $parser, FileAccess $fileAccess): Response
     {
         $import = $request->getSession()->get('data');
         if (!$import)
@@ -179,15 +182,17 @@ class SelectionController extends AbstractController
             $proc->run();
 
             $response = $this->file($new_path, $fileName);
-            $response->send();
+//            $response->send();
+            $response->deleteFileAfterSend(true);
+            return $response;
 
-            if (file_exists($new_path))
-                unlink($new_path);
+//            if (file_exists($new_path))
+//                unlink($new_path);
 
         } catch (\Exception $e) {
             return new JsonResponse("Erreur lors de la reconstruction du document", 500);
         }
 
-        return $this->json("ok");
+//        return $this->json("ok");
     }
 }
