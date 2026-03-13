@@ -43,13 +43,22 @@
             <div class="alert alert-warning">La suppression est définitive, les étudiants n'auront plus accès aux
               documents
             </div>
+            <div v-if="this.isFilesLoading" class="d-flex align-items-center gap-2 mb-2">
+              <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+              <span>Chargement des fichiers...</span>
+            </div>
+            <div v-if="!this.isFilesLoading && Array.isArray(this.files) && this.files.length === 0" class="text-muted mb-2">
+              Aucun document trouvé pour cet import.
+            </div>
             <ag-grid-vue v-if="this.selected !== null"
+                         :key="this.deleteGridKey"
                          class="ag-theme-alpine"
                          style="height: 60vh"
                          :columnDefs="columnEdit"
-                         :rowData="this.files"
+                         :rowData="Array.isArray(this.files) ? this.files : []"
                          :defaultColDef="defaultColDef"
                          :onSelectionChanged=onSelectionDeleteChanged
+                         @grid-ready="onDeleteGridReady"
                          rowSelection="multiple"
                          pagination="true"
                          animateRows="true"
@@ -59,7 +68,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             <button type="button" class="btn btn-primary" v-on:click="removeFiles"
-                    :disabled="this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0">Supprimer les
+                    :disabled="this.isFilesLoading || this.selectedDeleteRows === null || this.selectedDeleteRows.length === 0">Supprimer les
               documents
             </button>
           </div>
@@ -120,6 +129,16 @@ export default {
       selected: null,
       selectedDeleteRows: null,
       files: null,
+      isFilesLoading: false,
+      deleteGridApi: null,
+      deleteGridKey: 0,
+      deleteModalInstance: null,
+      deleteModalEl: null,
+      onDeleteModalHidden: null,
+      onDeleteModalShown: null,
+      activeImportId: null,
+      filesRequestId: 0,
+      filesAbortController: null,
       monitoring: null,
       defaultColDef: {
         floatingFilter: true,
@@ -227,14 +246,9 @@ export default {
           }
         },
         {
-          headerName: "Fichiers", floatingFilter: false, cellRenderer: BtnModalComponent, cellRendererParams: {
-            onClicked: (data) => {
-              this.selected = data;
-              this.files = [];
-              this.fetchFiles(data.id);
-            },
+          headerName: "Fichiers", floatingFilter: false, cellRenderer: BtnComponent, cellRendererParams: {
+            onClicked: (data) => this.openDeleteModal(data),
             txt: "mdi mdi-file-remove mdi-24px",
-            modal: "#suppressionModal"
           }
         },
         {
@@ -276,13 +290,56 @@ export default {
       });
     },
     fetchFiles(importId) {
-      WebService.fetchRnFiles(importId).then(response => {
-        // console.log(response.data);
+      const requestId = ++this.filesRequestId;
+
+      if (this.filesAbortController) {
+        this.filesAbortController.abort();
+      }
+
+      this.isFilesLoading = true;
+      this.files = [];
+      this.filesAbortController = new AbortController();
+
+      WebService.fetchRnFiles(importId, {signal: this.filesAbortController.signal}).then(response => {
+        // Ignore les réponses périmées quand l'utilisateur change vite d'import.
+        if (requestId !== this.filesRequestId || this.activeImportId !== importId) return;
         this.files = response.data;
+        this.$nextTick(() => this.refreshDeleteGrid());
       }).catch(error => {
+        if (error?.code === 'ERR_CANCELED') return;
         console.log(error);
         alert("Erreur lors de la récupération des données");
+      }).finally(() => {
+        if (requestId === this.filesRequestId) {
+          this.isFilesLoading = false;
+          this.$nextTick(() => this.refreshDeleteGrid());
+        }
       });
+    },
+    onDeleteGridReady(params) {
+      this.deleteGridApi = params.api;
+      this.refreshDeleteGrid();
+    },
+    refreshDeleteGrid() {
+      if (!this.deleteGridApi) return;
+      const rowData = Array.isArray(this.files) ? this.files : [];
+      this.deleteGridApi.setGridOption('rowData', rowData);
+      this.deleteGridApi.refreshCells({force: true});
+      this.deleteGridApi.sizeColumnsToFit();
+    },
+    openDeleteModal(data) {
+      this.selected = data;
+      this.selectedDeleteRows = [];
+      this.files = [];
+      this.deleteGridApi = null;
+      this.deleteGridKey += 1;
+      this.activeImportId = data.id;
+
+      const myModalEl = document.querySelector('#suppressionModal');
+      this.deleteModalInstance = bootstrap.Modal.getOrCreateInstance(myModalEl);
+      this.deleteModalInstance.show();
+
+      this.fetchFiles(data.id);
     },
     removeFiles() {
 
@@ -322,9 +379,40 @@ export default {
     this.fetchRnMonitoring();
   },
   mounted() {
-    // console.log(this.mode);
+    this.deleteModalEl = document.querySelector('#suppressionModal');
+    if (this.deleteModalEl) {
+      this.onDeleteModalShown = () => {
+        this.$nextTick(() => this.refreshDeleteGrid());
+      };
+      this.onDeleteModalHidden = () => {
+        if (this.filesAbortController) {
+          this.filesAbortController.abort();
+          this.filesAbortController = null;
+        }
+        this.deleteGridApi = null;
+        this.activeImportId = null;
+        this.selectedDeleteRows = [];
+        this.files = null;
+        this.isFilesLoading = false;
+      };
+
+      this.deleteModalEl.addEventListener('shown.bs.modal', this.onDeleteModalShown);
+      this.deleteModalEl.addEventListener('hidden.bs.modal', this.onDeleteModalHidden);
+    }
+  },
+  beforeUnmount() {
+    if (this.deleteModalEl && this.onDeleteModalShown) {
+      this.deleteModalEl.removeEventListener('shown.bs.modal', this.onDeleteModalShown);
+    }
+    if (this.deleteModalEl && this.onDeleteModalHidden) {
+      this.deleteModalEl.removeEventListener('hidden.bs.modal', this.onDeleteModalHidden);
+    }
   },
   beforeRouteLeave(to, from, next) {
+    if (this.filesAbortController) {
+      this.filesAbortController.abort();
+    }
+
     const myModalEl = document.querySelector('#suppressionModal');
     const modal = bootstrap.Modal.getOrCreateInstance(myModalEl);
     modal.hide();

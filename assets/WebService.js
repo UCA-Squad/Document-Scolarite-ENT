@@ -71,8 +71,8 @@ class WebService {
         });
     }
 
-    fetchRnFiles(importId) {
-        return axios.get(this.BASE_URL + "/api/import/imported/" + importId);
+    fetchRnFiles(importId, config = {}) {
+        return axios.get(this.BASE_URL + "/api/import/imported/" + importId, config);
     }
 
     removeFiles(id, nums) {
