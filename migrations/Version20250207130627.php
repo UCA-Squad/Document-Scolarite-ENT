@@ -19,13 +19,35 @@ final class Version20250207130627 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user ADD prenom VARCHAR(255) NOT NULL, ADD nom VARCHAR(255) NOT NULL');
+        if (!$schema->hasTable('user')) {
+            return;
+        }
+
+        $table = $schema->getTable('user');
+
+        if (!$table->hasColumn('prenom')) {
+            $this->addSql('ALTER TABLE user ADD prenom VARCHAR(255) NOT NULL');
+        }
+
+        if (!$table->hasColumn('nom')) {
+            $this->addSql('ALTER TABLE user ADD nom VARCHAR(255) NOT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user DROP prenom, DROP nom');
+        if (!$schema->hasTable('user')) {
+            return;
+        }
+
+        $table = $schema->getTable('user');
+
+        if ($table->hasColumn('prenom')) {
+            $this->addSql('ALTER TABLE user DROP prenom');
+        }
+
+        if ($table->hasColumn('nom')) {
+            $this->addSql('ALTER TABLE user DROP nom');
+        }
     }
 }

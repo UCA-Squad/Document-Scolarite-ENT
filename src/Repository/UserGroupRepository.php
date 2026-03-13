@@ -44,8 +44,9 @@ class UserGroupRepository extends ServiceEntityRepository
     //    }
     public function delete(UserGroup $userGrp): void
     {
-        $this->_em->remove($userGrp);
-        $this->_em->flush();
+        $entityManager = $this->getEntityManager();
+        $entityManager->remove($userGrp);
+        $entityManager->flush();
     }
 
     public function getUsernamesByResponsable(string $respUsername): array

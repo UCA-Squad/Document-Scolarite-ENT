@@ -19,13 +19,23 @@ final class Version20250207133325 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user ADD composante VARCHAR(25) NOT NULL');
+        if (!$schema->hasTable('user')) {
+            return;
+        }
+
+        if (!$schema->getTable('user')->hasColumn('composante')) {
+            $this->addSql('ALTER TABLE user ADD composante VARCHAR(25) NOT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user DROP composante');
+        if (!$schema->hasTable('user')) {
+            return;
+        }
+
+        if ($schema->getTable('user')->hasColumn('composante')) {
+            $this->addSql('ALTER TABLE user DROP composante');
+        }
     }
 }

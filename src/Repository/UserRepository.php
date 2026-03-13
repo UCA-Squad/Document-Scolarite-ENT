@@ -15,7 +15,8 @@ class UserRepository  extends ServiceEntityRepository
 
     public function delete(User $user): void
     {
-        $this->_em->remove($user);
-        $this->_em->flush();
+        $entityManager = $this->getEntityManager();
+        $entityManager->remove($user);
+        $entityManager->flush();
     }
 }
