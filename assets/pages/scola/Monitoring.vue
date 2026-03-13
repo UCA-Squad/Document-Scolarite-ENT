@@ -13,11 +13,13 @@
           </div>
           <div class="modal-body">
             <ag-grid-vue v-if="this.selected !== null"
+                         :key="this.historyGridKey"
                          class="ag-theme-alpine"
                          style="height: 40vh"
                          :columnDefs="columnHistorique"
-                         :rowData="this.selected.history"
+                         :rowData="Array.isArray(this.selected?.history) ? this.selected.history : []"
                          :defaultColDef="defaultColDef"
+                         @grid-ready="onHistoryGridReady"
                          pagination="true"
                          animateRows="true"
                          :ensureDomOrder="true"
@@ -105,13 +107,6 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import {displayNotif} from "../../notyf";
 import {user} from "../../user"; // Theme
 
-const BtnModalComponent = {
-  template: `<button data-bs-toggle="modal" :data-bs-target="this.params.modal" data-bs-backdrop="true" class="btn btn-outline-secondary mt-1"
-                style="height: 30px;width: 15px" v-on:click="this.params.onClicked(this.params.data)">
-                    <span :class="this.params.txt"></span>
-             </button>`
-};
-
 const BtnComponent = {
   template: `<button style="height: 30px;width: 15px" class="btn btn-outline-secondary mt-1" v-on:click="this.params.onClicked(this.params.data)">
                  <span :class="this.params.txt"></span>
@@ -130,6 +125,12 @@ export default {
       selectedDeleteRows: null,
       files: null,
       isFilesLoading: false,
+      historyGridApi: null,
+      historyGridKey: 0,
+      historyModalInstance: null,
+      historyModalEl: null,
+      onHistoryModalHidden: null,
+      onHistoryModalShown: null,
       deleteGridApi: null,
       deleteGridKey: 0,
       deleteModalInstance: null,
@@ -237,12 +238,11 @@ export default {
         {
           headerName: "Historique",
           floatingFilter: false,
-          cellRenderer: BtnModalComponent,
+          cellRenderer: BtnComponent,
           cellClassRules: {'non-selectable': true},
           cellRendererParams: {
-            onClicked: (data) => this.selected = data,
+            onClicked: (data) => this.openHistoryModal(data),
             txt: "mdi mdi-history mdi-24px",
-            modal: "#historiqueModal"
           }
         },
         {
@@ -320,12 +320,34 @@ export default {
       this.deleteGridApi = params.api;
       this.refreshDeleteGrid();
     },
+    onHistoryGridReady(params) {
+      this.historyGridApi = params.api;
+      this.refreshHistoryGrid();
+    },
     refreshDeleteGrid() {
       if (!this.deleteGridApi) return;
       const rowData = Array.isArray(this.files) ? this.files : [];
       this.deleteGridApi.setGridOption('rowData', rowData);
       this.deleteGridApi.refreshCells({force: true});
       this.deleteGridApi.sizeColumnsToFit();
+    },
+    refreshHistoryGrid() {
+      if (!this.historyGridApi) return;
+      const rowData = Array.isArray(this.selected?.history) ? this.selected.history : [];
+      this.historyGridApi.setGridOption('rowData', rowData);
+      this.historyGridApi.refreshCells({force: true});
+      this.historyGridApi.sizeColumnsToFit();
+    },
+    openHistoryModal(data) {
+      this.selected = data;
+      this.historyGridApi = null;
+      this.historyGridKey += 1;
+
+      this.$nextTick(() => {
+        const myModalEl = document.querySelector('#historiqueModal');
+        this.historyModalInstance = bootstrap.Modal.getOrCreateInstance(myModalEl);
+        this.historyModalInstance.show();
+      });
     },
     openDeleteModal(data) {
       this.selected = data;
@@ -379,6 +401,19 @@ export default {
     this.fetchRnMonitoring();
   },
   mounted() {
+    this.historyModalEl = document.querySelector('#historiqueModal');
+    if (this.historyModalEl) {
+      this.onHistoryModalShown = () => {
+        this.$nextTick(() => this.refreshHistoryGrid());
+      };
+      this.onHistoryModalHidden = () => {
+        this.historyGridApi = null;
+      };
+
+      this.historyModalEl.addEventListener('shown.bs.modal', this.onHistoryModalShown);
+      this.historyModalEl.addEventListener('hidden.bs.modal', this.onHistoryModalHidden);
+    }
+
     this.deleteModalEl = document.querySelector('#suppressionModal');
     if (this.deleteModalEl) {
       this.onDeleteModalShown = () => {
@@ -401,6 +436,13 @@ export default {
     }
   },
   beforeUnmount() {
+    if (this.historyModalEl && this.onHistoryModalShown) {
+      this.historyModalEl.removeEventListener('shown.bs.modal', this.onHistoryModalShown);
+    }
+    if (this.historyModalEl && this.onHistoryModalHidden) {
+      this.historyModalEl.removeEventListener('hidden.bs.modal', this.onHistoryModalHidden);
+    }
+
     if (this.deleteModalEl && this.onDeleteModalShown) {
       this.deleteModalEl.removeEventListener('shown.bs.modal', this.onDeleteModalShown);
     }
