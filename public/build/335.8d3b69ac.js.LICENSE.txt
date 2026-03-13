@@ -1,10 +1,8 @@
 /*!
-  * vue-router v4.2.5
-  * (c) 2023 Eduardo San Martin Morote
-  * @license MIT
-  */
-
-/*! #__NO_SIDE_EFFECTS__ */
+ * vue-router v4.6.4
+ * (c) 2025 Eduardo San Martin Morote
+ * @license MIT
+ */
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -21,19 +19,32 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 
-/*! Bundled license information:
+/**
+* @vue/compiler-core v3.5.29
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 
-@vue/shared/dist/shared.esm-bundler.js:
-  (**
-  * @vue/shared v3.4.21
-  * (c) 2018-present Yuxi (Evan) You and Vue contributors
-  * @license MIT
-  **)
+/**
+* @vue/compiler-dom v3.5.29
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
 
-@vue/reactivity/dist/reactivity.esm-bundler.js:
-  (**
-  * @vue/reactivity v3.4.21
-  * (c) 2018-present Yuxi (Evan) You and Vue contributors
-  * @license MIT
-  **)
-*/
+/**
+* @vue/runtime-core v3.5.29
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
+
+/**
+* @vue/runtime-dom v3.5.29
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
+
+/**
+* @vue/shared v3.5.29
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/

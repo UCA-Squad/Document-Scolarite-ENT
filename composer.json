@@ -7,7 +7,6 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-openssl": "*",
-        "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.3",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.13",

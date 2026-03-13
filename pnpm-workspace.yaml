@@ -1,0 +1,10 @@
+# Delay dependency updates
+# Pour plus de sécurité, retarder les mises à jour pour éviter des versions corrompues.
+# En minutes. Par exemple 1440 (1 jour) ou 10080 (1 semaine)
+minimumReleaseAge: 10080
+
+
+# Enforce trust with trustPolicy
+# Protection supplémentaire de la chaîne d'approvisionnement.
+# no-downgrade empêche l'installation d'un paquet si son niveau de confiance a diminué par rapport aux versions précédentes.
+trustPolicy: no-downgrade
