@@ -51,7 +51,8 @@ class EtuParser implements IEtuParser
         $content = file_get_contents($filename);
 
 //        $content = utf8_encode($content);
-        $content = mb_convert_encoding($content, "UTF-8", mb_list_encodings());
+        //$content = mb_convert_encoding($content, "UTF-8", mb_list_encodings());
+        $content = mb_convert_encoding($content, "UTF-8", ['UTF-8', 'Windows-1252', 'ISO-8859-1']);
 
         $content = preg_replace('/^\h*\v+/m', '', $content);
 
