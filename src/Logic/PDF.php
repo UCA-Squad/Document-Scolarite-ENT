@@ -154,10 +154,10 @@ class PDF
             return [$date, $indexes];
 
         if ($this->env == "dev") {
-//			dump("Nb students : " . count($students));
-//			dump("Nb Index : " . count($pageStudent['indexes']));
-//			dump("Nb doublon : " . $etu_parser->getNbDoublons());
-//			dump($pageStudent);
+			//dump("Nb students : " . count($students));
+            //dump("Nb doublon : " . $this->parser->getNbDoublons());
+            //dump("Nb doublonPagination : " . $this->getNbDoublonPagination($indexes));
+            //dump("Nb pages : " . count($indexes));
             throw new Exception("Nombre d'étudiants et de pages pdf incohérent");
         }
 
